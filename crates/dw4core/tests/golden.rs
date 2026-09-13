@@ -78,3 +78,63 @@ fn setting_a_player_name_survives_a_round_trip_through_bytes() {
     let reparsed = dw4core::SaveData::parse(&save.to_bytes()).unwrap();
     assert_eq!(reparsed.player_name(), "Zz9");
 }
+
+fn u32s(v: &serde_json::Value) -> Vec<u32> {
+    v.as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_u64().unwrap() as u32)
+        .collect()
+}
+
+#[test]
+fn containers_match_the_python_oracle() {
+    let e = expected();
+    let save =
+        dw4core::SaveData::parse(&std::fs::read(fixture_dir().join("save.raw")).unwrap()).unwrap();
+
+    assert_eq!(save.get_raw_device_slots().len(), 36);
+    assert_eq!(save.get_raw_device_slots(), u32s(&e["device"]));
+    assert_eq!(save.get_raw_weapon_slots(), u32s(&e["weapon"]));
+    assert_eq!(save.get_raw_weapon_mod_slots(), u32s(&e["weapon_mod"]));
+    assert_eq!(save.armor() as u64, e["armor"].as_u64().unwrap());
+    assert_eq!(save.get_raw_armor_mod_slots(), u32s(&e["armor_mod"]));
+    assert_eq!(save.sub() as u64, e["sub"].as_u64().unwrap());
+    assert_eq!(save.bank_bit() as u64, e["bank_bit"].as_u64().unwrap());
+    assert_eq!(save.get_raw_bank_slots(), u32s(&e["bank_device"]));
+
+    // The disk folder is compared as raw u32s: the count lives in the high
+    // half and the type id (0x4000 + i) in the low half.
+    let expected_disks: Vec<u32> = (0..12u32)
+        .map(|i| {
+            (e["disk"].as_array().unwrap()[i as usize].as_u64().unwrap() as u32) << 16
+                | (0x4000 + i)
+        })
+        .collect();
+    assert_eq!(save.get_raw_disk_slots(), expected_disks);
+
+    let counts: Vec<u16> = (0..12).map(|i| save.disk_count(i)).collect();
+    let expected_counts: Vec<u16> = e["disk"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_u64().unwrap() as u16)
+        .collect();
+    assert_eq!(counts, expected_counts);
+}
+
+#[test]
+fn nicknames_agree_with_the_python_item_catalogue() {
+    // The catalogue itself arrives in plan 2; here we only prove the ids match.
+    let e = expected();
+    let save =
+        dw4core::SaveData::parse(&std::fs::read(fixture_dir().join("save.raw")).unwrap()).unwrap();
+    let nicknames = e["nicknames"].as_object().unwrap();
+    for (base, name) in nicknames {
+        let base: u32 = base.parse().unwrap();
+        assert!(
+            (0..36).any(|i| save.device(i) & 0xFFFF == base),
+            "base id 0x{base:04X} ({name}) is not in the device folder"
+        );
+    }
+}

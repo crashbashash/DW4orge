@@ -204,6 +204,202 @@ impl SaveData {
     pub fn detect_species(&self) -> Species {
         Species::from_model_name(&self.digimon_name()).unwrap_or(Species::DEFAULT)
     }
+
+    // ---- device folder ---------------------------------------------------
+
+    /// A device-folder entry. Slots `0..DEVICE_SLOTS` are the usable inventory.
+    #[must_use]
+    pub fn device(&self, slot: usize) -> u32 {
+        assert!(
+            slot < offsets::DEVICE_SAVE_SLOTS,
+            "device slot {slot} out of range"
+        );
+        self.get_u32(offsets::DEVICE + slot * 4)
+    }
+
+    /// Write a device-folder entry.
+    pub fn set_device(&mut self, slot: usize, value: u32) {
+        assert!(
+            slot < offsets::DEVICE_SAVE_SLOTS,
+            "device slot {slot} out of range"
+        );
+        self.set_u32(offsets::DEVICE + slot * 4, value);
+    }
+
+    /// Every device-folder slot, including the 6 reserved padding slots.
+    #[must_use]
+    pub fn get_raw_device_slots(&self) -> Vec<u32> {
+        (0..offsets::DEVICE_SAVE_SLOTS)
+            .map(|i| self.device(i))
+            .collect()
+    }
+
+    // ---- equipment -------------------------------------------------------
+
+    /// A weapon slot: an index into the device folder.
+    #[must_use]
+    pub fn weapon(&self, index: usize) -> u32 {
+        assert!(
+            index < offsets::WEAPON_SLOTS,
+            "weapon slot {index} out of range"
+        );
+        self.get_u32(offsets::WEAPON + index * 4)
+    }
+
+    /// Write a weapon slot.
+    pub fn set_weapon(&mut self, index: usize, value: u32) {
+        assert!(
+            index < offsets::WEAPON_SLOTS,
+            "weapon slot {index} out of range"
+        );
+        self.set_u32(offsets::WEAPON + index * 4, value);
+    }
+
+    /// Every weapon slot.
+    #[must_use]
+    pub fn get_raw_weapon_slots(&self) -> Vec<u32> {
+        (0..offsets::WEAPON_SLOTS).map(|i| self.weapon(i)).collect()
+    }
+
+    /// A weapon-mod socket: an index into the device folder.
+    #[must_use]
+    pub fn weapon_mod(&self, index: usize) -> u32 {
+        assert!(
+            index < offsets::MOD_SOCKETS,
+            "weapon mod {index} out of range"
+        );
+        self.get_u32(offsets::WEAPON_MOD + index * 4)
+    }
+
+    /// Write a weapon-mod socket.
+    pub fn set_weapon_mod(&mut self, index: usize, value: u32) {
+        assert!(
+            index < offsets::MOD_SOCKETS,
+            "weapon mod {index} out of range"
+        );
+        self.set_u32(offsets::WEAPON_MOD + index * 4, value);
+    }
+
+    /// Every weapon-mod socket.
+    #[must_use]
+    pub fn get_raw_weapon_mod_slots(&self) -> Vec<u32> {
+        (0..offsets::MOD_SOCKETS)
+            .map(|i| self.weapon_mod(i))
+            .collect()
+    }
+
+    /// The armor / core slot: an index into the device folder.
+    #[must_use]
+    pub fn armor(&self) -> u32 {
+        self.get_u32(offsets::ARMOR)
+    }
+
+    /// Write the armor slot.
+    pub fn set_armor(&mut self, value: u32) {
+        self.set_u32(offsets::ARMOR, value);
+    }
+
+    /// An armor-mod socket: an index into the device folder.
+    #[must_use]
+    pub fn armor_mod(&self, index: usize) -> u32 {
+        assert!(
+            index < offsets::MOD_SOCKETS,
+            "armor mod {index} out of range"
+        );
+        self.get_u32(offsets::ARMOR_MOD + index * 4)
+    }
+
+    /// Write an armor-mod socket.
+    pub fn set_armor_mod(&mut self, index: usize, value: u32) {
+        assert!(
+            index < offsets::MOD_SOCKETS,
+            "armor mod {index} out of range"
+        );
+        self.set_u32(offsets::ARMOR_MOD + index * 4, value);
+    }
+
+    /// Every armor-mod socket.
+    #[must_use]
+    pub fn get_raw_armor_mod_slots(&self) -> Vec<u32> {
+        (0..offsets::MOD_SOCKETS)
+            .map(|i| self.armor_mod(i))
+            .collect()
+    }
+
+    /// The sub / board slot: an index into the device folder.
+    #[must_use]
+    pub fn sub(&self) -> u32 {
+        self.get_u32(offsets::SUB)
+    }
+
+    /// Write the sub slot.
+    pub fn set_sub(&mut self, value: u32) {
+        self.set_u32(offsets::SUB, value);
+    }
+
+    // ---- disks -----------------------------------------------------------
+
+    /// The raw disk-folder u32: `(count << 16) | (0x4000 + type)`.
+    #[must_use]
+    pub fn disk_raw(&self, disk_type: usize) -> u32 {
+        assert!(
+            disk_type < offsets::DISK_SLOTS,
+            "disk type {disk_type} out of range"
+        );
+        self.get_u32(offsets::DISK + disk_type * 4)
+    }
+
+    /// How many of `disk_type` are owned.
+    #[must_use]
+    pub fn disk_count(&self, disk_type: usize) -> u16 {
+        (self.disk_raw(disk_type) >> 16) as u16
+    }
+
+    /// Set how many of `disk_type` are owned, preserving the type id.
+    pub fn set_disk_count(&mut self, disk_type: usize, count: u16) {
+        let id = 0x4000 + disk_type as u32;
+        self.set_u32(offsets::DISK + disk_type * 4, (u32::from(count) << 16) | id);
+    }
+
+    /// Every disk-folder u32.
+    #[must_use]
+    pub fn get_raw_disk_slots(&self) -> Vec<u32> {
+        (0..offsets::DISK_SLOTS).map(|i| self.disk_raw(i)).collect()
+    }
+
+    // ---- bank ------------------------------------------------------------
+
+    /// The bank balance.
+    #[must_use]
+    pub fn bank_bit(&self) -> u32 {
+        self.get_u32(offsets::BANK_BIT)
+    }
+
+    /// Set the bank balance.
+    pub fn set_bank_bit(&mut self, value: u32) {
+        self.set_u32(offsets::BANK_BIT, value);
+    }
+
+    /// A bank storage slot.
+    #[must_use]
+    pub fn bank_device(&self, slot: usize) -> u32 {
+        assert!(slot < offsets::BANK_SLOTS, "bank slot {slot} out of range");
+        self.get_u32(offsets::BANK_DEVICE + slot * 4)
+    }
+
+    /// Write a bank storage slot.
+    pub fn set_bank_device(&mut self, slot: usize, value: u32) {
+        assert!(slot < offsets::BANK_SLOTS, "bank slot {slot} out of range");
+        self.set_u32(offsets::BANK_DEVICE + slot * 4, value);
+    }
+
+    /// Every bank slot.
+    #[must_use]
+    pub fn get_raw_bank_slots(&self) -> Vec<u32> {
+        (0..offsets::BANK_SLOTS)
+            .map(|i| self.bank_device(i))
+            .collect()
+    }
 }
 
 /// `Σ u32le(block+4 .. block+0xA000) mod 2³²`.
@@ -372,5 +568,95 @@ mod tests {
         save.set_digimon_name("p_this_stem_is_far_too_long");
         assert_eq!(save.digimon_name_raw().len(), 16);
         assert_eq!(save.digimon_name(), "p_this_stem_is_f");
+    }
+
+    #[test]
+    fn container_strides_are_four_bytes() {
+        assert_eq!(
+            offsets::DEVICE + offsets::DEVICE_SAVE_SLOTS * 4,
+            offsets::DISK
+        );
+        assert_eq!(offsets::DISK + offsets::DISK_SLOTS * 4, offsets::CARD_LIST);
+        assert_eq!(
+            offsets::BANK_DEVICE + offsets::BANK_SLOTS * 4,
+            offsets::BANK_BIT
+        );
+        assert_eq!(
+            offsets::WEAPON + offsets::WEAPON_SLOTS * 4,
+            offsets::WEAPON_MOD
+        );
+        assert_eq!(
+            offsets::WEAPON_MOD + offsets::MOD_SOCKETS * 4,
+            offsets::ARMOR
+        );
+        assert_eq!(offsets::ARMOR_MOD + offsets::MOD_SOCKETS * 4, offsets::SUB);
+    }
+
+    #[test]
+    fn the_fixture_devices_decode_as_expected() {
+        let save = SaveData::parse(&real_save()).unwrap();
+        assert_eq!(save.device(0), 0x050D);
+        assert_eq!(save.device(1), 0x0513);
+        assert_eq!(save.device(2), 0x0512);
+        assert_eq!(save.device(3), crate::EMPTY);
+        assert_eq!(save.device(35), crate::EMPTY);
+    }
+
+    #[test]
+    fn equipment_slots_are_device_indices() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        assert_eq!(save.weapon(0), 0);
+        assert_eq!(save.weapon(1), 1);
+        assert_eq!(save.weapon(2), 2);
+        assert_eq!(save.armor(), crate::EMPTY);
+        assert_eq!(save.sub(), crate::EMPTY);
+
+        save.set_weapon(0, 7);
+        save.set_armor(9);
+        save.set_sub(11);
+        save.set_weapon_mod(0, 12);
+        save.set_armor_mod(4, 13);
+        assert_eq!(save.weapon(0), 7);
+        assert_eq!(save.armor(), 9);
+        assert_eq!(save.sub(), 11);
+        assert_eq!(save.weapon_mod(0), 12);
+        assert_eq!(save.armor_mod(4), 13);
+    }
+
+    #[test]
+    fn disk_count_uses_the_high_half_and_keeps_its_type_id() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        assert_eq!(save.disk_raw(0), 0x4000);
+        assert_eq!(save.disk_count(0), 0);
+
+        save.set_disk_count(3, 99);
+        assert_eq!(save.disk_raw(3), (99 << 16) | 0x4003);
+        assert_eq!(save.disk_count(3), 99);
+
+        save.set_disk_count(3, 0);
+        assert_eq!(
+            save.disk_raw(3),
+            0x4003,
+            "the type id survives a count of zero"
+        );
+    }
+
+    #[test]
+    fn bank_slots_and_balance_round_trip() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        assert_eq!(save.bank_device(0), crate::EMPTY);
+        assert_eq!(save.bank_bit(), 0);
+
+        save.set_bank_device(95, 0x3000);
+        save.set_bank_bit(1_234_567);
+        assert_eq!(save.bank_device(95), 0x3000);
+        assert_eq!(save.bank_bit(), 1_234_567);
+    }
+
+    #[test]
+    fn a_container_write_is_mirrored_too() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        save.set_device(29, 0xDEAD_BEEF);
+        assert_eq!(save.get_u32_block(offsets::DEVICE + 29 * 4, 1), 0xDEAD_BEEF);
     }
 }

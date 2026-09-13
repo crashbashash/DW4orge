@@ -40,6 +40,9 @@ pub use codes::{
     CAP_UPCNT, CAP_XDATA, Cap, MAX_LEVEL, POWERUP_STATS, Rarity, TECHNIQUES, color_for_seed,
     level_from_exp, level_threshold, upcnt_safe_cap,
 };
+pub use document::{
+    DifficultyChoice, EditSet, FieldError, Mode, Severity, StoryEdit, StoryKind, Warning,
+};
 pub use error::{Error, Result};
 pub use flags::{
     BOSS_FLAGS, CHAPTER_FLAGS, Difficulty, FOLDER_LABELS, FlagLabel, INTRO_FLAGS, LOBBY_FLAGS,

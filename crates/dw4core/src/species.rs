@@ -8,8 +8,10 @@
 //! starters) and 12 (`p_impdrapm`) are pinned against real saves; the rest are
 //! best-effort, exactly as in the Python editor.
 
+use serde::{Deserialize, Serialize};
+
 /// One of the 16 species. The discriminant **is** the species index.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[repr(u8)]
 pub enum Species {
     Agumon = 0,

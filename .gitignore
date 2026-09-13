@@ -30,3 +30,8 @@ src-tauri/gen/
 
 # Test scratch output
 /tmp-fixtures/
+
+# Agent working notes: implementation plans are scratch, not project
+# documentation. The durable record is the code, its doc comments, the commit
+# messages, and docs/save-format.md.
+docs/superpowers/

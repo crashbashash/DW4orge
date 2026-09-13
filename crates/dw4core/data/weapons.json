@@ -1,0 +1,1558 @@
+{
+ "category": 0,
+ "stride": 5,
+ "grades": [
+  "alpha",
+  "beta",
+  "gamma",
+  "delta",
+  "epsilon"
+ ],
+ "graded_models": 50,
+ "unique": {
+  "250": "Judgment",
+  "251": "Light Bringer",
+  "252": "Data Destroyer",
+  "253": "Hyakki Yako",
+  "254": "Orochi Slayer",
+  "255": "Nightmare Lance"
+ },
+ "items": [
+  {
+   "id": 0,
+   "model": 0,
+   "grade": "alpha",
+   "name": "Battle Hawk"
+  },
+  {
+   "id": 1,
+   "model": 0,
+   "grade": "beta",
+   "name": "Battle Hawk"
+  },
+  {
+   "id": 2,
+   "model": 0,
+   "grade": "gamma",
+   "name": "Battle Hawk"
+  },
+  {
+   "id": 3,
+   "model": 0,
+   "grade": "delta",
+   "name": "Battle Hawk"
+  },
+  {
+   "id": 4,
+   "model": 0,
+   "grade": "epsilon",
+   "name": "Battle Hawk"
+  },
+  {
+   "id": 5,
+   "model": 1,
+   "grade": "alpha",
+   "name": "Van Blade"
+  },
+  {
+   "id": 6,
+   "model": 1,
+   "grade": "beta",
+   "name": "Van Blade"
+  },
+  {
+   "id": 7,
+   "model": 1,
+   "grade": "gamma",
+   "name": "Van Blade"
+  },
+  {
+   "id": 8,
+   "model": 1,
+   "grade": "delta",
+   "name": "Van Blade"
+  },
+  {
+   "id": 9,
+   "model": 1,
+   "grade": "epsilon",
+   "name": "Van Blade"
+  },
+  {
+   "id": 10,
+   "model": 2,
+   "grade": "alpha",
+   "name": "Crusher"
+  },
+  {
+   "id": 11,
+   "model": 2,
+   "grade": "beta",
+   "name": "Crusher"
+  },
+  {
+   "id": 12,
+   "model": 2,
+   "grade": "gamma",
+   "name": "Crusher"
+  },
+  {
+   "id": 13,
+   "model": 2,
+   "grade": "delta",
+   "name": "Crusher"
+  },
+  {
+   "id": 14,
+   "model": 2,
+   "grade": "epsilon",
+   "name": "Crusher"
+  },
+  {
+   "id": 15,
+   "model": 3,
+   "grade": "alpha",
+   "name": "Destroyer"
+  },
+  {
+   "id": 16,
+   "model": 3,
+   "grade": "beta",
+   "name": "Destroyer"
+  },
+  {
+   "id": 17,
+   "model": 3,
+   "grade": "gamma",
+   "name": "Destroyer"
+  },
+  {
+   "id": 18,
+   "model": 3,
+   "grade": "delta",
+   "name": "Destroyer"
+  },
+  {
+   "id": 19,
+   "model": 3,
+   "grade": "epsilon",
+   "name": "Destroyer"
+  },
+  {
+   "id": 20,
+   "model": 4,
+   "grade": "alpha",
+   "name": "Soul Burn"
+  },
+  {
+   "id": 21,
+   "model": 4,
+   "grade": "beta",
+   "name": "Soul Burn"
+  },
+  {
+   "id": 22,
+   "model": 4,
+   "grade": "gamma",
+   "name": "Soul Burn"
+  },
+  {
+   "id": 23,
+   "model": 4,
+   "grade": "delta",
+   "name": "Soul Burn"
+  },
+  {
+   "id": 24,
+   "model": 4,
+   "grade": "epsilon",
+   "name": "Soul Burn"
+  },
+  {
+   "id": 25,
+   "model": 5,
+   "grade": "alpha",
+   "name": "Long Sword"
+  },
+  {
+   "id": 26,
+   "model": 5,
+   "grade": "beta",
+   "name": "Long Sword"
+  },
+  {
+   "id": 27,
+   "model": 5,
+   "grade": "gamma",
+   "name": "Long Sword"
+  },
+  {
+   "id": 28,
+   "model": 5,
+   "grade": "delta",
+   "name": "Long Sword"
+  },
+  {
+   "id": 29,
+   "model": 5,
+   "grade": "epsilon",
+   "name": "Long Sword"
+  },
+  {
+   "id": 30,
+   "model": 6,
+   "grade": "alpha",
+   "name": "War Sword"
+  },
+  {
+   "id": 31,
+   "model": 6,
+   "grade": "beta",
+   "name": "War Sword"
+  },
+  {
+   "id": 32,
+   "model": 6,
+   "grade": "gamma",
+   "name": "War Sword"
+  },
+  {
+   "id": 33,
+   "model": 6,
+   "grade": "delta",
+   "name": "War Sword"
+  },
+  {
+   "id": 34,
+   "model": 6,
+   "grade": "epsilon",
+   "name": "War Sword"
+  },
+  {
+   "id": 35,
+   "model": 7,
+   "grade": "alpha",
+   "name": "Victor Sword"
+  },
+  {
+   "id": 36,
+   "model": 7,
+   "grade": "beta",
+   "name": "Victor Sword"
+  },
+  {
+   "id": 37,
+   "model": 7,
+   "grade": "gamma",
+   "name": "Victor Sword"
+  },
+  {
+   "id": 38,
+   "model": 7,
+   "grade": "delta",
+   "name": "Victor Sword"
+  },
+  {
+   "id": 39,
+   "model": 7,
+   "grade": "epsilon",
+   "name": "Victor Sword"
+  },
+  {
+   "id": 40,
+   "model": 8,
+   "grade": "alpha",
+   "name": "Phantom"
+  },
+  {
+   "id": 41,
+   "model": 8,
+   "grade": "beta",
+   "name": "Phantom"
+  },
+  {
+   "id": 42,
+   "model": 8,
+   "grade": "gamma",
+   "name": "Phantom"
+  },
+  {
+   "id": 43,
+   "model": 8,
+   "grade": "delta",
+   "name": "Phantom"
+  },
+  {
+   "id": 44,
+   "model": 8,
+   "grade": "epsilon",
+   "name": "Phantom"
+  },
+  {
+   "id": 45,
+   "model": 9,
+   "grade": "alpha",
+   "name": "Onslaught"
+  },
+  {
+   "id": 46,
+   "model": 9,
+   "grade": "beta",
+   "name": "Onslaught"
+  },
+  {
+   "id": 47,
+   "model": 9,
+   "grade": "gamma",
+   "name": "Onslaught"
+  },
+  {
+   "id": 48,
+   "model": 9,
+   "grade": "delta",
+   "name": "Onslaught"
+  },
+  {
+   "id": 49,
+   "model": 9,
+   "grade": "epsilon",
+   "name": "Onslaught"
+  },
+  {
+   "id": 50,
+   "model": 10,
+   "grade": "alpha",
+   "name": "Dyno Tooth"
+  },
+  {
+   "id": 51,
+   "model": 10,
+   "grade": "beta",
+   "name": "Dyno Tooth"
+  },
+  {
+   "id": 52,
+   "model": 10,
+   "grade": "gamma",
+   "name": "Dyno Tooth"
+  },
+  {
+   "id": 53,
+   "model": 10,
+   "grade": "delta",
+   "name": "Dyno Tooth"
+  },
+  {
+   "id": 54,
+   "model": 10,
+   "grade": "epsilon",
+   "name": "Dyno Tooth"
+  },
+  {
+   "id": 55,
+   "model": 11,
+   "grade": "alpha",
+   "name": "Red Moon"
+  },
+  {
+   "id": 56,
+   "model": 11,
+   "grade": "beta",
+   "name": "Red Moon"
+  },
+  {
+   "id": 57,
+   "model": 11,
+   "grade": "gamma",
+   "name": "Red Moon"
+  },
+  {
+   "id": 58,
+   "model": 11,
+   "grade": "delta",
+   "name": "Red Moon"
+  },
+  {
+   "id": 59,
+   "model": 11,
+   "grade": "epsilon",
+   "name": "Red Moon"
+  },
+  {
+   "id": 60,
+   "model": 12,
+   "grade": "alpha",
+   "name": "Rune Blade"
+  },
+  {
+   "id": 61,
+   "model": 12,
+   "grade": "beta",
+   "name": "Rune Blade"
+  },
+  {
+   "id": 62,
+   "model": 12,
+   "grade": "gamma",
+   "name": "Rune Blade"
+  },
+  {
+   "id": 63,
+   "model": 12,
+   "grade": "delta",
+   "name": "Rune Blade"
+  },
+  {
+   "id": 64,
+   "model": 12,
+   "grade": "epsilon",
+   "name": "Rune Blade"
+  },
+  {
+   "id": 65,
+   "model": 13,
+   "grade": "alpha",
+   "name": "Light Ring"
+  },
+  {
+   "id": 66,
+   "model": 13,
+   "grade": "beta",
+   "name": "Light Ring"
+  },
+  {
+   "id": 67,
+   "model": 13,
+   "grade": "gamma",
+   "name": "Light Ring"
+  },
+  {
+   "id": 68,
+   "model": 13,
+   "grade": "delta",
+   "name": "Light Ring"
+  },
+  {
+   "id": 69,
+   "model": 13,
+   "grade": "epsilon",
+   "name": "Light Ring"
+  },
+  {
+   "id": 70,
+   "model": 14,
+   "grade": "alpha",
+   "name": "Dragoon"
+  },
+  {
+   "id": 71,
+   "model": 14,
+   "grade": "beta",
+   "name": "Dragoon"
+  },
+  {
+   "id": 72,
+   "model": 14,
+   "grade": "gamma",
+   "name": "Dragoon"
+  },
+  {
+   "id": 73,
+   "model": 14,
+   "grade": "delta",
+   "name": "Dragoon"
+  },
+  {
+   "id": 74,
+   "model": 14,
+   "grade": "epsilon",
+   "name": "Dragoon"
+  },
+  {
+   "id": 75,
+   "model": 15,
+   "grade": "alpha",
+   "name": "Kamikiri Maru"
+  },
+  {
+   "id": 76,
+   "model": 15,
+   "grade": "beta",
+   "name": "Kamikiri Maru"
+  },
+  {
+   "id": 77,
+   "model": 15,
+   "grade": "gamma",
+   "name": "Kamikiri Maru"
+  },
+  {
+   "id": 78,
+   "model": 15,
+   "grade": "delta",
+   "name": "Kamikiri Maru"
+  },
+  {
+   "id": 79,
+   "model": 15,
+   "grade": "epsilon",
+   "name": "Kamikiri Maru"
+  },
+  {
+   "id": 80,
+   "model": 16,
+   "grade": "alpha",
+   "name": "Kurogane Maru"
+  },
+  {
+   "id": 81,
+   "model": 16,
+   "grade": "beta",
+   "name": "Kurogane Maru"
+  },
+  {
+   "id": 82,
+   "model": 16,
+   "grade": "gamma",
+   "name": "Kurogane Maru"
+  },
+  {
+   "id": 83,
+   "model": 16,
+   "grade": "delta",
+   "name": "Kurogane Maru"
+  },
+  {
+   "id": 84,
+   "model": 16,
+   "grade": "epsilon",
+   "name": "Kurogane Maru"
+  },
+  {
+   "id": 85,
+   "model": 17,
+   "grade": "alpha",
+   "name": "Denji Prince"
+  },
+  {
+   "id": 86,
+   "model": 17,
+   "grade": "beta",
+   "name": "Denji Prince"
+  },
+  {
+   "id": 87,
+   "model": 17,
+   "grade": "gamma",
+   "name": "Denji Prince"
+  },
+  {
+   "id": 88,
+   "model": 17,
+   "grade": "delta",
+   "name": "Denji Prince"
+  },
+  {
+   "id": 89,
+   "model": 17,
+   "grade": "epsilon",
+   "name": "Denji Prince"
+  },
+  {
+   "id": 90,
+   "model": 18,
+   "grade": "alpha",
+   "name": "Yasha Glass"
+  },
+  {
+   "id": 91,
+   "model": 18,
+   "grade": "beta",
+   "name": "Yasha Glass"
+  },
+  {
+   "id": 92,
+   "model": 18,
+   "grade": "gamma",
+   "name": "Yasha Glass"
+  },
+  {
+   "id": 93,
+   "model": 18,
+   "grade": "delta",
+   "name": "Yasha Glass"
+  },
+  {
+   "id": 94,
+   "model": 18,
+   "grade": "epsilon",
+   "name": "Yasha Glass"
+  },
+  {
+   "id": 95,
+   "model": 19,
+   "grade": "alpha",
+   "name": "Ankokuten"
+  },
+  {
+   "id": 96,
+   "model": 19,
+   "grade": "beta",
+   "name": "Ankokuten"
+  },
+  {
+   "id": 97,
+   "model": 19,
+   "grade": "gamma",
+   "name": "Ankokuten"
+  },
+  {
+   "id": 98,
+   "model": 19,
+   "grade": "delta",
+   "name": "Ankokuten"
+  },
+  {
+   "id": 99,
+   "model": 19,
+   "grade": "epsilon",
+   "name": "Ankokuten"
+  },
+  {
+   "id": 100,
+   "model": 20,
+   "grade": "alpha",
+   "name": "Dbl Axe"
+  },
+  {
+   "id": 101,
+   "model": 20,
+   "grade": "beta",
+   "name": "Dbl Axe"
+  },
+  {
+   "id": 102,
+   "model": 20,
+   "grade": "gamma",
+   "name": "Dbl Axe"
+  },
+  {
+   "id": 103,
+   "model": 20,
+   "grade": "delta",
+   "name": "Dbl Axe"
+  },
+  {
+   "id": 104,
+   "model": 20,
+   "grade": "epsilon",
+   "name": "Dbl Axe"
+  },
+  {
+   "id": 105,
+   "model": 21,
+   "grade": "alpha",
+   "name": "Rage Hammer"
+  },
+  {
+   "id": 106,
+   "model": 21,
+   "grade": "beta",
+   "name": "Rage Hammer"
+  },
+  {
+   "id": 107,
+   "model": 21,
+   "grade": "gamma",
+   "name": "Rage Hammer"
+  },
+  {
+   "id": 108,
+   "model": 21,
+   "grade": "delta",
+   "name": "Rage Hammer"
+  },
+  {
+   "id": 109,
+   "model": 21,
+   "grade": "epsilon",
+   "name": "Rage Hammer"
+  },
+  {
+   "id": 110,
+   "model": 22,
+   "grade": "alpha",
+   "name": "Hekatoncheir"
+  },
+  {
+   "id": 111,
+   "model": 22,
+   "grade": "beta",
+   "name": "Hekatoncheir"
+  },
+  {
+   "id": 112,
+   "model": 22,
+   "grade": "gamma",
+   "name": "Hekatoncheir"
+  },
+  {
+   "id": 113,
+   "model": 22,
+   "grade": "delta",
+   "name": "Hekatoncheir"
+  },
+  {
+   "id": 114,
+   "model": 22,
+   "grade": "epsilon",
+   "name": "Hekatoncheir"
+  },
+  {
+   "id": 115,
+   "model": 23,
+   "grade": "alpha",
+   "name": "Fang Smasher"
+  },
+  {
+   "id": 116,
+   "model": 23,
+   "grade": "beta",
+   "name": "Fang Smasher"
+  },
+  {
+   "id": 117,
+   "model": 23,
+   "grade": "gamma",
+   "name": "Fang Smasher"
+  },
+  {
+   "id": 118,
+   "model": 23,
+   "grade": "delta",
+   "name": "Fang Smasher"
+  },
+  {
+   "id": 119,
+   "model": 23,
+   "grade": "epsilon",
+   "name": "Fang Smasher"
+  },
+  {
+   "id": 120,
+   "model": 24,
+   "grade": "alpha",
+   "name": "Meteor Force"
+  },
+  {
+   "id": 121,
+   "model": 24,
+   "grade": "beta",
+   "name": "Meteor Force"
+  },
+  {
+   "id": 122,
+   "model": 24,
+   "grade": "gamma",
+   "name": "Meteor Force"
+  },
+  {
+   "id": 123,
+   "model": 24,
+   "grade": "delta",
+   "name": "Meteor Force"
+  },
+  {
+   "id": 124,
+   "model": 24,
+   "grade": "epsilon",
+   "name": "Meteor Force"
+  },
+  {
+   "id": 125,
+   "model": 25,
+   "grade": "alpha",
+   "name": "Bone Blade"
+  },
+  {
+   "id": 126,
+   "model": 25,
+   "grade": "beta",
+   "name": "Bone Blade"
+  },
+  {
+   "id": 127,
+   "model": 25,
+   "grade": "gamma",
+   "name": "Bone Blade"
+  },
+  {
+   "id": 128,
+   "model": 25,
+   "grade": "delta",
+   "name": "Bone Blade"
+  },
+  {
+   "id": 129,
+   "model": 25,
+   "grade": "epsilon",
+   "name": "Bone Blade"
+  },
+  {
+   "id": 130,
+   "model": 26,
+   "grade": "alpha",
+   "name": "Slasher"
+  },
+  {
+   "id": 131,
+   "model": 26,
+   "grade": "beta",
+   "name": "Slasher"
+  },
+  {
+   "id": 132,
+   "model": 26,
+   "grade": "gamma",
+   "name": "Slasher"
+  },
+  {
+   "id": 133,
+   "model": 26,
+   "grade": "delta",
+   "name": "Slasher"
+  },
+  {
+   "id": 134,
+   "model": 26,
+   "grade": "epsilon",
+   "name": "Slasher"
+  },
+  {
+   "id": 135,
+   "model": 27,
+   "grade": "alpha",
+   "name": "Tri-edge"
+  },
+  {
+   "id": 136,
+   "model": 27,
+   "grade": "beta",
+   "name": "Tri-edge"
+  },
+  {
+   "id": 137,
+   "model": 27,
+   "grade": "gamma",
+   "name": "Tri-edge"
+  },
+  {
+   "id": 138,
+   "model": 27,
+   "grade": "delta",
+   "name": "Tri-edge"
+  },
+  {
+   "id": 139,
+   "model": 27,
+   "grade": "epsilon",
+   "name": "Tri-edge"
+  },
+  {
+   "id": 140,
+   "model": 28,
+   "grade": "alpha",
+   "name": "Dark Crimson"
+  },
+  {
+   "id": 141,
+   "model": 28,
+   "grade": "beta",
+   "name": "Dark Crimson"
+  },
+  {
+   "id": 142,
+   "model": 28,
+   "grade": "gamma",
+   "name": "Dark Crimson"
+  },
+  {
+   "id": 143,
+   "model": 28,
+   "grade": "delta",
+   "name": "Dark Crimson"
+  },
+  {
+   "id": 144,
+   "model": 28,
+   "grade": "epsilon",
+   "name": "Dark Crimson"
+  },
+  {
+   "id": 145,
+   "model": 29,
+   "grade": "alpha",
+   "name": "Doom Bringer"
+  },
+  {
+   "id": 146,
+   "model": 29,
+   "grade": "beta",
+   "name": "Doom Bringer"
+  },
+  {
+   "id": 147,
+   "model": 29,
+   "grade": "gamma",
+   "name": "Doom Bringer"
+  },
+  {
+   "id": 148,
+   "model": 29,
+   "grade": "delta",
+   "name": "Doom Bringer"
+  },
+  {
+   "id": 149,
+   "model": 29,
+   "grade": "epsilon",
+   "name": "Doom Bringer"
+  },
+  {
+   "id": 150,
+   "model": 30,
+   "grade": "alpha",
+   "name": "Dbl Rapier"
+  },
+  {
+   "id": 151,
+   "model": 30,
+   "grade": "beta",
+   "name": "Dbl Rapier"
+  },
+  {
+   "id": 152,
+   "model": 30,
+   "grade": "gamma",
+   "name": "Dbl Rapier"
+  },
+  {
+   "id": 153,
+   "model": 30,
+   "grade": "delta",
+   "name": "Dbl Rapier"
+  },
+  {
+   "id": 154,
+   "model": 30,
+   "grade": "epsilon",
+   "name": "Dbl Rapier"
+  },
+  {
+   "id": 155,
+   "model": 31,
+   "grade": "alpha",
+   "name": "Light Blade"
+  },
+  {
+   "id": 156,
+   "model": 31,
+   "grade": "beta",
+   "name": "Light Blade"
+  },
+  {
+   "id": 157,
+   "model": 31,
+   "grade": "gamma",
+   "name": "Light Blade"
+  },
+  {
+   "id": 158,
+   "model": 31,
+   "grade": "delta",
+   "name": "Light Blade"
+  },
+  {
+   "id": 159,
+   "model": 31,
+   "grade": "epsilon",
+   "name": "Light Blade"
+  },
+  {
+   "id": 160,
+   "model": 32,
+   "grade": "alpha",
+   "name": "Apocalypse"
+  },
+  {
+   "id": 161,
+   "model": 32,
+   "grade": "beta",
+   "name": "Apocalypse"
+  },
+  {
+   "id": 162,
+   "model": 32,
+   "grade": "gamma",
+   "name": "Apocalypse"
+  },
+  {
+   "id": 163,
+   "model": 32,
+   "grade": "delta",
+   "name": "Apocalypse"
+  },
+  {
+   "id": 164,
+   "model": 32,
+   "grade": "epsilon",
+   "name": "Apocalypse"
+  },
+  {
+   "id": 165,
+   "model": 33,
+   "grade": "alpha",
+   "name": "Flame Rose"
+  },
+  {
+   "id": 166,
+   "model": 33,
+   "grade": "beta",
+   "name": "Flame Rose"
+  },
+  {
+   "id": 167,
+   "model": 33,
+   "grade": "gamma",
+   "name": "Flame Rose"
+  },
+  {
+   "id": 168,
+   "model": 33,
+   "grade": "delta",
+   "name": "Flame Rose"
+  },
+  {
+   "id": 169,
+   "model": 33,
+   "grade": "epsilon",
+   "name": "Flame Rose"
+  },
+  {
+   "id": 170,
+   "model": 34,
+   "grade": "alpha",
+   "name": "Photon Edge"
+  },
+  {
+   "id": 171,
+   "model": 34,
+   "grade": "beta",
+   "name": "Photon Edge"
+  },
+  {
+   "id": 172,
+   "model": 34,
+   "grade": "gamma",
+   "name": "Photon Edge"
+  },
+  {
+   "id": 173,
+   "model": 34,
+   "grade": "delta",
+   "name": "Photon Edge"
+  },
+  {
+   "id": 174,
+   "model": 34,
+   "grade": "epsilon",
+   "name": "Photon Edge"
+  },
+  {
+   "id": 175,
+   "model": 35,
+   "grade": "alpha",
+   "name": "Mighty Talon"
+  },
+  {
+   "id": 176,
+   "model": 35,
+   "grade": "beta",
+   "name": "Mighty Talon"
+  },
+  {
+   "id": 177,
+   "model": 35,
+   "grade": "gamma",
+   "name": "Mighty Talon"
+  },
+  {
+   "id": 178,
+   "model": 35,
+   "grade": "delta",
+   "name": "Mighty Talon"
+  },
+  {
+   "id": 179,
+   "model": 35,
+   "grade": "epsilon",
+   "name": "Mighty Talon"
+  },
+  {
+   "id": 180,
+   "model": 36,
+   "grade": "alpha",
+   "name": "Hook Katar"
+  },
+  {
+   "id": 181,
+   "model": 36,
+   "grade": "beta",
+   "name": "Hook Katar"
+  },
+  {
+   "id": 182,
+   "model": 36,
+   "grade": "gamma",
+   "name": "Hook Katar"
+  },
+  {
+   "id": 183,
+   "model": 36,
+   "grade": "delta",
+   "name": "Hook Katar"
+  },
+  {
+   "id": 184,
+   "model": 36,
+   "grade": "epsilon",
+   "name": "Hook Katar"
+  },
+  {
+   "id": 185,
+   "model": 37,
+   "grade": "alpha",
+   "name": "D Slayer"
+  },
+  {
+   "id": 186,
+   "model": 37,
+   "grade": "beta",
+   "name": "D Slayer"
+  },
+  {
+   "id": 187,
+   "model": 37,
+   "grade": "gamma",
+   "name": "D Slayer"
+  },
+  {
+   "id": 188,
+   "model": 37,
+   "grade": "delta",
+   "name": "D Slayer"
+  },
+  {
+   "id": 189,
+   "model": 37,
+   "grade": "epsilon",
+   "name": "D Slayer"
+  },
+  {
+   "id": 190,
+   "model": 38,
+   "grade": "alpha",
+   "name": "Nova Blade"
+  },
+  {
+   "id": 191,
+   "model": 38,
+   "grade": "beta",
+   "name": "Nova Blade"
+  },
+  {
+   "id": 192,
+   "model": 38,
+   "grade": "gamma",
+   "name": "Nova Blade"
+  },
+  {
+   "id": 193,
+   "model": 38,
+   "grade": "delta",
+   "name": "Nova Blade"
+  },
+  {
+   "id": 194,
+   "model": 38,
+   "grade": "epsilon",
+   "name": "Nova Blade"
+  },
+  {
+   "id": 195,
+   "model": 39,
+   "grade": "alpha",
+   "name": "Drill Bunker"
+  },
+  {
+   "id": 196,
+   "model": 39,
+   "grade": "beta",
+   "name": "Drill Bunker"
+  },
+  {
+   "id": 197,
+   "model": 39,
+   "grade": "gamma",
+   "name": "Drill Bunker"
+  },
+  {
+   "id": 198,
+   "model": 39,
+   "grade": "delta",
+   "name": "Drill Bunker"
+  },
+  {
+   "id": 199,
+   "model": 39,
+   "grade": "epsilon",
+   "name": "Drill Bunker"
+  },
+  {
+   "id": 200,
+   "model": 40,
+   "grade": "alpha",
+   "name": "Beam Magnum"
+  },
+  {
+   "id": 201,
+   "model": 40,
+   "grade": "beta",
+   "name": "Beam Magnum"
+  },
+  {
+   "id": 202,
+   "model": 40,
+   "grade": "gamma",
+   "name": "Beam Magnum"
+  },
+  {
+   "id": 203,
+   "model": 40,
+   "grade": "delta",
+   "name": "Beam Magnum"
+  },
+  {
+   "id": 204,
+   "model": 40,
+   "grade": "epsilon",
+   "name": "Beam Magnum"
+  },
+  {
+   "id": 205,
+   "model": 41,
+   "grade": "alpha",
+   "name": "Sword Cannon"
+  },
+  {
+   "id": 206,
+   "model": 41,
+   "grade": "beta",
+   "name": "Sword Cannon"
+  },
+  {
+   "id": 207,
+   "model": 41,
+   "grade": "gamma",
+   "name": "Sword Cannon"
+  },
+  {
+   "id": 208,
+   "model": 41,
+   "grade": "delta",
+   "name": "Sword Cannon"
+  },
+  {
+   "id": 209,
+   "model": 41,
+   "grade": "epsilon",
+   "name": "Sword Cannon"
+  },
+  {
+   "id": 210,
+   "model": 42,
+   "grade": "alpha",
+   "name": "Blaster Gun"
+  },
+  {
+   "id": 211,
+   "model": 42,
+   "grade": "beta",
+   "name": "Blaster Gun"
+  },
+  {
+   "id": 212,
+   "model": 42,
+   "grade": "gamma",
+   "name": "Blaster Gun"
+  },
+  {
+   "id": 213,
+   "model": 42,
+   "grade": "delta",
+   "name": "Blaster Gun"
+  },
+  {
+   "id": 214,
+   "model": 42,
+   "grade": "epsilon",
+   "name": "Blaster Gun"
+  },
+  {
+   "id": 215,
+   "model": 43,
+   "grade": "alpha",
+   "name": "Sphere Nova"
+  },
+  {
+   "id": 216,
+   "model": 43,
+   "grade": "beta",
+   "name": "Sphere Nova"
+  },
+  {
+   "id": 217,
+   "model": 43,
+   "grade": "gamma",
+   "name": "Sphere Nova"
+  },
+  {
+   "id": 218,
+   "model": 43,
+   "grade": "delta",
+   "name": "Sphere Nova"
+  },
+  {
+   "id": 219,
+   "model": 43,
+   "grade": "epsilon",
+   "name": "Sphere Nova"
+  },
+  {
+   "id": 220,
+   "model": 44,
+   "grade": "alpha",
+   "name": "Omega Raptor"
+  },
+  {
+   "id": 221,
+   "model": 44,
+   "grade": "beta",
+   "name": "Omega Raptor"
+  },
+  {
+   "id": 222,
+   "model": 44,
+   "grade": "gamma",
+   "name": "Omega Raptor"
+  },
+  {
+   "id": 223,
+   "model": 44,
+   "grade": "delta",
+   "name": "Omega Raptor"
+  },
+  {
+   "id": 224,
+   "model": 44,
+   "grade": "epsilon",
+   "name": "Omega Raptor"
+  },
+  {
+   "id": 225,
+   "model": 45,
+   "grade": "alpha",
+   "name": "Grand Blade"
+  },
+  {
+   "id": 226,
+   "model": 45,
+   "grade": "beta",
+   "name": "Grand Blade"
+  },
+  {
+   "id": 227,
+   "model": 45,
+   "grade": "gamma",
+   "name": "Grand Blade"
+  },
+  {
+   "id": 228,
+   "model": 45,
+   "grade": "delta",
+   "name": "Grand Blade"
+  },
+  {
+   "id": 229,
+   "model": 45,
+   "grade": "epsilon",
+   "name": "Grand Blade"
+  },
+  {
+   "id": 230,
+   "model": 46,
+   "grade": "alpha",
+   "name": "Pain Scimitar"
+  },
+  {
+   "id": 231,
+   "model": 46,
+   "grade": "beta",
+   "name": "Pain Scimitar"
+  },
+  {
+   "id": 232,
+   "model": 46,
+   "grade": "gamma",
+   "name": "Pain Scimitar"
+  },
+  {
+   "id": 233,
+   "model": 46,
+   "grade": "delta",
+   "name": "Pain Scimitar"
+  },
+  {
+   "id": 234,
+   "model": 46,
+   "grade": "epsilon",
+   "name": "Pain Scimitar"
+  },
+  {
+   "id": 235,
+   "model": 47,
+   "grade": "alpha",
+   "name": "Sword Break"
+  },
+  {
+   "id": 236,
+   "model": 47,
+   "grade": "beta",
+   "name": "Sword Break"
+  },
+  {
+   "id": 237,
+   "model": 47,
+   "grade": "gamma",
+   "name": "Sword Break"
+  },
+  {
+   "id": 238,
+   "model": 47,
+   "grade": "delta",
+   "name": "Sword Break"
+  },
+  {
+   "id": 239,
+   "model": 47,
+   "grade": "epsilon",
+   "name": "Sword Break"
+  },
+  {
+   "id": 240,
+   "model": 48,
+   "grade": "alpha",
+   "name": "Strider"
+  },
+  {
+   "id": 241,
+   "model": 48,
+   "grade": "beta",
+   "name": "Strider"
+  },
+  {
+   "id": 242,
+   "model": 48,
+   "grade": "gamma",
+   "name": "Strider"
+  },
+  {
+   "id": 243,
+   "model": 48,
+   "grade": "delta",
+   "name": "Strider"
+  },
+  {
+   "id": 244,
+   "model": 48,
+   "grade": "epsilon",
+   "name": "Strider"
+  },
+  {
+   "id": 245,
+   "model": 49,
+   "grade": "alpha",
+   "name": "Infinity"
+  },
+  {
+   "id": 246,
+   "model": 49,
+   "grade": "beta",
+   "name": "Infinity"
+  },
+  {
+   "id": 247,
+   "model": 49,
+   "grade": "gamma",
+   "name": "Infinity"
+  },
+  {
+   "id": 248,
+   "model": 49,
+   "grade": "delta",
+   "name": "Infinity"
+  },
+  {
+   "id": 249,
+   "model": 49,
+   "grade": "epsilon",
+   "name": "Infinity"
+  },
+  {
+   "id": 250,
+   "model": null,
+   "grade": null,
+   "name": "Judgment"
+  },
+  {
+   "id": 251,
+   "model": null,
+   "grade": null,
+   "name": "Light Bringer"
+  },
+  {
+   "id": 252,
+   "model": null,
+   "grade": null,
+   "name": "Data Destroyer"
+  },
+  {
+   "id": 253,
+   "model": null,
+   "grade": null,
+   "name": "Hyakki Yako"
+  },
+  {
+   "id": 254,
+   "model": null,
+   "grade": null,
+   "name": "Orochi Slayer"
+  },
+  {
+   "id": 255,
+   "model": null,
+   "grade": null,
+   "name": "Nightmare Lance"
+  }
+ ]
+}

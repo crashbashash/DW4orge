@@ -24,6 +24,9 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 OUT = REPO / "crates/dw4core/tests/fixtures/mcd001"
+CAT_OUT = REPO / "crates/dw4core/tests/fixtures/catalogue"
+FLAG_OUT = REPO / "crates/dw4core/tests/fixtures/flags"
+BUILDER_OUT = REPO / "crates/dw4core/tests/fixtures/builder"
 
 # The real card, and the save inside it, as expected.json's provenance records.
 CARD = "memcards/Mcd001.ps2"
@@ -38,7 +41,11 @@ def import_reference(decomp: Path):
     for path in (str(venvs[0]), str(editor)):
         if path not in sys.path:
             sys.path.insert(0, path)
-    import dw4save  # noqa: E402
+
+    # Resolved at runtime from the path pushed above, so static tools cannot
+    # see it. The venv check just before fails loudly if it is genuinely
+    # missing, so an unresolved-import warning here is expected.
+    import dw4save  # noqa: E402  # type: ignore[import-not-found]
 
     return dw4save
 
@@ -83,6 +90,209 @@ def dump(d, save) -> dict:
     }
 
 
+def dump_catalogue(d, out: Path) -> None:
+    """Every catalogue entry, plus descriptions and validity verdicts."""
+    out.mkdir(parents=True, exist_ok=True)
+    cat = d.get_catalogue()
+
+    items = [
+        {
+            "base": base,
+            "name": item.name,
+            "cat": item.cat,
+            "grade": item.grade,
+        }
+        for base, item in sorted(cat.items())
+    ]
+    (out / "items.json").write_text(json.dumps(items, indent=1) + "\n")
+
+    # Describe every catalogue id, plus ids that exercise the invalid path and
+    # the rarity/mod suffixes. The last group walks the rarity band boundaries
+    # and the placeholder id from the appraisal items.
+    describe_ids = sorted(cat.keys())
+    describe_ids += [
+        0xFFFFFFFF,  # the empty sentinel
+        0x00010000,  # seed 0, 1 mod
+        0x00050000,  # 5 mods, no seed
+        0x000F0000,  # 15 mods
+        0x00100000,  # blue band, low end (seed 1)
+        0x00F00000,  # blue band, high end (seed 15)
+        0x01000000,  # green band, low end (seed 16)
+        0x07F00000,  # green band, high end (seed 127)
+        0x08000000,  # yellow band, low end (seed 128)
+        0x1FF00000,  # yellow band, high end (seed 511)
+        0x20000000,  # orange band, low end (seed 512)
+        0x3FF00000,  # orange band, high end (seed 1023)
+        0x40000000,  # pink band, low end (seed 1024)
+        0x7FF00000,  # pink band, high end (seed 2047)
+        0x80000000,  # bit 11 set, which is masked off
+        0x00300000,  # seed 3, in the blue band
+        0x01234000,  # invalid base 0x4000
+        0x00000100,  # invalid base 0x0100, category byte 0x01
+        0x00004400,  # invalid base 0x4400
+    ]
+    describe = {str(i): d.describe_item_id(i) for i in describe_ids}
+    (out / "describe.json").write_text(
+        json.dumps(describe, indent=1, sort_keys=True) + "\n"
+    )
+
+    # Every base id in the ranges of interest, plus the boundaries around each
+    # glitch band and a few ids outside any known category.
+    bases = list(range(0x0100))  # graded + unique weapons
+    bases += list(range(0x0500, 0x0540))  # styled, including the glitch tail
+    bases += list(range(0x1000, 0x1040))  # cores
+    bases += list(range(0x2000, 0x2040))  # boards
+    bases += list(range(0x30B0, 0x30C0))  # mods, including the blank tail
+    bases += [0x3400, 0x3401, 0x44FF, 0xFFFF, 0x1234]
+    invalid = {str(b): d.invalid_reason(b) for b in sorted(set(bases))}
+    (out / "invalid.json").write_text(
+        json.dumps(invalid, indent=1, sort_keys=True) + "\n"
+    )
+
+    print(
+        f"wrote {out}/items.json ({len(items)} entries), "
+        f"describe.json ({len(describe)}), invalid.json ({len(invalid)})"
+    )
+
+
+def _gui_tables(editor: Path) -> dict:
+    """Pull the GUI's mirror and preset tables out of its source.
+
+    `save_editor_gui` imports tkinter at module scope, which is frequently
+    absent (it is on this machine), so the module cannot be imported. The tables
+    are plain literals, so parse the file and execute only the assignments we
+    need. This is deliberately narrow: it extracts named constants, not code.
+    """
+    import ast  # noqa: PLC0415
+
+    src = (editor / "save_editor_gui.py").read_text()
+    tree = ast.parse(src)
+    wanted = {
+        "_story_preset",
+        "STORY_PRESETS",
+        "FLAG_MIRRORS",
+        "FOLDER_MIRRORS",
+        "BOSS_LABELS",
+        "CHAPTER_LABELS",
+        "INTRO_LABELS",
+        "QUEST_LABELS",
+        "LOBBY_LABELS",
+        "FOLDER_LABELS",
+    }
+
+    def names_of(node):
+        if isinstance(node, ast.Assign):
+            return {t.id for t in node.targets if isinstance(t, ast.Name)}
+        return {getattr(node, "name", "")}
+
+    keep = [n for n in tree.body if names_of(n) & wanted]
+    found = {}
+    exec(  # noqa: S102
+        compile(ast.Module(body=keep, type_ignores=[]), "<gui-subset>", "exec"),
+        found,
+    )
+    return found
+
+
+def dump_flags(decomp: Path, out: Path) -> None:
+    """Both partial Python mirror tables, and both preset dictionaries."""
+    # Resolved at runtime from the path `import_reference` pushed, so static
+    # tools cannot see it - same as `dw4save` above.
+    import dw4build  # noqa: PLC0415  # type: ignore[import-not-found]
+
+    out.mkdir(parents=True, exist_ok=True)
+    gui = _gui_tables(decomp / "DW4_Save_Editor")
+
+    mirrors = {
+        "gui": {
+            name: {str(k): v for k, v in table.items()}
+            for name, table in gui["FLAG_MIRRORS"].items()
+        },
+        "gui_folders": {
+            name: {str(k): v for k, v in table.items()}
+            for name, table in gui["FOLDER_MIRRORS"].items()
+        },
+        "builder_normal": {str(k): v for k, v in dw4build.NORMAL_FLAG_MIRRORS.items()},
+        "folder_base": {"Normal": 518, "Hard": 530, "Very Hard": 542},
+    }
+    (out / "mirrors.json").write_text(
+        json.dumps(mirrors, indent=1, sort_keys=True) + "\n"
+    )
+
+    def preset_map(presets):
+        """Normalise both preset shapes to {name: {flags, folders}}.
+
+        The builder stores `active_flags`/`active_folders` lists; the GUI stores
+        `{(kind, id): 0|1}`, including every label it knows, switched off.
+        """
+        normalised = {}
+        for name, preset in presets.items():
+            if "active_flags" in preset or "active_folders" in preset:
+                flags = sorted(preset.get("active_flags", []))
+                folders = sorted(preset.get("active_folders", []))
+            else:
+                flags = sorted(
+                    i for (kind, i), on in preset.items() if kind == "flag" and on
+                )
+                folders = sorted(
+                    i for (kind, i), on in preset.items() if kind == "folder" and on
+                )
+            normalised[name] = {"flags": flags, "folders": folders}
+        return normalised
+
+    presets = {
+        "gui": preset_map(gui["STORY_PRESETS"]),
+        "builder": preset_map(dw4build.STORY_PRESETS),
+    }
+    (out / "presets.json").write_text(
+        json.dumps(presets, indent=1, sort_keys=True) + "\n"
+    )
+
+    print(
+        f"wrote {out}/mirrors.json ({len(mirrors['builder_normal'])} builder rows, "
+        f"{sum(len(v) for v in mirrors['gui'].values())} gui rows) and presets.json"
+    )
+
+
+def dump_builder(out: Path) -> None:
+    """Saves synthesised by the Python builder, for byte-identity tests."""
+    # Resolved at runtime from the path `import_reference` pushed.
+    import dw4build  # noqa: PLC0415  # type: ignore[import-not-found]
+
+    out.mkdir(parents=True, exist_ok=True)
+
+    def write(name: str, spec: dict) -> None:
+        (out / name).write_bytes(dw4build.build_save(spec))
+
+    # `dw4build.fresh_spec()` leaves `"flags"` as None, and `build_block` does
+    # `bytearray(spec.get("flags", ...))` - because the key *exists* with value
+    # None, the default is not used and `bytearray(None)` raises TypeError. So a
+    # storyless fresh save has to be handed its 1024 zero bytes explicitly,
+    # which is exactly what `SaveSpec::default()` produces on the Rust side.
+    plain = dw4build.fresh_spec()
+    plain["flags"] = b"\x00" * 1024
+    write("fresh_plain.raw", plain)
+    write(
+        "fresh_story.raw",
+        dw4build.spec_with_story("Fresh (tutorial)", species=3, player_name="TST"),
+    )
+    write("maxed.raw", dw4build.spec_maxed("fresh", species=3, name="TST"))
+
+    # story_{i}.raw must line up with STORY_PRESETS[i] on the Rust side, so
+    # print the mapping and let the byte-identity test catch a mismatch.
+    for index, name in enumerate(dw4build.STORY_PRESETS):
+        write(
+            f"story_{index}.raw",
+            dw4build.spec_with_story(name, species=3, player_name="TST"),
+        )
+        print(f"  story_{index}.raw <- {name}")
+
+    print(
+        f"wrote {out}/ with fresh_plain.raw, fresh_story.raw, maxed.raw and "
+        f"{len(dw4build.STORY_PRESETS)} story saves"
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", default="/workspace/Decomp/DW4")
@@ -117,6 +327,10 @@ def main() -> None:
     print(f"wrote {OUT}/save.raw ({n} bytes), expected.json, and PROVENANCE.md")
     assert n == 81920, f"expected an 81920-byte save, got {n}"
     assert expected["verify"], "the oracle says the checksum does not verify"
+
+    dump_catalogue(d, CAT_OUT)
+    dump_flags(decomp, FLAG_OUT)
+    dump_builder(BUILDER_OUT)
 
 
 if __name__ == "__main__":

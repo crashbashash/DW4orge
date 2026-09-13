@@ -1,7 +1,9 @@
-# DW4orge — Design
+# DW4orge — save format and design reference
 
-**Date:** 2026-09-13
-**Status:** approved design, ready for implementation planning
+How DW4orge talks to Digimon World 4 save files: the on-disk layout, the item
+encoding, the story-flag mirror system, and the places where DW4orge
+deliberately differs from the original Python editor.
+
 **Repo:** <https://github.com/crashbashash/DW4orge> (GPL-3.0)
 
 ---
@@ -94,7 +96,7 @@ DW4orge/
 │  ├─ app/  components/  features/  lib/  bindings/  styles/
 ├─ tools/gen_fixtures.py          # regenerates vendored data + golden fixtures from Decomp/
 ├─ .github/workflows/{ci,release}.yml
-└─ docs/superpowers/specs/
+└─ docs/save-format.md            # this document
 ```
 
 ### 3.2 Responsibility boundaries
@@ -325,42 +327,53 @@ result is shown as a badge and can be overridden in the UI.
 
 ## 5. Deliberate divergences from the Python implementation
 
-The Python editor is the only known-good implementation. DW4orge resolves
-three internal inconsistencies in it and drops one feature, all deliberately;
-the divergence is recorded here and in the README.
+The Python editor is the only known-good implementation. DW4orge deviates from
+it in three deliberate ways — two behavioural, one a feature it drops — and
+records each here.
 
-1. **Mirror table.** `dw4build.NORMAL_FLAG_MIRRORS` covers ~30 flags;
-   `save_editor_gui.FLAG_MIRRORS` covers 8 and omits 18/19, 88–97, 319–331,
-   334, 48, 382, 81 and 333. DW4orge implements the complete table in §4.5 for
-   all three difficulties.
-2. **Story presets.** The two preset dictionaries have drifted: the builder's
-   "All worlds + keys" sets flag 66 while the GUI's does not; the GUI's
-   "Story cleared" omits 609 while the builder's includes it. DW4orge uses one
-   canonical preset list shared by the Story tab and the New Save dialog:
+1. **Mirror table.** The Python editor carries two different *partial* mirror
+   tables. `save_editor_gui.FLAG_MIRRORS` knows 10 flags per difficulty;
+   `dw4build.NORMAL_FLAG_MIRRORS` knows all 38 for Normal only. Neither
+   describes Hard or Very Hard completely. DW4orge implements the complete
+   table in §4.5 for all three difficulties.
 
-   | Preset | Folders set | Flags set |
-   | --- | --- | --- |
-   | Fresh (tutorial) | — | 1, 24, 501, 508, 931, 935, 936, 960 |
-   | After World 1 | 0–2 | 0, 2, 66, 67, 701 |
-   | After World 2 | 0–5 | 0, 4, 66, 67, 68, 703 |
-   | After World 3 | 0–8 | 0, 5, 66, 67, 68, 69, 82, 704 |
-   | All worlds + keys | 0–10 | 0, 6, 66, 67, 68, 69, 82, 705 |
-   | Story cleared (post-game) | 0–10 | 0, 67, 68, 69, 82, 85, 609 |
+   Verified against both sources: our Normal column is **exactly**
+   `dw4build.NORMAL_FLAG_MIRRORS` (38 of 38 rows), and the GUI's tables are
+   strict subsets of ours — 10 flags each, all 10 covered, for all three
+   difficulties. The GUI omits 28 flags: 18–19, 88–97, 319–331, 334, 48, 382,
+   81 and 333.
 
-   The two disagreements are resolved in favour of the builder's more complete
-   sets (flag 66 present in "All worlds + keys"; 609 present in "Story
-   cleared"), which match the real checkpoint saves the presets were derived
-   from.
+2. **New-save difficulty.** The Python New dialog never asks for a difficulty,
+   and `dw4build._build_story` hardcodes the Normal mirror map, silently
+   locking every synthesised save to Normal. DW4orge adds a difficulty selector
+   to New Save and writes that difficulty's mirror set, defaulting to Normal.
+   Explicit story state from an existing save is unaffected.
 
-3. **New-save difficulty.** The Python New dialog never asks, and the builder
-   always writes Normal mirrors, silently locking new saves to Normal. DW4orge
-   adds a difficulty selector to New Save and writes the matching mirror set,
-   defaulting to Normal.
-4. **Raw offset editing is dropped.** The Python tool's advanced "Raw edits"
+3. **Raw offset editing is dropped.** The Python tool's advanced "Raw edits"
    tab accepted free-form `offset = value` pairs (u32 or `:u8`) against the
    block. It existed as a development aid while the block layout was still
    being mapped and is not carried over (see §1). Advanced **mode** remains: it
    still unlocks glitch/crash item IDs and values above the in-game caps.
+
+### Story presets
+
+Both Python sources agree on all six presets, flag for flag, so there is no
+inconsistency to resolve here. DW4orge keeps the single canonical list below so
+the Story tab and the New Save dialog cannot drift apart, and pins it against
+the Python values with a test.
+
+| Preset | Folders set | Flags set |
+| --- | --- | --- |
+| Fresh (tutorial) | — | 1, 24, 501, 508, 931, 935, 936, 960 |
+| After World 1 | 0–2 | 0, 2, 66, 67, 701 |
+| After World 2 | 0–5 | 0, 4, 66, 67, 68, 703 |
+| After World 3 | 0–8 | 0, 5, 67, 68, 69, 82, 704 |
+| All worlds + keys | 0–10 | 0, 6, 67, 68, 69, 82, 705 |
+| Story cleared (post-game) | 0–10 | 0, 67, 68, 69, 82, 85, 609 |
+
+Note that flag 66 belongs to "After World 1" and "After World 2" only: it is
+Apocalymon, the World 1 boss, and it presumes W1 is where you are. Flag 609 is
+the final scene and appears only in "Story cleared".
 
 Everything else is intended to be behaviourally identical to the Python editor.
 
@@ -765,7 +778,10 @@ and records that `crates/dw4core/data/*.json` is vendored verbatim from
 
 ---
 
-## 12. Milestones
+## 12. Build order
+
+The sequence the project was built in. Each step produces working, tested
+software on its own.
 
 1. **Workspace skeleton** — Cargo workspace, Vite/React/Tauri scaffolding, CI
    green on an empty app.

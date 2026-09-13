@@ -1,0 +1,3236 @@
+[
+ {
+  "base": 0,
+  "name": "Battle Hawk",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 1,
+  "name": "Battle Hawk",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 2,
+  "name": "Battle Hawk",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 3,
+  "name": "Battle Hawk",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 4,
+  "name": "Battle Hawk",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 5,
+  "name": "Van Blade",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 6,
+  "name": "Van Blade",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 7,
+  "name": "Van Blade",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 8,
+  "name": "Van Blade",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 9,
+  "name": "Van Blade",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 10,
+  "name": "Crusher",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 11,
+  "name": "Crusher",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 12,
+  "name": "Crusher",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 13,
+  "name": "Crusher",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 14,
+  "name": "Crusher",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 15,
+  "name": "Destroyer",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 16,
+  "name": "Destroyer",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 17,
+  "name": "Destroyer",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 18,
+  "name": "Destroyer",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 19,
+  "name": "Destroyer",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 20,
+  "name": "Soul Burn",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 21,
+  "name": "Soul Burn",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 22,
+  "name": "Soul Burn",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 23,
+  "name": "Soul Burn",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 24,
+  "name": "Soul Burn",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 25,
+  "name": "Long Sword",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 26,
+  "name": "Long Sword",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 27,
+  "name": "Long Sword",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 28,
+  "name": "Long Sword",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 29,
+  "name": "Long Sword",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 30,
+  "name": "War Sword",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 31,
+  "name": "War Sword",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 32,
+  "name": "War Sword",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 33,
+  "name": "War Sword",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 34,
+  "name": "War Sword",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 35,
+  "name": "Victor Sword",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 36,
+  "name": "Victor Sword",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 37,
+  "name": "Victor Sword",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 38,
+  "name": "Victor Sword",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 39,
+  "name": "Victor Sword",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 40,
+  "name": "Phantom",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 41,
+  "name": "Phantom",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 42,
+  "name": "Phantom",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 43,
+  "name": "Phantom",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 44,
+  "name": "Phantom",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 45,
+  "name": "Onslaught",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 46,
+  "name": "Onslaught",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 47,
+  "name": "Onslaught",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 48,
+  "name": "Onslaught",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 49,
+  "name": "Onslaught",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 50,
+  "name": "Dyno Tooth",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 51,
+  "name": "Dyno Tooth",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 52,
+  "name": "Dyno Tooth",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 53,
+  "name": "Dyno Tooth",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 54,
+  "name": "Dyno Tooth",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 55,
+  "name": "Red Moon",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 56,
+  "name": "Red Moon",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 57,
+  "name": "Red Moon",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 58,
+  "name": "Red Moon",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 59,
+  "name": "Red Moon",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 60,
+  "name": "Rune Blade",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 61,
+  "name": "Rune Blade",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 62,
+  "name": "Rune Blade",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 63,
+  "name": "Rune Blade",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 64,
+  "name": "Rune Blade",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 65,
+  "name": "Light Ring",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 66,
+  "name": "Light Ring",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 67,
+  "name": "Light Ring",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 68,
+  "name": "Light Ring",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 69,
+  "name": "Light Ring",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 70,
+  "name": "Dragoon",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 71,
+  "name": "Dragoon",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 72,
+  "name": "Dragoon",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 73,
+  "name": "Dragoon",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 74,
+  "name": "Dragoon",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 75,
+  "name": "Kamikiri Maru",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 76,
+  "name": "Kamikiri Maru",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 77,
+  "name": "Kamikiri Maru",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 78,
+  "name": "Kamikiri Maru",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 79,
+  "name": "Kamikiri Maru",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 80,
+  "name": "Kurogane Maru",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 81,
+  "name": "Kurogane Maru",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 82,
+  "name": "Kurogane Maru",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 83,
+  "name": "Kurogane Maru",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 84,
+  "name": "Kurogane Maru",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 85,
+  "name": "Denji Prince",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 86,
+  "name": "Denji Prince",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 87,
+  "name": "Denji Prince",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 88,
+  "name": "Denji Prince",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 89,
+  "name": "Denji Prince",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 90,
+  "name": "Yasha Glass",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 91,
+  "name": "Yasha Glass",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 92,
+  "name": "Yasha Glass",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 93,
+  "name": "Yasha Glass",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 94,
+  "name": "Yasha Glass",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 95,
+  "name": "Ankokuten",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 96,
+  "name": "Ankokuten",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 97,
+  "name": "Ankokuten",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 98,
+  "name": "Ankokuten",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 99,
+  "name": "Ankokuten",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 100,
+  "name": "Dbl Axe",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 101,
+  "name": "Dbl Axe",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 102,
+  "name": "Dbl Axe",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 103,
+  "name": "Dbl Axe",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 104,
+  "name": "Dbl Axe",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 105,
+  "name": "Rage Hammer",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 106,
+  "name": "Rage Hammer",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 107,
+  "name": "Rage Hammer",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 108,
+  "name": "Rage Hammer",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 109,
+  "name": "Rage Hammer",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 110,
+  "name": "Hekatoncheir",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 111,
+  "name": "Hekatoncheir",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 112,
+  "name": "Hekatoncheir",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 113,
+  "name": "Hekatoncheir",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 114,
+  "name": "Hekatoncheir",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 115,
+  "name": "Fang Smasher",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 116,
+  "name": "Fang Smasher",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 117,
+  "name": "Fang Smasher",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 118,
+  "name": "Fang Smasher",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 119,
+  "name": "Fang Smasher",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 120,
+  "name": "Meteor Force",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 121,
+  "name": "Meteor Force",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 122,
+  "name": "Meteor Force",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 123,
+  "name": "Meteor Force",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 124,
+  "name": "Meteor Force",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 125,
+  "name": "Bone Blade",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 126,
+  "name": "Bone Blade",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 127,
+  "name": "Bone Blade",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 128,
+  "name": "Bone Blade",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 129,
+  "name": "Bone Blade",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 130,
+  "name": "Slasher",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 131,
+  "name": "Slasher",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 132,
+  "name": "Slasher",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 133,
+  "name": "Slasher",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 134,
+  "name": "Slasher",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 135,
+  "name": "Tri-edge",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 136,
+  "name": "Tri-edge",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 137,
+  "name": "Tri-edge",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 138,
+  "name": "Tri-edge",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 139,
+  "name": "Tri-edge",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 140,
+  "name": "Dark Crimson",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 141,
+  "name": "Dark Crimson",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 142,
+  "name": "Dark Crimson",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 143,
+  "name": "Dark Crimson",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 144,
+  "name": "Dark Crimson",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 145,
+  "name": "Doom Bringer",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 146,
+  "name": "Doom Bringer",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 147,
+  "name": "Doom Bringer",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 148,
+  "name": "Doom Bringer",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 149,
+  "name": "Doom Bringer",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 150,
+  "name": "Dbl Rapier",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 151,
+  "name": "Dbl Rapier",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 152,
+  "name": "Dbl Rapier",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 153,
+  "name": "Dbl Rapier",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 154,
+  "name": "Dbl Rapier",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 155,
+  "name": "Light Blade",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 156,
+  "name": "Light Blade",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 157,
+  "name": "Light Blade",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 158,
+  "name": "Light Blade",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 159,
+  "name": "Light Blade",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 160,
+  "name": "Apocalypse",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 161,
+  "name": "Apocalypse",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 162,
+  "name": "Apocalypse",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 163,
+  "name": "Apocalypse",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 164,
+  "name": "Apocalypse",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 165,
+  "name": "Flame Rose",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 166,
+  "name": "Flame Rose",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 167,
+  "name": "Flame Rose",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 168,
+  "name": "Flame Rose",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 169,
+  "name": "Flame Rose",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 170,
+  "name": "Photon Edge",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 171,
+  "name": "Photon Edge",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 172,
+  "name": "Photon Edge",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 173,
+  "name": "Photon Edge",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 174,
+  "name": "Photon Edge",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 175,
+  "name": "Mighty Talon",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 176,
+  "name": "Mighty Talon",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 177,
+  "name": "Mighty Talon",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 178,
+  "name": "Mighty Talon",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 179,
+  "name": "Mighty Talon",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 180,
+  "name": "Hook Katar",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 181,
+  "name": "Hook Katar",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 182,
+  "name": "Hook Katar",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 183,
+  "name": "Hook Katar",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 184,
+  "name": "Hook Katar",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 185,
+  "name": "D Slayer",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 186,
+  "name": "D Slayer",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 187,
+  "name": "D Slayer",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 188,
+  "name": "D Slayer",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 189,
+  "name": "D Slayer",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 190,
+  "name": "Nova Blade",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 191,
+  "name": "Nova Blade",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 192,
+  "name": "Nova Blade",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 193,
+  "name": "Nova Blade",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 194,
+  "name": "Nova Blade",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 195,
+  "name": "Drill Bunker",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 196,
+  "name": "Drill Bunker",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 197,
+  "name": "Drill Bunker",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 198,
+  "name": "Drill Bunker",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 199,
+  "name": "Drill Bunker",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 200,
+  "name": "Beam Magnum",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 201,
+  "name": "Beam Magnum",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 202,
+  "name": "Beam Magnum",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 203,
+  "name": "Beam Magnum",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 204,
+  "name": "Beam Magnum",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 205,
+  "name": "Sword Cannon",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 206,
+  "name": "Sword Cannon",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 207,
+  "name": "Sword Cannon",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 208,
+  "name": "Sword Cannon",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 209,
+  "name": "Sword Cannon",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 210,
+  "name": "Blaster Gun",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 211,
+  "name": "Blaster Gun",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 212,
+  "name": "Blaster Gun",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 213,
+  "name": "Blaster Gun",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 214,
+  "name": "Blaster Gun",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 215,
+  "name": "Sphere Nova",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 216,
+  "name": "Sphere Nova",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 217,
+  "name": "Sphere Nova",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 218,
+  "name": "Sphere Nova",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 219,
+  "name": "Sphere Nova",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 220,
+  "name": "Omega Raptor",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 221,
+  "name": "Omega Raptor",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 222,
+  "name": "Omega Raptor",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 223,
+  "name": "Omega Raptor",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 224,
+  "name": "Omega Raptor",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 225,
+  "name": "Grand Blade",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 226,
+  "name": "Grand Blade",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 227,
+  "name": "Grand Blade",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 228,
+  "name": "Grand Blade",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 229,
+  "name": "Grand Blade",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 230,
+  "name": "Pain Scimitar",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 231,
+  "name": "Pain Scimitar",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 232,
+  "name": "Pain Scimitar",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 233,
+  "name": "Pain Scimitar",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 234,
+  "name": "Pain Scimitar",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 235,
+  "name": "Sword Break",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 236,
+  "name": "Sword Break",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 237,
+  "name": "Sword Break",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 238,
+  "name": "Sword Break",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 239,
+  "name": "Sword Break",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 240,
+  "name": "Strider",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 241,
+  "name": "Strider",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 242,
+  "name": "Strider",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 243,
+  "name": "Strider",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 244,
+  "name": "Strider",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 245,
+  "name": "Infinity",
+  "cat": 0,
+  "grade": 0
+ },
+ {
+  "base": 246,
+  "name": "Infinity",
+  "cat": 0,
+  "grade": 1
+ },
+ {
+  "base": 247,
+  "name": "Infinity",
+  "cat": 0,
+  "grade": 2
+ },
+ {
+  "base": 248,
+  "name": "Infinity",
+  "cat": 0,
+  "grade": 3
+ },
+ {
+  "base": 249,
+  "name": "Infinity",
+  "cat": 0,
+  "grade": 4
+ },
+ {
+  "base": 250,
+  "name": "Judgment",
+  "cat": 0,
+  "grade": null
+ },
+ {
+  "base": 251,
+  "name": "Light Bringer",
+  "cat": 0,
+  "grade": null
+ },
+ {
+  "base": 252,
+  "name": "Data Destroyer",
+  "cat": 0,
+  "grade": null
+ },
+ {
+  "base": 253,
+  "name": "Hyakki Yako",
+  "cat": 0,
+  "grade": null
+ },
+ {
+  "base": 254,
+  "name": "Orochi Slayer",
+  "cat": 0,
+  "grade": null
+ },
+ {
+  "base": 255,
+  "name": "Nightmare Lance",
+  "cat": 0,
+  "grade": null
+ },
+ {
+  "base": 1280,
+  "name": "Dark Shadow",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1281,
+  "name": "Omega Blade",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1282,
+  "name": "Stargazer",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1283,
+  "name": "Invisible",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1284,
+  "name": "Kaiser Knuckle",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1285,
+  "name": "Demon Arm",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1286,
+  "name": "Nosferatus",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1287,
+  "name": "Executor",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1288,
+  "name": "Dbl Positron",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1289,
+  "name": "Plasma Blade",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1290,
+  "name": "Blunt Axe",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1291,
+  "name": "Slash Sword",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1292,
+  "name": "Stab Dagger",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1293,
+  "name": "Bash Katana",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1294,
+  "name": "Blunt Edge",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1295,
+  "name": "Slash Edge",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1296,
+  "name": "Stab Edge",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1297,
+  "name": "Bash Edge",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1298,
+  "name": "Crush Arm",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1299,
+  "name": "Shot Pistol",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 1300,
+  "name": "?????? (unidentified; appraises into random weapon, white rarity)",
+  "cat": 5,
+  "grade": null
+ },
+ {
+  "base": 4096,
+  "name": "Brave Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4097,
+  "name": "Brave Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4098,
+  "name": "Brave Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4099,
+  "name": "Aegis Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4100,
+  "name": "Aegis Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4101,
+  "name": "Aegis Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4102,
+  "name": "Vulture Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4103,
+  "name": "Vulture Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4104,
+  "name": "Vulture Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4105,
+  "name": "Cipher Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4106,
+  "name": "Cipher Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4107,
+  "name": "Cipher Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4108,
+  "name": "Astral Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4109,
+  "name": "Astral Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4110,
+  "name": "Astral Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4111,
+  "name": "Wizard Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4112,
+  "name": "Wizard Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4113,
+  "name": "Wizard Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4114,
+  "name": "Element Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4115,
+  "name": "Element Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4116,
+  "name": "Element Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4117,
+  "name": "Spirit Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4118,
+  "name": "Spirit Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4119,
+  "name": "Spirit Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4120,
+  "name": "Divine Core",
+  "cat": 16,
+  "grade": 0
+ },
+ {
+  "base": 4121,
+  "name": "Divine Core",
+  "cat": 16,
+  "grade": 1
+ },
+ {
+  "base": 4122,
+  "name": "Divine Core",
+  "cat": 16,
+  "grade": 2
+ },
+ {
+  "base": 4123,
+  "name": "Invincible",
+  "cat": 16,
+  "grade": null
+ },
+ {
+  "base": 4124,
+  "name": "Mythlandia",
+  "cat": 16,
+  "grade": null
+ },
+ {
+  "base": 4125,
+  "name": "Rainbow Veil",
+  "cat": 16,
+  "grade": null
+ },
+ {
+  "base": 4126,
+  "name": "Talis of Order",
+  "cat": 16,
+  "grade": null
+ },
+ {
+  "base": 4127,
+  "name": "?????? (unidentified; appraises into random core, white rarity)",
+  "cat": 16,
+  "grade": null
+ },
+ {
+  "base": 8192,
+  "name": "Achilles Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8193,
+  "name": "Achilles Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8194,
+  "name": "Achilles Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8195,
+  "name": "Atlas Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8196,
+  "name": "Atlas Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8197,
+  "name": "Atlas Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8198,
+  "name": "Meteor Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8199,
+  "name": "Meteor Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8200,
+  "name": "Meteor Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8201,
+  "name": "Fire Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8202,
+  "name": "Fire Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8203,
+  "name": "Fire Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8204,
+  "name": "Ice Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8205,
+  "name": "Ice Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8206,
+  "name": "Ice Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8207,
+  "name": "Bolt Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8208,
+  "name": "Bolt Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8209,
+  "name": "Bolt Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8210,
+  "name": "Dark Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8211,
+  "name": "Dark Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8212,
+  "name": "Dark Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8213,
+  "name": "Armor Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8214,
+  "name": "Armor Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8215,
+  "name": "Armor Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8216,
+  "name": "Beast Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8217,
+  "name": "Beast Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8218,
+  "name": "Beast Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8219,
+  "name": "Rack Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8220,
+  "name": "Rack Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8221,
+  "name": "Rack Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8222,
+  "name": "EXP Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8223,
+  "name": "EXP Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8224,
+  "name": "EXP Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8225,
+  "name": "BIT Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8226,
+  "name": "BIT Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8227,
+  "name": "BIT Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8228,
+  "name": "Mana Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8229,
+  "name": "Mana Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8230,
+  "name": "Mana Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8231,
+  "name": "Resist Board",
+  "cat": 32,
+  "grade": 0
+ },
+ {
+  "base": 8232,
+  "name": "Resist Board",
+  "cat": 32,
+  "grade": 1
+ },
+ {
+  "base": 8233,
+  "name": "Resist Board",
+  "cat": 32,
+  "grade": 2
+ },
+ {
+  "base": 8234,
+  "name": "Filter Board",
+  "cat": 32,
+  "grade": null
+ },
+ {
+  "base": 8235,
+  "name": "Talis of Chaos",
+  "cat": 32,
+  "grade": null
+ },
+ {
+  "base": 8236,
+  "name": "?????? (unidentified; appraises into random board, white rarity)",
+  "cat": 32,
+  "grade": null
+ },
+ {
+  "base": 12288,
+  "name": "Wisdom Chip \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12289,
+  "name": "Wisdom Chip \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12290,
+  "name": "Wisdom Chip \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12291,
+  "name": "Wisdom Chip \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12292,
+  "name": "Wisdom Chip \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12293,
+  "name": "Wisdom Chip \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12294,
+  "name": "Wisdom Chip \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12295,
+  "name": "Wisdom Chip \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12296,
+  "name": "Wisdom Chip \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12297,
+  "name": "Wisdom Chip \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12298,
+  "name": "Wisdom Chip \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12299,
+  "name": "Wisdom Chip \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12300,
+  "name": "Wisdom Chip \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12301,
+  "name": "Wisdom Chip \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12302,
+  "name": "Wisdom Chip \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12303,
+  "name": "Spirit Chip \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12304,
+  "name": "Spirit Chip \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12305,
+  "name": "Spirit Chip \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12306,
+  "name": "Spirit Chip \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12307,
+  "name": "Spirit Chip \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12308,
+  "name": "Spirit Chip \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12309,
+  "name": "Spirit Chip \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12310,
+  "name": "Spirit Chip \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12311,
+  "name": "Spirit Chip \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12312,
+  "name": "Spirit Chip \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12313,
+  "name": "Spirit Chip \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12314,
+  "name": "Spirit Chip \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12315,
+  "name": "Spirit Chip \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12316,
+  "name": "Spirit Chip \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12317,
+  "name": "Spirit Chip \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12318,
+  "name": "Speed Chip \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12319,
+  "name": "Speed Chip \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12320,
+  "name": "Speed Chip \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12321,
+  "name": "Speed Chip \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12322,
+  "name": "Speed Chip \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12323,
+  "name": "Speed Chip \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12324,
+  "name": "Speed Chip \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12325,
+  "name": "Speed Chip \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12326,
+  "name": "Speed Chip \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12327,
+  "name": "Speed Chip \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12328,
+  "name": "Speed Chip \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12329,
+  "name": "Speed Chip \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12330,
+  "name": "Speed Chip \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12331,
+  "name": "Speed Chip \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12332,
+  "name": "Speed Chip \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12333,
+  "name": "PWR Medal (fire) \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12334,
+  "name": "PWR Medal (fire) \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12335,
+  "name": "PWR Medal (fire) \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12336,
+  "name": "PWR Medal (fire) \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12337,
+  "name": "PWR Medal (fire) \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12338,
+  "name": "PWR Medal (fire) \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12339,
+  "name": "PWR Medal (fire) \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12340,
+  "name": "PWR Medal (fire) \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12341,
+  "name": "PWR Medal (fire) \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12342,
+  "name": "PWR Medal (fire) \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12343,
+  "name": "PWR Medal (fire) \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12344,
+  "name": "PWR Medal (fire) \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12345,
+  "name": "PWR Medal (fire) \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12346,
+  "name": "PWR Medal (fire) \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12347,
+  "name": "PWR Medal (fire) \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12348,
+  "name": "PWR Medal (ice) \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12349,
+  "name": "PWR Medal (ice) \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12350,
+  "name": "PWR Medal (ice) \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12351,
+  "name": "PWR Medal (ice) \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12352,
+  "name": "PWR Medal (ice) \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12353,
+  "name": "PWR Medal (ice) \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12354,
+  "name": "PWR Medal (ice) \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12355,
+  "name": "PWR Medal (ice) \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12356,
+  "name": "PWR Medal (ice) \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12357,
+  "name": "PWR Medal (ice) \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12358,
+  "name": "PWR Medal (ice) \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12359,
+  "name": "PWR Medal (ice) \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12360,
+  "name": "PWR Medal (ice) \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12361,
+  "name": "PWR Medal (ice) \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12362,
+  "name": "PWR Medal (ice) \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12363,
+  "name": "PWR Medal (lightning) \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12364,
+  "name": "PWR Medal (lightning) \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12365,
+  "name": "PWR Medal (lightning) \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12366,
+  "name": "PWR Medal (lightning) \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12367,
+  "name": "PWR Medal (lightning) \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12368,
+  "name": "PWR Medal (lightning) \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12369,
+  "name": "PWR Medal (lightning) \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12370,
+  "name": "PWR Medal (lightning) \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12371,
+  "name": "PWR Medal (lightning) \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12372,
+  "name": "PWR Medal (lightning) \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12373,
+  "name": "PWR Medal (lightning) \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12374,
+  "name": "PWR Medal (lightning) \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12375,
+  "name": "PWR Medal (lightning) \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12376,
+  "name": "PWR Medal (lightning) \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12377,
+  "name": "PWR Medal (lightning) \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12378,
+  "name": "PWR Medal (dark) \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12379,
+  "name": "PWR Medal (dark) \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12380,
+  "name": "PWR Medal (dark) \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12381,
+  "name": "PWR Medal (dark) \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12382,
+  "name": "PWR Medal (dark) \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12383,
+  "name": "PWR Medal (dark) \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12384,
+  "name": "PWR Medal (dark) \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12385,
+  "name": "PWR Medal (dark) \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12386,
+  "name": "PWR Medal (dark) \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12387,
+  "name": "PWR Medal (dark) \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12388,
+  "name": "PWR Medal (dark) \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12389,
+  "name": "PWR Medal (dark) \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12390,
+  "name": "PWR Medal (dark) \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12391,
+  "name": "PWR Medal (dark) \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12392,
+  "name": "PWR Medal (dark) \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12393,
+  "name": "Drain Ram \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12394,
+  "name": "Drain Ram \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12395,
+  "name": "Drain Ram \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12396,
+  "name": "Drain Ram \u03b4",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12397,
+  "name": "Drain Ram \u03b5",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12398,
+  "name": "Dread Ram \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12399,
+  "name": "Dread Ram \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12400,
+  "name": "Dread Ram \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12401,
+  "name": "Dread Ram \u03b4",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12402,
+  "name": "Dread Ram \u03b5",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12403,
+  "name": "Assault Ram \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12404,
+  "name": "Assault Ram \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12405,
+  "name": "Assault Ram \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12406,
+  "name": "Assault Ram \u03b4",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12407,
+  "name": "Assault Ram \u03b5",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12408,
+  "name": "Resist ROM (fire) \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12409,
+  "name": "Resist ROM (fire) \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12410,
+  "name": "Resist ROM (fire) \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12411,
+  "name": "Resist ROM (fire) \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12412,
+  "name": "Resist ROM (fire) \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12413,
+  "name": "Resist ROM (fire) \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12414,
+  "name": "Resist ROM (fire) \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12415,
+  "name": "Resist ROM (fire) \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12416,
+  "name": "Resist ROM (fire) \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12417,
+  "name": "Resist ROM (fire) \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12418,
+  "name": "Resist ROM (fire) \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12419,
+  "name": "Resist ROM (fire) \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12420,
+  "name": "Resist ROM (fire) \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12421,
+  "name": "Resist ROM (fire) \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12422,
+  "name": "Resist ROM (fire) \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12423,
+  "name": "Resist ROM (ice) \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12424,
+  "name": "Resist ROM (ice) \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12425,
+  "name": "Resist ROM (ice) \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12426,
+  "name": "Resist ROM (ice) \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12427,
+  "name": "Resist ROM (ice) \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12428,
+  "name": "Resist ROM (ice) \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12429,
+  "name": "Resist ROM (ice) \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12430,
+  "name": "Resist ROM (ice) \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12431,
+  "name": "Resist ROM (ice) \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12432,
+  "name": "Resist ROM (ice) \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12433,
+  "name": "Resist ROM (ice) \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12434,
+  "name": "Resist ROM (ice) \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12435,
+  "name": "Resist ROM (ice) \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12436,
+  "name": "Resist ROM (ice) \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12437,
+  "name": "Resist ROM (ice) \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12438,
+  "name": "Resist ROM (lightning) \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12439,
+  "name": "Resist ROM (lightning) \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12440,
+  "name": "Resist ROM (lightning) \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12441,
+  "name": "Resist ROM (lightning) \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12442,
+  "name": "Resist ROM (lightning) \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12443,
+  "name": "Resist ROM (lightning) \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12444,
+  "name": "Resist ROM (lightning) \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12445,
+  "name": "Resist ROM (lightning) \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12446,
+  "name": "Resist ROM (lightning) \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12447,
+  "name": "Resist ROM (lightning) \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12448,
+  "name": "Resist ROM (lightning) \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12449,
+  "name": "Resist ROM (lightning) \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12450,
+  "name": "Resist ROM (lightning) \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12451,
+  "name": "Resist ROM (lightning) \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12452,
+  "name": "Resist ROM (lightning) \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12453,
+  "name": "Resist ROM (dark) \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12454,
+  "name": "Resist ROM (dark) \u03b1+30",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12455,
+  "name": "Resist ROM (dark) \u03b1+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12456,
+  "name": "Resist ROM (dark) \u03b1+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12457,
+  "name": "Resist ROM (dark) \u03b1+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12458,
+  "name": "Resist ROM (dark) \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12459,
+  "name": "Resist ROM (dark) \u03b2+60",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12460,
+  "name": "Resist ROM (dark) \u03b2+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12461,
+  "name": "Resist ROM (dark) \u03b2+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12462,
+  "name": "Resist ROM (dark) \u03b2+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12463,
+  "name": "Resist ROM (dark) \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12464,
+  "name": "Resist ROM (dark) \u03b3+120",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12465,
+  "name": "Resist ROM (dark) \u03b3+240",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12466,
+  "name": "Resist ROM (dark) \u03b3+360",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12467,
+  "name": "Resist ROM (dark) \u03b3+480",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12468,
+  "name": "Defence ROM \u03b1",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12469,
+  "name": "Defence ROM \u03b2",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12470,
+  "name": "Defence ROM \u03b3",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12471,
+  "name": "Defence ROM \u03b4",
+  "cat": 48,
+  "grade": null
+ },
+ {
+  "base": 12472,
+  "name": "Defence ROM \u03b5",
+  "cat": 48,
+  "grade": null
+ }
+]

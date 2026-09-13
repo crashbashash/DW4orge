@@ -215,7 +215,9 @@ def dump_flags(decomp: Path, out: Path) -> None:
         "builder_normal": {str(k): v for k, v in dw4build.NORMAL_FLAG_MIRRORS.items()},
         "folder_base": {"Normal": 518, "Hard": 530, "Very Hard": 542},
     }
-    (out / "mirrors.json").write_text(json.dumps(mirrors, indent=1, sort_keys=True) + "\n")
+    (out / "mirrors.json").write_text(
+        json.dumps(mirrors, indent=1, sort_keys=True) + "\n"
+    )
 
     def preset_map(presets):
         """Normalise both preset shapes to {name: {flags, folders}}.
@@ -229,7 +231,9 @@ def dump_flags(decomp: Path, out: Path) -> None:
                 flags = sorted(preset.get("active_flags", []))
                 folders = sorted(preset.get("active_folders", []))
             else:
-                flags = sorted(i for (kind, i), on in preset.items() if kind == "flag" and on)
+                flags = sorted(
+                    i for (kind, i), on in preset.items() if kind == "flag" and on
+                )
                 folders = sorted(
                     i for (kind, i), on in preset.items() if kind == "folder" and on
                 )
@@ -240,7 +244,9 @@ def dump_flags(decomp: Path, out: Path) -> None:
         "gui": preset_map(gui["STORY_PRESETS"]),
         "builder": preset_map(dw4build.STORY_PRESETS),
     }
-    (out / "presets.json").write_text(json.dumps(presets, indent=1, sort_keys=True) + "\n")
+    (out / "presets.json").write_text(
+        json.dumps(presets, indent=1, sort_keys=True) + "\n"
+    )
 
     print(
         f"wrote {out}/mirrors.json ({len(mirrors['builder_normal'])} builder rows, "

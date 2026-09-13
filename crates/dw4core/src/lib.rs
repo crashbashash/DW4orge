@@ -38,7 +38,11 @@ pub use codes::{
     level_from_exp, level_threshold, upcnt_safe_cap,
 };
 pub use error::{Error, Result};
-pub use flags::{Difficulty, Mirror, detect_difficulty, folder_mirror, mirror_of};
+pub use flags::{
+    BOSS_FLAGS, CHAPTER_FLAGS, Difficulty, FOLDER_LABELS, FlagLabel, INTRO_FLAGS, LOBBY_FLAGS,
+    Mirror, QUEST_FLAGS, STORY_PRESETS, StoryPreset, StoryState, apply_story, detect_difficulty,
+    folder_mirror, mirror_of, preset_by_name,
+};
 pub use item::{Category, build_item_id, category_of, is_empty, split_item_id};
 pub use name::{NAME_CHARS, decode_player_name, encode_player_name};
 pub use save::{SaveData, block_checksum, fix_checksums};

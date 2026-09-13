@@ -201,6 +201,288 @@ pub fn detect_difficulty(flags: &[u8]) -> Difficulty {
     best
 }
 
+/// A flag and the label the UI shows for it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FlagLabel {
+    /// The flag index.
+    pub flag: u32,
+    /// Human label.
+    pub label: &'static str,
+}
+
+/// The intro/chapter selector. Exactly one of 1-6 is set in a normal save.
+pub const INTRO_FLAGS: &[FlagLabel] = &[
+    FlagLabel {
+        flag: 0,
+        label: "Idle (no active chapter - locked if 1-6 are all off)",
+    },
+    FlagLabel {
+        flag: 1,
+        label: "Tutorial (fresh start)",
+    },
+    FlagLabel {
+        flag: 2,
+        label: "Chapter: World 1 access",
+    },
+    FlagLabel {
+        flag: 3,
+        label: "Chapter: post-W1 (Ophanimon key)",
+    },
+    FlagLabel {
+        flag: 4,
+        label: "Chapter: World 2",
+    },
+    FlagLabel {
+        flag: 5,
+        label: "Chapter: World 3",
+    },
+    FlagLabel {
+        flag: 6,
+        label: "Chapter: World 4",
+    },
+];
+
+/// Era markers. These overlap the intro mirrors deliberately.
+pub const CHAPTER_FLAGS: &[FlagLabel] = &[
+    FlagLabel {
+        flag: 701,
+        label: "World 1 era",
+    },
+    FlagLabel {
+        flag: 702,
+        label: "Post-W1 (Ophanimon key)",
+    },
+    FlagLabel {
+        flag: 703,
+        label: "World 2 era",
+    },
+    FlagLabel {
+        flag: 704,
+        label: "World 3 era",
+    },
+    FlagLabel {
+        flag: 705,
+        label: "World 4 era",
+    },
+    FlagLabel {
+        flag: 706,
+        label: "Post-W4",
+    },
+];
+
+/// Boss defeats and the story-cleared markers.
+pub const BOSS_FLAGS: &[FlagLabel] = &[
+    FlagLabel {
+        flag: 66,
+        label: "Apocalymon (W1)",
+    },
+    FlagLabel {
+        flag: 67,
+        label: "BelialVamdemon (W1)",
+    },
+    FlagLabel {
+        flag: 68,
+        label: "Lucemon (W2)",
+    },
+    FlagLabel {
+        flag: 69,
+        label: "Devimon (W3)",
+    },
+    FlagLabel {
+        flag: 82,
+        label: "LordKnightmon",
+    },
+    FlagLabel {
+        flag: 85,
+        label: "Story cleared (final)",
+    },
+    FlagLabel {
+        flag: 609,
+        label: "Final scene",
+    },
+];
+
+/// The quest-chain flags.
+pub const QUEST_FLAGS: &[FlagLabel] = &[
+    FlagLabel {
+        flag: 375,
+        label: "Quest 1",
+    },
+    FlagLabel {
+        flag: 376,
+        label: "Quest 2",
+    },
+    FlagLabel {
+        flag: 377,
+        label: "Quest 3",
+    },
+    FlagLabel {
+        flag: 378,
+        label: "Quest 4",
+    },
+    FlagLabel {
+        flag: 379,
+        label: "Quest 5",
+    },
+    FlagLabel {
+        flag: 380,
+        label: "Final gate",
+    },
+];
+
+/// Always-on lobby and system flags, set at new game and never cleared.
+pub const LOBBY_FLAGS: &[FlagLabel] = &[
+    FlagLabel {
+        flag: 24,
+        label: "Lobby flag 24 (first-visit)",
+    },
+    FlagLabel {
+        flag: 501,
+        label: "Lobby flag 501 (save state)",
+    },
+    FlagLabel {
+        flag: 508,
+        label: "Lobby flag 508 (early state)",
+    },
+    FlagLabel {
+        flag: 931,
+        label: "Lobby flag 931 (quest init)",
+    },
+    FlagLabel {
+        flag: 935,
+        label: "Lobby flag 935 (quest init)",
+    },
+    FlagLabel {
+        flag: 936,
+        label: "Lobby flag 936 (quest init)",
+    },
+    FlagLabel {
+        flag: 960,
+        label: "Lobby flag 960 (system init)",
+    },
+];
+
+/// The twelve `BASE_FLAGFOLDER` slots, in order.
+pub const FOLDER_LABELS: [&str; 12] = [
+    "Humid Cave (W1, Blosso ID)",
+    "Cliff Dungeon (W1, Mammothmon ID)",
+    "Leomon rescue (W1)",
+    "Ophanimon key",
+    "Sand Labrynth (W2, SkullGrey ID)",
+    "Ancient Ruins (W2, Scorpio ID)",
+    "Gecko Path (W3, Shogun ID)",
+    "Vine Tunnel (W3, MRS04 ID)",
+    "Vein (W3, Diaboro ID)",
+    "Mecha Nest (W4, MRE05 ID)",
+    "Electro Mine (W4, LordKnight ID)",
+    "(unused)",
+];
+
+/// A complete story state: which flags and folders to set.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct StoryPreset {
+    /// Label shown in the preset dropdown.
+    pub name: &'static str,
+    /// Active flags to set.
+    pub flags: &'static [u32],
+    /// Folders to set.
+    pub folders: &'static [u32],
+}
+
+/// The canonical story presets.
+///
+/// Both Python sources — the GUI's `STORY_PRESETS` and `dw4build.STORY_PRESETS`
+/// — agree on all six of these, flag for flag, so there is no inconsistency to
+/// resolve. Keeping one list here means the Story tab and the New Save dialog
+/// cannot drift apart, and `tests/flags.rs` pins every entry against the Python
+/// values.
+#[rustfmt::skip]
+pub const STORY_PRESETS: &[StoryPreset] = &[
+    StoryPreset {
+        name: "Fresh (tutorial)",
+        flags: &[1, 24, 501, 508, 931, 935, 936, 960],
+        folders: &[],
+    },
+    StoryPreset {
+        name: "After World 1",
+        flags: &[0, 2, 66, 67, 701],
+        folders: &[0, 1, 2],
+    },
+    StoryPreset {
+        name: "After World 2",
+        flags: &[0, 4, 66, 67, 68, 703],
+        folders: &[0, 1, 2, 3, 4, 5],
+    },
+    StoryPreset {
+        name: "After World 3",
+        flags: &[0, 5, 67, 68, 69, 82, 704],
+        folders: &[0, 1, 2, 3, 4, 5, 6, 7, 8],
+    },
+    StoryPreset {
+        name: "All worlds + keys",
+        flags: &[0, 6, 67, 68, 69, 82, 705],
+        folders: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    },
+    StoryPreset {
+        name: "Story cleared (post-game)",
+        flags: &[0, 67, 68, 69, 82, 85, 609],
+        folders: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    },
+];
+
+/// The preset with this exact name.
+#[must_use]
+pub fn preset_by_name(name: &str) -> Option<&'static StoryPreset> {
+    STORY_PRESETS.iter().find(|p| p.name == name)
+}
+
+/// A resolved story state, ready to be written into a save.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StoryState {
+    /// The 1024 `BASE_FLAG` bytes.
+    pub flags: Vec<u8>,
+    /// The 12 `BASE_FLAGFOLDER` bytes.
+    pub folders: Vec<u8>,
+}
+
+/// Resolve a preset into flag and folder bytes for `difficulty`.
+///
+/// Writes every active flag **and its difficulty mirror**, because the title
+/// screen restores active ← mirror on load and an active-only edit reverts.
+///
+/// Explicit preset flags are re-applied last: some of them (701, 703, 705) are
+/// also mirror targets, and must keep the value the preset asked for. The
+/// Python builder orders its writes the same way.
+#[must_use]
+pub fn apply_story(preset: &StoryPreset, difficulty: Difficulty) -> StoryState {
+    let mut flags = vec![0u8; offsets::FLAG_COUNT];
+    let mut folders = vec![0u8; offsets::FOLDER_COUNT];
+
+    for &flag in preset.flags {
+        flags[flag as usize] = 1;
+    }
+    for &folder in preset.folders {
+        folders[folder as usize] = 1;
+    }
+
+    // Mirror the active state for this save's difficulty.
+    for row in MIRRORS {
+        flags[row.mirror_for(difficulty) as usize] = flags[row.active as usize];
+    }
+    for (folder, &set) in folders.iter().enumerate().take(MIRRORED_FOLDERS) {
+        if let Some(mirror) = folder_mirror(folder, difficulty) {
+            flags[mirror as usize] = set;
+        }
+    }
+
+    // Re-apply, so an explicit flag that is also a mirror target keeps its value.
+    for &flag in preset.flags {
+        flags[flag as usize] = 1;
+    }
+
+    StoryState { flags, folders }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -406,5 +688,182 @@ mod tests {
         let flags = &raw[offsets::BASE_FLAG..offsets::BASE_FLAG + offsets::FLAG_COUNT];
         // The fixture is the human's Normal-difficulty save.
         assert_eq!(detect_difficulty(flags), Difficulty::Normal);
+    }
+
+    #[test]
+    fn there_are_six_presets_with_unique_names() {
+        assert_eq!(STORY_PRESETS.len(), 6);
+        let mut names = std::collections::BTreeSet::new();
+        for p in STORY_PRESETS {
+            assert!(names.insert(p.name), "duplicate preset {}", p.name);
+        }
+        assert_eq!(
+            preset_by_name("Fresh (tutorial)").map(|p| p.name),
+            Some("Fresh (tutorial)")
+        );
+        assert!(preset_by_name("nope").is_none());
+    }
+
+    #[test]
+    fn every_labelled_flag_is_in_range() {
+        for section in [
+            INTRO_FLAGS,
+            CHAPTER_FLAGS,
+            BOSS_FLAGS,
+            QUEST_FLAGS,
+            LOBBY_FLAGS,
+        ] {
+            for entry in section {
+                assert!(
+                    (entry.flag as usize) < offsets::FLAG_COUNT,
+                    "flag {} is past the array",
+                    entry.flag
+                );
+                assert!(!entry.label.is_empty(), "flag {} has no label", entry.flag);
+            }
+        }
+        assert_eq!(FOLDER_LABELS.len(), offsets::FOLDER_COUNT);
+    }
+
+    #[test]
+    fn an_empty_preset_leaves_everything_clear() {
+        let empty = StoryPreset {
+            name: "empty",
+            flags: &[],
+            folders: &[],
+        };
+        let state = apply_story(&empty, Difficulty::Normal);
+        assert!(state.flags.iter().all(|&b| b == 0));
+        assert!(state.folders.iter().all(|&b| b == 0));
+    }
+
+    #[test]
+    fn a_preset_writes_both_the_active_flag_and_its_mirror() {
+        // The core rule: the active flag alone reverts on load.
+        let only_intro = StoryPreset {
+            name: "intro",
+            flags: &[0],
+            folders: &[],
+        };
+        for difficulty in Difficulty::ALL {
+            let state = apply_story(&only_intro, difficulty);
+            assert_eq!(state.flags[0], 1, "{difficulty:?} active");
+            assert_eq!(
+                state.flags[mirror_of(0, difficulty).unwrap() as usize],
+                1,
+                "{difficulty:?} mirror"
+            );
+        }
+    }
+
+    #[test]
+    fn folders_mirror_into_the_flag_array() {
+        let with_folders = StoryPreset {
+            name: "f",
+            flags: &[],
+            folders: &[0, 9],
+        };
+        let state = apply_story(&with_folders, Difficulty::Normal);
+        assert_eq!(&state.folders[..10], &[1, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
+        assert_eq!(state.flags[518], 1, "folder 0 mirror");
+        assert_eq!(state.flags[527], 1, "folder 9 mirror");
+    }
+
+    #[test]
+    fn explicit_preset_flags_win_over_mirror_writes() {
+        // 701 is both an intro mirror (of flag 2) and the "World 1 era" chapter
+        // flag. The Python builder re-applies explicit flags last for exactly
+        // this reason, and so must we.
+        let both = StoryPreset {
+            name: "both",
+            flags: &[701],
+            folders: &[],
+        };
+        let state = apply_story(&both, Difficulty::Normal);
+        assert_eq!(state.flags[701], 1, "the explicit chapter flag survives");
+    }
+
+    #[test]
+    fn the_fresh_preset_matches_the_documented_flag_set() {
+        let fresh = preset_by_name("Fresh (tutorial)").unwrap();
+        assert_eq!(fresh.flags, &[1, 24, 501, 508, 931, 935, 936, 960]);
+        assert!(fresh.folders.is_empty());
+
+        let state = apply_story(fresh, Difficulty::Normal);
+        assert_eq!(state.flags[1], 1);
+        assert_eq!(state.flags[700], 1, "flag 1's Normal mirror");
+        assert_eq!(state.flags[24], 1, "lobby flag 24 is not mirrored");
+    }
+
+    #[test]
+    fn the_presets_match_the_python_values_exactly() {
+        // Both Python sources agree on all six presets, so these are pinned
+        // literally. Flag 66 is Apocalymon (W1) and belongs only to the two
+        // post-W1 presets; flag 609 is the final scene and belongs only to
+        // the post-game one.
+        let expected: [(&str, &[u32], &[u32]); 6] = [
+            (
+                "Fresh (tutorial)",
+                &[1, 24, 501, 508, 931, 935, 936, 960],
+                &[],
+            ),
+            ("After World 1", &[0, 2, 66, 67, 701], &[0, 1, 2]),
+            (
+                "After World 2",
+                &[0, 4, 66, 67, 68, 703],
+                &[0, 1, 2, 3, 4, 5],
+            ),
+            (
+                "After World 3",
+                &[0, 5, 67, 68, 69, 82, 704],
+                &[0, 1, 2, 3, 4, 5, 6, 7, 8],
+            ),
+            (
+                "All worlds + keys",
+                &[0, 6, 67, 68, 69, 82, 705],
+                &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            ),
+            (
+                "Story cleared (post-game)",
+                &[0, 67, 68, 69, 82, 85, 609],
+                &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+            ),
+        ];
+
+        assert_eq!(STORY_PRESETS.len(), expected.len());
+        for (preset, (name, flags, folders)) in STORY_PRESETS.iter().zip(expected) {
+            assert_eq!(preset.name, name);
+            assert_eq!(preset.flags, flags, "{name} flags");
+            assert_eq!(preset.folders, folders, "{name} folders");
+        }
+    }
+
+    #[test]
+    fn flag_66_and_609_appear_only_where_they_belong() {
+        let with = |flag: u32| -> Vec<&str> {
+            STORY_PRESETS
+                .iter()
+                .filter(|p| p.flags.contains(&flag))
+                .map(|p| p.name)
+                .collect()
+        };
+        assert_eq!(with(66), vec!["After World 1", "After World 2"]);
+        assert_eq!(with(609), vec!["Story cleared (post-game)"]);
+    }
+
+    #[test]
+    fn every_preset_flag_is_a_real_flag_index() {
+        for p in STORY_PRESETS {
+            for &f in p.flags {
+                assert!((f as usize) < offsets::FLAG_COUNT, "{}: flag {f}", p.name);
+            }
+            for &f in p.folders {
+                assert!(
+                    (f as usize) < offsets::FOLDER_COUNT,
+                    "{}: folder {f}",
+                    p.name
+                );
+            }
+        }
     }
 }

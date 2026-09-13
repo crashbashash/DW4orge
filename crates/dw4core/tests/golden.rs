@@ -60,3 +60,21 @@ fn detected_species_matches_the_python_oracle() {
         e["detected_species"].as_u64().unwrap()
     );
 }
+
+#[test]
+fn player_name_matches_the_python_oracle() {
+    let e = expected();
+    let save =
+        dw4core::SaveData::parse(&std::fs::read(fixture_dir().join("save.raw")).unwrap()).unwrap();
+    assert_eq!(save.player_name(), e["player_name"].as_str().unwrap());
+    assert_eq!(save.player_name(), "abc");
+}
+
+#[test]
+fn setting_a_player_name_survives_a_round_trip_through_bytes() {
+    let mut save =
+        dw4core::SaveData::parse(&std::fs::read(fixture_dir().join("save.raw")).unwrap()).unwrap();
+    save.set_player_name("Zz9");
+    let reparsed = dw4core::SaveData::parse(&save.to_bytes()).unwrap();
+    assert_eq!(reparsed.player_name(), "Zz9");
+}

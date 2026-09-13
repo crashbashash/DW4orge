@@ -15,11 +15,13 @@
 //! assert_eq!(save.device(0), dw4core::EMPTY);
 //! ```
 pub mod error;
+pub mod name;
 pub mod offsets;
 pub mod save;
 pub mod species;
 
 pub use error::{Error, Result};
+pub use name::{NAME_CHARS, decode_player_name, encode_player_name};
 pub use save::{SaveData, block_checksum, fix_checksums};
 pub use species::Species;
 

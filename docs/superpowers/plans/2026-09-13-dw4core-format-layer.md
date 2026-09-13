@@ -3328,4 +3328,3 @@ zeroed `device`) were arithmetically checkable by hand and were still wrong.
 Nothing about the format itself changed during execution: every offset, the
 `0xCFC` padding boundary, the checksum, the fullwidth name encoding and the
 level curve all held up against the real card.
-

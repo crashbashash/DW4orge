@@ -13,6 +13,7 @@ site-packages on sys.path and runs under any Python 3.8+.
 
 Run it by hand when the format changes; commit the result.
 """
+
 from __future__ import annotations
 
 import argparse

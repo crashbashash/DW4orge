@@ -106,14 +106,14 @@ DW4orge/
 | `flags` | story flag/folder tables, per-difficulty mirror maps, presets | consts |
 | `builder` | synthesise a complete save from a `SaveSpec` | `offsets`, `codes`, `flags` |
 | `Document` | project a `SaveData` into a `SaveView`; validate and apply an `EditSet` | all of the above |
-| `CardBackend` | read/write the save file inside a card image or a raw file | `ps2-memcard` (one impl) |
+| `CardBackend` | read/write the save file inside a card image or a raw file | nothing (native) |
 | `dw4cli` | headless entry point | `dw4core` |
 | `src-tauri` | IPC commands, window/app lifecycle, file dialogs | `dw4core`, Tauri |
 | React app | draft state, validation display, all presentation | Tauri IPC only |
 
-Each unit is independently testable. `CardBackend` is the only seam through
-which a third-party crate (`ps2-memcard`) enters, so replacing it with a native
-implementation touches one file.
+Each unit is independently testable. `dw4core` has no third-party runtime
+dependencies at all: the PS2 memory-card filesystem is implemented natively
+(§6.1), so there is no external format layer to work around.
 
 ### 3.3 Data flow
 
@@ -459,16 +459,166 @@ pub trait CardBackend {
 Implementations:
 
 - `RawFile` — a bare 81920-byte file; no filesystem.
-- `Ps2Memcard` — wraps `ps2-memcard` 0.2.2 (Apache-2.0) for superblock, indirect
-  FAT, directory tree and spare-area ECC.
+- `Ps2Memcard` — a **native** PS2 memory-card filesystem implementation. No
+  third-party crate.
 
 Path selection reproduces the Python semantics: an existing `.ps2` is written in
 place; a non-existent `.ps2` is created by copying the source card image and
-swapping in the save data; anything else is written as a raw file. Before
-committing to `ps2-memcard`, it is validated against the real 8.2 MB
-`Decomp/DW4/memcards/Mcd001.ps2` and against the Python tool's `.ps2` output.
-If it fails that validation, a native implementation replaces it behind the
-same trait.
+swapping in the save data; anything else is written as a raw file.
+
+#### Why native
+
+`ps2-memcard` 0.2.2 was evaluated first and **rejected**. Against the real
+`Mcd001.ps2` it returns one save with **zero files**:
+
+```text
+saves: 1
+  dir "BASLUS-20836savedata" (0) files=0
+```
+
+A card's save is a directory, and the crate bounds a directory's entry count by
+the `.` entry's `length` field. On this card the save directory's `.` entry
+holds `0` while the parent directory entry correctly holds `5`. The working
+Python `ps2mc` reference does the opposite — `find_sub_entries` bounds by
+`parent_entry.length` — which is why it succeeds. The crate also has no
+in-place write: its `CardBuilder` rebuilds a whole card and is documented as
+not byte-preserving.
+
+The crate's ECC implementation *was* verified correct and was used to establish
+the algorithm below: across all 16,384 pages of `Mcd001.ps2`, computed ECC
+matches **351 of the 352** in-use pages. The single mismatch is page 1, inside
+the pre-allocated superblock region, which is never written.
+
+#### Card geometry
+
+| Unit | Size | Notes |
+| --- | --- | --- |
+| Page | 512 B | 528 B in a hardware dump; the extra 16 B are the spare area |
+| Cluster | `pages_per_cluster` × page (2 × 512 = 1024 B) | what the allocation table counts |
+| Spare area | `(page_size / 128) * 4` = 16 B | first 12 B are ECC (4 chunks × 3 B), last 4 B zero on write |
+
+Both image forms are supported and are distinguished by length: 8,388,608 B
+(data only) and 8,650,752 B (hardware dump, 528-byte pages).
+
+#### Superblock (offsets from the start of page 0)
+
+| Offset | Size | Field | Real `Mcd001.ps2` |
+| --- | --- | --- | --- |
+| `0x00` | 28 B | magic `"Sony PS2 Memory Card Format "` | ✓ |
+| `0x1C` | 12 B | version string | `"1.2.0.0"` |
+| `0x28` | u16 | `page_size` | 512 |
+| `0x2A` | u16 | `pages_per_cluster` | 2 |
+| `0x2C` | u16 | `pages_per_block` | 16 |
+| `0x30` | u32 | `clusters_per_card` | 8192 |
+| `0x34` | u32 | `alloc_offset` | 41 |
+| `0x38` | u32 | `alloc_end` | 8135 |
+| `0x3C` | u32 | `rootdir_cluster` | 0 |
+| `0x40` | u32 | `backup_block1` | |
+| `0x44` | u32 | `backup_block2` | |
+| `0x50` | 32×u32 | `ifc_list` (indirect FAT clusters) | `[8, 0, …]` |
+| `0x150` | u8 | `card_type` | |
+| `0x151` | u8 | `card_flags` | |
+
+Validation: `alloc_offset + alloc_end <= clusters_per_card`, and
+`page_size != 0 && pages_per_cluster != 0`.
+
+#### Directory entry (512 B)
+
+```text
+0x00  u16  mode          0x8000 EXISTS, 0x0020 DIRECTORY, 0x0010 FILE
+0x02  u16  (ignored)
+0x04  u32  length        file: bytes. directory: entry count.
+0x08   8B  created
+0x10  u32  cluster       first cluster of this entry's contents
+0x14  u32  dir_entry     (ignored)
+0x18   8B  modified
+0x20  u32  attr          (ignored)
+0x24  28B  (ignored)
+0x40  32B  name          NUL-terminated
+0x60 416B  (ignored)
+```
+
+**Directory walk:** the entry count comes from the **parent** entry's `length`,
+not the directory's own `.` entry — this is the trap that broke `ps2-memcard`.
+For the root directory, which has no parent, the `.` entry's `length` is used.
+Entries without `EXISTS` are skipped, as are `.` and `..`.
+
+#### Cluster addressing
+
+Cluster numbers in directory entries and FAT values are **relative**; the
+absolute cluster is `relative + alloc_offset`:
+
+```text
+byte offset of cluster c = (alloc_offset + c) * cluster_size
+```
+
+The root directory, FAT and data are all addressed this way.
+
+#### Allocation table
+
+Two levels of indirection: `ifc_list` names the indirect-FAT clusters; each of
+those holds FAT cluster numbers; each FAT cluster holds the entries.
+
+```text
+fat_per_cluster = cluster_size / 4
+fat_matrix      = [ entries of each FAT cluster named by the flattened ifc list ]
+
+fat_entry(n)    = fat_matrix[(n / fat_per_cluster) % fat_per_cluster][n % fat_per_cluster]
+next(n)         = if fat_entry(n) & 0x8000_0000 { fat_entry(n) & 0x7FFF_FFFF } else { END }
+```
+
+`0x7FFF_FFFF` means end-of-chain. A cluster not marked `0x8000_0000` is not part
+of a chain. Chain walking must detect loops and refusing to run past
+`alloc_end`.
+
+#### ECC
+
+Per 128-byte chunk of page data, three bytes: column parity and two line
+parities.
+
+```text
+seeds: cp = 0x77, lp0 = 0x7F, lp1 = 0x7F
+parity(b) = ((b ^ b>>1 ^ b>>2 ^ b>>4) & 1)
+column masks = [0x55, 0x33, 0x0F, 0x00, 0xAA, 0xCC, 0xF0]
+column_mask(b) = OR over i of parity(b & mask[i]) << i
+
+for i, b in data[..128]:
+    cp  ^= column_mask(b)
+    if parity(b): lp0 ^= !i ; lp1 ^= i
+
+ecc = [cp, lp0 & 0x7F, lp1 & 0x7F]
+```
+
+A page's 16-byte spare area is four 3-byte codes followed by four zero bytes.
+An **erased** page's spare area is all `0xFF`. In-use pages on a real card have
+zero in the trailing four bytes, so an in-place write of unchanged content
+reproduces the original image exactly.
+
+#### In-place write
+
+`write_save` never rebuilds the card:
+
+1. Walk the root directory to the save directory, then to the target file.
+2. Follow the FAT chain from the file's starting cluster.
+3. Write the new bytes cluster by cluster along that chain, recomputing each
+   page's 12 ECC bytes and zeroing the 4 trailing spare bytes.
+4. Leave every other byte of the image untouched.
+
+A file whose size does not divide evenly into clusters writes only as many
+bytes as the file declares. The chain must already be long enough; growing the
+save is not supported and returns an error rather than silently corrupting the
+card.
+
+#### Verified behaviour on `Mcd001.ps2`
+
+| Fact | Value |
+| --- | --- |
+| Image size / form | 8,650,752 B, 528-byte pages (with spare) |
+| Save directory | `BASLUS-20836savedata`, cluster 2, 5 entries |
+| Save file | `BASLUS-20836savedata`, cluster 38, 81,920 B |
+| Other files | `icon.sys`, `icon1.ico` (34,156 B) |
+| In-use pages / erased pages | 352 / 16,032 |
+| ECC agreement | 351/352 in-use pages |
 
 ### 6.2 Builder
 
@@ -576,8 +726,14 @@ Bundle identity: product name `DW4orge`, identifier
 
 ## 10. Licensing and attribution
 
-DW4orge is GPL-3.0 (matching the existing `LICENSE`). `ps2-memcard` is
-Apache-2.0, which is GPL-compatible.
+DW4orge is GPL-3.0 (matching the existing `LICENSE`), and `dw4core` has no
+third-party runtime dependencies.
+
+Implementation references: the PS2 memory-card filesystem details in §6.1 were
+derived from the `ps2mc` Python package (the working reference used by the
+original editor) and verified against the real `Mcd001.ps2` dump. The
+`ps2-memcard` Rust crate was evaluated and rejected (§6.1) but its ECC routine
+was used as a cross-check.
 
 A `NOTICE` file credits the reverse-engineering findings and their provenance,
 and records that `crates/dw4core/data/*.json` is vendored verbatim from
@@ -589,10 +745,10 @@ and records that `crates/dw4core/data/*.json` is vendored verbatim from
 
 | Risk | Mitigation |
 | --- | --- |
-| `ps2-memcard` is young (111 downloads, 4 releases) and its API may be unsuitable | Behind `CardBackend`; validated against a real 8.2 MB card and the Python tool's output before adoption; native fallback is a contained change |
+| Writing an edited save to a real memory card is destructive if we get the FAT/ECC wrong | Native implementation validated against the real card at every layer: ECC against all 16,384 pages, directory walk against the known 5-entry save directory, and a byte-identical read→write→read round-trip. Plus atomic write, `.bak`, and post-write verification |
+| The native card writer only overwrites an existing chain, so a save that grows could not be written | The DW4 save is a fixed 81,920 bytes and never grows; the writer returns an error rather than corrupting the card if the chain is too short |
 | `react-aria-components` API churn | Confined to four primitive components behind our own wrappers |
 | Species 4–15 identification is best-effort (only the four starters are pinned) | Identical limitation to the Python editor; documented; defaults to Dorumon as before |
-| Writing an edited save to a real memory card is destructive if we get the FAT/ECC wrong | Atomic write, `.bak`, post-write verification, and a live round-trip test against a real card image |
 | Rarity seed→colour mapping is a threshold model with one known anomaly | Six verified colours only, exactly as the Python editor; arbitrary colours remain unavailable |
 
 ---

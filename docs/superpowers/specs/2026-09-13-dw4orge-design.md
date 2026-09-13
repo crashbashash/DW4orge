@@ -111,9 +111,10 @@ DW4orge/
 | `src-tauri` | IPC commands, window/app lifecycle, file dialogs | `dw4core`, Tauri |
 | React app | draft state, validation display, all presentation | Tauri IPC only |
 
-Each unit is independently testable. `dw4core` has no third-party runtime
-dependencies at all: the PS2 memory-card filesystem is implemented natively
-(§6.1), so there is no external format layer to work around.
+Each unit is independently testable. `dw4core` takes no third-party **format or
+filesystem** dependency: the PS2 memory-card filesystem is implemented natively
+(§6.1), so there is no external format layer to work around. Its only external
+crates are `serde`/`serde_json` (item catalogue, IPC payloads) and `thiserror`.
 
 ### 3.3 Data flow
 
@@ -168,7 +169,7 @@ Per block: `checksum = Σ u32le(block+4 .. block+0xA000) mod 2³²`, stored at
 | `+0x00` | u32 | checksum |
 | `+0x04` | u32 | version (4) |
 | `+0x08` | u32 | `ISUSE` |
-| `+0x0c` | u32 | `UNIQUE` (`0x6096F82C`) |
+| `+0x0c` | u32 | `UNIQUE`, a per-save id — **varies** (`0x6096F82C`, `0x700FFDAC` observed) |
 | `+0x10` | 16 B | `DIGIMONNAME` (ASCII model stem, `p_<stem>`) |
 | `+0x30` | 8 B | `PLAYERNAME` (u16 `0xFFFF` marker + up to 3 fullwidth chars) |
 | `+0x50` | u32 | `LEVEL` (menu snapshot) |
@@ -633,8 +634,10 @@ card.
 `builder.rs` is a pure function of a `SaveSpec` producing one 0xA000 block
 duplicated with both checksums, byte-identical to `dw4build.build_save` for the
 same spec apart from the deliberate corrections in §5. Defaults: version 4,
-`ISUSE` 1, `UNIQUE = 0x6096F82C`, all species level 1 / EXP 0 / 9 techniques at
-1 / power-ups 0, zero padding, disks initialised to `0x4000 + i`.
+`ISUSE` 1, `UNIQUE = 0x6096F82C` (a fixed placeholder — `UNIQUE` is really a
+per-save id, but a synthesised save has no history to derive one from), all
+species level 1 / EXP 0 / 9 techniques at 1 / power-ups 0, zero padding, disks
+initialised to `0x4000 + i`.
 
 `SaveSpec` keeps the Python builder's extension points: explicit per-species
 `BASE_LEVEL`/`BASE_EXP`/`BASE_SKILL`/`BASE_UPCNT` arrays, a `maxed()`
@@ -734,8 +737,9 @@ Bundle identity: product name `DW4orge`, identifier
 
 ## 10. Licensing and attribution
 
-DW4orge is GPL-3.0 (matching the existing `LICENSE`), and `dw4core` has no
-third-party runtime dependencies.
+DW4orge is GPL-3.0 (matching the existing `LICENSE`). `dw4core` takes no
+third-party format or filesystem dependency; its external crates are `serde`,
+`serde_json` and `thiserror` only.
 
 Implementation references: the PS2 memory-card filesystem details in §6.1 were
 derived from the `ps2mc` Python package (the working reference used by the

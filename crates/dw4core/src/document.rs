@@ -82,9 +82,12 @@ impl FieldError {
 pub type Warning = FieldError;
 
 use crate::EMPTY;
-use crate::flags::Difficulty;
+use crate::codes::{junk_tier_from_counter, level_threshold};
+use crate::flags::{Difficulty, detect_difficulty};
 use crate::offsets::{BANK_SLOTS, DEVICE_SLOTS};
+use crate::save::SaveData;
 use crate::species::Species;
+use std::path::{Path, PathBuf};
 
 /// Which of the two story fields an edit targets.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -238,6 +241,208 @@ impl Default for EditSet {
     }
 }
 
+/// Everything the UI needs to render, read out of a save.
+///
+/// This is a *projection*, not a second source of truth: it is rebuilt from the
+/// bytes on every open and every save, and never written back wholesale.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SaveView {
+    /// Species derived from `DIGIMONNAME`.
+    pub species: Species,
+    /// Player name.
+    pub name: String,
+    /// Currency.
+    pub bit: u32,
+    /// X-Data currency.
+    pub xdata: u32,
+    /// Junk-shop donation counter as stored.
+    pub junk_counter: u32,
+    /// Tier that counter reaches.
+    pub junk_tier: u32,
+    /// Level for `species`.
+    pub level: u32,
+    /// EXP for `species`, lifted to the level threshold in Normal mode.
+    pub exp: u32,
+    /// The 9 techniques, signed.
+    pub tech: [i32; 9],
+    /// The 11 power-ups.
+    pub upcnt: [u32; 11],
+    /// The 30 usable device slots.
+    pub device: [u32; DEVICE_SLOTS],
+    /// 3 weapon slots, as device indices.
+    pub weapons: [u32; 3],
+    /// Armor slot, as a device index.
+    pub armor: u32,
+    /// Sub slot, as a device index.
+    pub sub: u32,
+    /// 5 weapon mod sockets, as device indices.
+    pub wmods: [u32; 5],
+    /// 5 armor mod sockets, as device indices.
+    pub amods: [u32; 5],
+    /// The 1024 raw `BASE_FLAG` bytes, so the Story tab can render every
+    /// checkbox without a second call.
+    pub story_flags: Vec<u8>,
+    /// The 12 raw `BASE_FLAGFOLDER` bytes.
+    pub story_folders: Vec<u8>,
+    /// Difficulty inferred from the live mirror set.
+    pub difficulty: Difficulty,
+    /// Bank balance.
+    pub bank_bit: u32,
+    /// The 12 owned disk counts.
+    pub disks: [u16; 12],
+    /// The 96 bank slots.
+    pub bank_items: Vec<u32>,
+    /// Whether the loaded bytes carried valid checksums.
+    pub checksum_ok: bool,
+}
+
+impl SaveView {
+    /// Seed a draft from this view.
+    ///
+    /// `wmods`/`amods` convert from device indices back to mod-chip base ids,
+    /// which is the inverse of the resolution `apply` performs.
+    #[must_use]
+    pub fn to_edit_set(&self) -> EditSet {
+        EditSet {
+            species: self.species,
+            name: self.name.clone(),
+            bit: self.bit,
+            xdata: self.xdata,
+            junk: self.junk_counter,
+            level: self.level,
+            exp: self.exp,
+            tech: self.tech,
+            upcnt: self.upcnt,
+            device: self.device,
+            weapons: self.weapons,
+            armor: self.armor,
+            sub: self.sub,
+            wmods: self.wmods.map(|i| socket_base_id(&self.device, i)),
+            amods: self.amods.map(|i| socket_base_id(&self.device, i)),
+            story: Vec::new(),
+            difficulty: DifficultyChoice::Fixed(self.difficulty),
+            bank_bit: self.bank_bit,
+            disks: self.disks,
+            bank_items: self.bank_items.clone(),
+        }
+    }
+}
+
+/// The mod-chip base id a socket index points at, or `None` if empty or out of range.
+fn socket_base_id(device: &[u32; DEVICE_SLOTS], index: u32) -> Option<u32> {
+    let slot = device.get(index as usize)?;
+    if *slot == EMPTY {
+        return None;
+    }
+    Some(*slot & 0xFFFF)
+}
+
+/// A save being edited, plus where it came from.
+#[derive(Debug, Clone)]
+pub struct Document {
+    data: SaveData,
+    path: Option<PathBuf>,
+    /// Whether the bytes as loaded had valid checksums.
+    loaded_checksums_ok: bool,
+}
+
+impl Document {
+    /// Wrap already-parsed save bytes.
+    ///
+    /// # Errors
+    /// [`crate::Error::BadSaveSize`] if `bytes` is not [`crate::SAVE_SIZE`] long.
+    pub fn from_bytes(bytes: &[u8]) -> crate::Result<Self> {
+        let data = SaveData::parse(bytes)?;
+        let loaded_checksums_ok = data.verify();
+        Ok(Self {
+            data,
+            path: None,
+            loaded_checksums_ok,
+        })
+    }
+
+    /// The underlying save.
+    #[must_use]
+    pub fn data(&self) -> &SaveData {
+        &self.data
+    }
+
+    /// The underlying save, mutably. Used by tests and, later, the card backend.
+    pub fn data_mut(&mut self) -> &mut SaveData {
+        &mut self.data
+    }
+
+    /// The file this was loaded from, if any.
+    #[must_use]
+    pub fn path(&self) -> Option<&Path> {
+        self.path.as_deref()
+    }
+
+    /// Whether the bytes as loaded carried valid checksums.
+    #[must_use]
+    pub fn loaded_checksums_ok(&self) -> bool {
+        self.loaded_checksums_ok
+    }
+
+    /// Project the save for the UI.
+    ///
+    /// In [`Mode::Normal`] a stale EXP - one below `level_threshold(level)` - is
+    /// lifted to the threshold, reproducing `_load_species_stats`
+    /// (`save_editor_gui.py:784`). Advanced mode reports what is stored.
+    #[must_use]
+    pub fn view(&self, mode: Mode) -> SaveView {
+        let species = self.data.detect_species();
+        let level = self.data.level(species);
+        let mut exp = self.data.exp(species);
+        if !mode.is_advanced() {
+            let threshold = level_threshold(level);
+            if i64::from(exp) < threshold && threshold <= i64::from(u32::MAX) {
+                exp = threshold as u32;
+            }
+        }
+
+        SaveView {
+            species,
+            name: self.data.player_name(),
+            bit: self.data.bit(),
+            xdata: self.data.xdata(),
+            junk_counter: self.data.junk_counter(),
+            junk_tier: junk_tier_from_counter(self.data.junk_counter()),
+            level,
+            exp,
+            tech: std::array::from_fn(|i| self.data.skill(species, i)),
+            upcnt: std::array::from_fn(|i| self.data.upcnt(species, i)),
+            // `get_raw_device_slots` returns all 36 slots (30 usable + 6
+            // reserved); the view exposes only the usable 30.
+            device: std::array::from_fn(|i| self.data.device(i)),
+            weapons: [
+                self.data.weapon(0),
+                self.data.weapon(1),
+                self.data.weapon(2),
+            ],
+            armor: self.data.armor(),
+            sub: self.data.sub(),
+            wmods: self
+                .data
+                .get_raw_weapon_mod_slots()
+                .try_into()
+                .expect("5 slots"),
+            amods: self
+                .data
+                .get_raw_armor_mod_slots()
+                .try_into()
+                .expect("5 slots"),
+            story_flags: self.data.raw_flags().to_vec(),
+            story_folders: self.data.raw_folders().to_vec(),
+            difficulty: detect_difficulty(self.data.raw_flags()),
+            bank_bit: self.data.bank_bit(),
+            disks: std::array::from_fn(|i| self.data.disk_count(i)),
+            bank_items: self.data.get_raw_bank_slots(),
+            checksum_ok: self.loaded_checksums_ok,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -296,5 +501,68 @@ mod tests {
         let f = StoryEdit::folder(3, false);
         assert_eq!(f.kind, StoryKind::Folder);
         assert!(!f.value);
+    }
+
+    use crate::builder::{SaveSpec, build_save};
+
+    fn fresh_document() -> Document {
+        let bytes = build_save(&SaveSpec::default());
+        Document::from_bytes(&bytes).expect("a built save parses")
+    }
+
+    #[test]
+    fn a_view_of_a_fresh_save_reports_its_defaults() {
+        let doc = fresh_document();
+        let v = doc.view(Mode::Normal);
+        assert_eq!(v.species, Species::Dorumon);
+        assert_eq!(v.name, "TST");
+        assert_eq!(v.level, 1);
+        assert_eq!(v.exp, 0);
+        assert_eq!(v.bit, 0);
+        assert_eq!(v.junk_counter, 0);
+        assert_eq!(v.junk_tier, 0);
+        assert_eq!(v.tech, [1; 9]);
+        assert_eq!(v.device, [EMPTY; DEVICE_SLOTS]);
+        assert_eq!(v.bank_items, vec![EMPTY; BANK_SLOTS]);
+        assert!(v.checksum_ok);
+    }
+
+    #[test]
+    fn the_view_lifts_a_stale_exp_to_the_level_threshold_in_normal_mode() {
+        // Level 10 with EXP 0 is inconsistent: the GUI's _load_species_stats
+        // lifts it so the field shows a value matching the level.
+        let spec = SaveSpec {
+            level: 10,
+            exp: 0,
+            ..SaveSpec::default()
+        };
+        let doc = Document::from_bytes(&build_save(&spec)).expect("parses");
+
+        let normal = doc.view(Mode::Normal);
+        assert_eq!(normal.exp, crate::codes::level_threshold(10) as u32);
+
+        // Advanced shows the stored value untouched.
+        let advanced = doc.view(Mode::Advanced);
+        assert_eq!(advanced.exp, 0);
+    }
+
+    #[test]
+    fn a_view_round_trips_through_an_edit_set() {
+        let doc = fresh_document();
+        let v = doc.view(Mode::Normal);
+        let e = v.to_edit_set();
+        assert_eq!(e.species, v.species);
+        assert_eq!(e.name, v.name);
+        assert_eq!(e.level, v.level);
+        assert_eq!(e.exp, v.exp);
+        assert_eq!(e.tech, v.tech);
+        assert_eq!(e.upcnt, v.upcnt);
+        assert_eq!(e.device, v.device);
+        assert_eq!(e.weapons, v.weapons);
+        assert_eq!(e.armor, v.armor);
+        assert_eq!(e.sub, v.sub);
+        assert_eq!(e.bank_bit, v.bank_bit);
+        assert_eq!(e.disks, v.disks);
+        assert_eq!(e.bank_items, v.bank_items);
     }
 }

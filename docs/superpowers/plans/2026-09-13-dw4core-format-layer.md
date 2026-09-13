@@ -2348,13 +2348,16 @@ mod tests {
     #[test]
     fn categories_come_from_the_second_byte() {
         assert_eq!(category_of(0x0010), Category::Weapon);
-        assert_eq!(category_of(0x03FF), Category::Weapon);
+        // Graded weapons are category 0x00, so they span 0x0000..=0x00FF.
+        assert_eq!(category_of(0x00FF), Category::Weapon);
         assert_eq!(category_of(0x0500), Category::Styled);
         assert_eq!(category_of(0x1020), Category::Core);
         assert_eq!(category_of(0x2020), Category::Board);
         assert_eq!(category_of(0x3000), Category::Mod);
         assert_eq!(category_of(0x3400), Category::ModEquipped);
         assert_eq!(category_of(0x44FF), Category::Unknown(0x44));
+        // 0x03FF is category byte 0x03, which is not a known category.
+        assert_eq!(category_of(0x03FF), Category::Unknown(0x03));
     }
 
     #[test]

@@ -130,7 +130,9 @@ def dump_catalogue(d, out: Path) -> None:
         0x00004400,  # invalid base 0x4400
     ]
     describe = {str(i): d.describe_item_id(i) for i in describe_ids}
-    (out / "describe.json").write_text(json.dumps(describe, indent=1, sort_keys=True) + "\n")
+    (out / "describe.json").write_text(
+        json.dumps(describe, indent=1, sort_keys=True) + "\n"
+    )
 
     # Every base id in the ranges of interest, plus the boundaries around each
     # glitch band and a few ids outside any known category.
@@ -141,7 +143,9 @@ def dump_catalogue(d, out: Path) -> None:
     bases += list(range(0x30B0, 0x30C0))  # mods, including the blank tail
     bases += [0x3400, 0x3401, 0x44FF, 0xFFFF, 0x1234]
     invalid = {str(b): d.invalid_reason(b) for b in sorted(set(bases))}
-    (out / "invalid.json").write_text(json.dumps(invalid, indent=1, sort_keys=True) + "\n")
+    (out / "invalid.json").write_text(
+        json.dumps(invalid, indent=1, sort_keys=True) + "\n"
+    )
 
     print(
         f"wrote {out}/items.json ({len(items)} entries), "

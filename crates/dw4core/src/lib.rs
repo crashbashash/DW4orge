@@ -32,7 +32,7 @@ pub mod offsets;
 pub mod save;
 pub mod species;
 
-pub use builder::{SaveSpec, UNIQUE_DEFAULT, build_block, build_save};
+pub use builder::{SaveSpec, UNIQUE_DEFAULT, build_block, build_save, spec_maxed, spec_with_story};
 pub use catalogue::{Item, ItemCatalogue, describe_item_id, get_catalogue, invalid_reason};
 pub use codes::{
     CAP_BIT, CAP_DISK_COUNT, CAP_EXP, CAP_ITEM_BONUS, CAP_ITEM_MODS, CAP_LEVEL, CAP_TECH,

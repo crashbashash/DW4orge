@@ -9,8 +9,10 @@
 //! module was written; the measured values are recorded in the implementation
 //! plan and asserted by `tests/memcard.rs`.
 
+mod ecc;
 mod geometry;
 
+pub use ecc::{ECC_CHUNK, ECC_CHUNK_BYTES, ecc_chunk, page_spare};
 pub use geometry::{CardKind, Geometry, SB_MAGIC, SB_SIZE, Superblock};
 
 /// The directory holding the save, inside the card.

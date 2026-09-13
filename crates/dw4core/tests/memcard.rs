@@ -84,3 +84,55 @@ fn card_kind_is_decided_by_length() {
     assert_eq!(CardKind::of_size(8_388_608), Some(CardKind::DataOnly));
     assert_eq!(CardKind::of_size(1234), None);
 }
+
+use dw4core::memcard::page_spare;
+
+#[test]
+fn computed_ecc_matches_the_real_card_on_every_in_use_page() {
+    // The card stores its own ECC in each page's 16-byte spare area, so it is
+    // the oracle. The known exception is page 1, inside the pre-allocated
+    // superblock region, which write_save never touches.
+    let card = common::memcard_fixture();
+    let page = common::CARD_PAGE_SIZE;
+    let data = 512usize;
+
+    let mut matched = 0;
+    let mut mismatched = Vec::new();
+    for n in 0..card.len() / page {
+        let at = n * page;
+        if card[at..at + page] == [0xffu8; 528][..] {
+            continue; // erased page: spare is 0xFF, not a code
+        }
+        let stored = &card[at + data..at + page];
+        let computed = page_spare(&card[at..at + data]);
+        if computed == stored {
+            matched += 1;
+        } else {
+            mismatched.push(n);
+        }
+    }
+
+    assert_eq!(matched, 351, "in-use pages with matching ECC");
+    assert_eq!(
+        mismatched,
+        vec![1],
+        "the only mismatch is page 1, in the superblock region"
+    );
+}
+
+#[test]
+fn the_trailing_four_spare_bytes_are_zero_on_in_use_pages() {
+    let card = common::memcard_fixture();
+    let page = common::CARD_PAGE_SIZE;
+    for n in 0..card.len() / page {
+        let at = n * page;
+        if card[at..at + page] == [0xffu8; 528][..] {
+            continue;
+        }
+        assert_eq!(
+            &card[at + 512 + 12..at + page],
+            &[0u8; 4],
+            "page {n} trailing spare bytes"
+        );
+    }
+}

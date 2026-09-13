@@ -1,7 +1,9 @@
-# DW4orge — Design
+# DW4orge — save format and design reference
 
-**Date:** 2026-09-13
-**Status:** approved design, ready for implementation planning
+How DW4orge talks to Digimon World 4 save files: the on-disk layout, the item
+encoding, the story-flag mirror system, and the places where DW4orge
+deliberately differs from the original Python editor.
+
 **Repo:** <https://github.com/crashbashash/DW4orge> (GPL-3.0)
 
 ---
@@ -94,7 +96,7 @@ DW4orge/
 │  ├─ app/  components/  features/  lib/  bindings/  styles/
 ├─ tools/gen_fixtures.py          # regenerates vendored data + golden fixtures from Decomp/
 ├─ .github/workflows/{ci,release}.yml
-└─ docs/superpowers/specs/
+└─ docs/save-format.md            # this document
 ```
 
 ### 3.2 Responsibility boundaries
@@ -765,7 +767,10 @@ and records that `crates/dw4core/data/*.json` is vendored verbatim from
 
 ---
 
-## 12. Milestones
+## 12. Build order
+
+The sequence the project was built in. Each step produces working, tested
+software on its own.
 
 1. **Workspace skeleton** — Cargo workspace, Vite/React/Tauri scaffolding, CI
    green on an empty app.

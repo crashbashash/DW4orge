@@ -1,6 +1,7 @@
 //! The save document: parse, mirror-both-blocks access, checksum.
 use crate::error::{Error, Result};
 use crate::offsets;
+use crate::species::Species;
 use crate::{BLOCK, SAVE_SIZE};
 
 /// A parsed save file: two mirrored 0xA000-byte blocks.
@@ -193,6 +194,15 @@ impl SaveData {
         let mut field = [0u8; 16];
         field[..take].copy_from_slice(&bytes[..take]);
         self.set_bytes(offsets::DIGIMON_NAME, &field);
+    }
+
+    /// The species implied by the stored model name.
+    ///
+    /// Unrecognised names fall back to [`Species::DEFAULT`], matching the
+    /// Python editor.
+    #[must_use]
+    pub fn detect_species(&self) -> Species {
+        Species::from_model_name(&self.digimon_name()).unwrap_or(Species::DEFAULT)
     }
 }
 

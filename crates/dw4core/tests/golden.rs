@@ -49,3 +49,14 @@ fn header_and_character_match_the_python_oracle() {
         e["checksum_block"].as_u64().unwrap()
     );
 }
+
+#[test]
+fn detected_species_matches_the_python_oracle() {
+    let e = expected();
+    let save =
+        dw4core::SaveData::parse(&std::fs::read(fixture_dir().join("save.raw")).unwrap()).unwrap();
+    assert_eq!(
+        save.detect_species().index() as u64,
+        e["detected_species"].as_u64().unwrap()
+    );
+}

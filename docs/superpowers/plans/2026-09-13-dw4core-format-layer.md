@@ -196,12 +196,13 @@ Create `crates/dw4core/src/lib.rs`:
 //! assert_eq!(save.device(0), dw4core::EMPTY);
 //! ```
 pub mod error;
-pub mod offsets;
 
 pub use error::{Error, Result};
 
 /// Size of one mirrored save block.
-pub const BLOCK: usize = offsets::BLOCK;
+///
+/// Task 2 moves this into `offsets` and re-exports it.
+pub const BLOCK: usize = 0xA000;
 
 /// Size of the whole save data file: two mirrored blocks.
 pub const SAVE_SIZE: usize = BLOCK * 2;
@@ -257,7 +258,7 @@ Every offset is defined exactly once here. This module is the single reference f
 **Files:**
 
 - Create: `crates/dw4core/src/offsets.rs`
-- Modify: `crates/dw4core/src/lib.rs` (already declares `pub mod offsets;`)
+- Modify: `crates/dw4core/src/lib.rs` (declare `pub mod offsets;` and turn `BLOCK` into a re-export)
 - Test: inline `#[cfg(test)] mod tests` in `offsets.rs`
 
 **Interfaces:**
@@ -514,15 +515,29 @@ pub const FIELDS: &[Field] = &[
 ];
 ```
 
-- [ ] **Step 4: Run the tests to verify they pass**
+- [ ] **Step 4: Wire `offsets` into `lib.rs`**
+
+`lib.rs` currently defines `BLOCK` itself, because `offsets.rs` did not exist yet. Now that it does, move the definition:
+
+```rust
+pub mod error;
+pub mod offsets;
+
+pub use error::{Error, Result};
+
+/// Size of one mirrored save block.
+pub const BLOCK: usize = offsets::BLOCK;
+```
+
+- [ ] **Step 5: Run the tests to verify they pass**
 
 Run: `cargo test -p dw4core offsets`
-Expected: PASS — 4 tests.
+Expected: PASS — 4 tests. Then `cargo test -p dw4core` to confirm nothing else broke.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add crates/dw4core/src/offsets.rs
+git add crates/dw4core/src/offsets.rs crates/dw4core/src/lib.rs
 git commit -m "feat(dw4core): add the complete block field map"
 ```
 

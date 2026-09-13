@@ -15,14 +15,12 @@
 //! assert_eq!(save.device(0), dw4core::EMPTY);
 //! ```
 pub mod error;
+pub mod offsets;
 
 pub use error::{Error, Result};
 
 /// Size of one mirrored save block.
-///
-/// Moves into `offsets` in Task 2, which becomes the single home for every
-/// block-relative offset.
-pub const BLOCK: usize = 0xA000;
+pub const BLOCK: usize = offsets::BLOCK;
 
 /// Size of the whole save data file: two mirrored blocks.
 pub const SAVE_SIZE: usize = BLOCK * 2;

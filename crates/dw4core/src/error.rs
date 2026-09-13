@@ -35,6 +35,26 @@ pub enum Error {
     #[error("{0}")]
     NoSave(String),
 
+    /// The input is not a PS2 memory-card image.
+    #[error("not a PS2 memory card: {0}")]
+    NotAMemcard(String),
+
+    /// The superblock's geometry is self-inconsistent.
+    #[error("bad memory-card geometry: {0}")]
+    BadCardGeometry(String),
+
+    /// A structure inside the card is malformed.
+    #[error("malformed memory card: {0}")]
+    BadCard(String),
+
+    /// The save is not present inside the card.
+    #[error("{dir}/{file} not found in the card")]
+    SaveNotFound { dir: String, file: String },
+
+    /// A cluster chain is broken, loops, or runs past the data area.
+    #[error("cluster chain from {start} is invalid: {reason}")]
+    BadClusterChain { start: u32, reason: String },
+
     /// Every device-folder slot is occupied, so a mod chip could not be added.
     #[error("no free device-folder slot to add the mod chip 0x{0:04X}")]
     NoFreeDeviceSlot(u32),

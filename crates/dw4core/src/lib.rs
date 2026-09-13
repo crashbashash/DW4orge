@@ -28,6 +28,7 @@ pub mod document;
 pub mod error;
 pub mod flags;
 pub mod item;
+pub mod memcard;
 pub mod name;
 pub mod offsets;
 pub mod save;

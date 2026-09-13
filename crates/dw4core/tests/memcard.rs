@@ -21,7 +21,7 @@ fn the_fixture_rebuilds_the_real_card() {
     );
 
     // The save directory name is present.
-    let needle = b"BASLUS-20836savedata";
+    let needle = dw4core::memcard::SAVE_DIR.as_bytes();
     assert!(
         card.windows(needle.len()).any(|w| w == needle),
         "the save directory name must be present"
@@ -33,4 +33,54 @@ fn the_fixture_rebuilds_the_real_card() {
         .filter(|n| card[n * page..(n + 1) * page] == [0xffu8; 528][..])
         .count();
     assert_eq!(erased, 16_032, "erased pages");
+}
+
+use dw4core::memcard::{CardKind, Geometry, Superblock};
+
+#[test]
+fn the_real_superblock_parses_to_the_measured_values() {
+    let card = common::memcard_fixture();
+    assert_eq!(CardKind::of_size(card.len()), Some(CardKind::WithSpare));
+
+    let sb = Superblock::parse(&card).expect("the real superblock parses");
+    assert_eq!(sb.version, "1.2.0.0");
+    assert_eq!(sb.page_size, 512);
+    assert_eq!(sb.pages_per_cluster, 2);
+    assert_eq!(sb.pages_per_block, 16);
+    assert_eq!(sb.clusters_per_card, 8192);
+    assert_eq!(sb.alloc_offset, 41);
+    assert_eq!(sb.alloc_end, 8135);
+    assert_eq!(sb.rootdir_cluster, 0);
+    assert_eq!(sb.ifc_list, vec![8]);
+    assert_eq!(sb.card_type, 2);
+    assert_eq!(sb.card_flags, 43);
+
+    let g = Geometry::from_superblock(&sb);
+    assert_eq!(g.page_size, 512);
+    assert_eq!(g.spare_size, 16);
+    assert_eq!(g.raw_page_size, 528);
+    assert_eq!(g.cluster_size, 1024);
+    assert_eq!(g.fat_per_cluster, 256);
+    assert_eq!(g.total_pages(), 16_384);
+
+    // Addressing: page 1 starts one raw page in; cluster 0 is the first data
+    // cluster, at alloc_offset.
+    assert_eq!(g.page_offset(1), 528);
+    assert_eq!(g.cluster_offset(0), 41 * 1024);
+    assert_eq!(g.cluster_offset(2), 43 * 1024);
+}
+
+#[test]
+fn a_short_or_non_card_input_is_rejected() {
+    assert!(Superblock::parse(&[0u8; 100]).is_err());
+    let mut card = common::memcard_fixture();
+    card[0] = b'X'; // break the magic
+    assert!(Superblock::parse(&card).is_err());
+}
+
+#[test]
+fn card_kind_is_decided_by_length() {
+    assert_eq!(CardKind::of_size(8_650_752), Some(CardKind::WithSpare));
+    assert_eq!(CardKind::of_size(8_388_608), Some(CardKind::DataOnly));
+    assert_eq!(CardKind::of_size(1234), None);
 }

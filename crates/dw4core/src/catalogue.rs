@@ -172,6 +172,51 @@ impl ItemCatalogue {
             }
         }
 
+        // Mod chips: families of graded blocks, with stat variants in the
+        // 3-grade shape only.
+        let mods: serde_json::Value = serde_json::from_str(MODS_JSON).expect("mods.json parses");
+        let variant_seq: Vec<u32> = mods["variant_seq"]
+            .as_array()
+            .expect("variant_seq array")
+            .iter()
+            .map(|v| v.as_u64().expect("variant is a number") as u32)
+            .collect();
+        for family in mods["families"].as_array().expect("families array") {
+            let block = family["block"].as_u64().expect("block") as u32;
+            let grades = family["grades"].as_u64().expect("grades") as u32;
+            let name = family["name"].as_str().expect("name");
+
+            // 3-grade families give each grade a 5-base block of stat variants.
+            // 5-grade families give each grade exactly one base.
+            let stride = if grades == 3 { 5 } else { 1 };
+            for grade in 0..grades {
+                let grade_letter = GRADE_LETTER[grade as usize];
+                for offset in 0..stride {
+                    let base = 0x3000 | (block + grade * stride + offset);
+                    let display = if offset == 0 {
+                        format!("{name} {grade_letter}")
+                    } else {
+                        // Offsets 1..=4 index variant_seq from this grade's slot.
+                        let variant = variant_seq
+                            .get((grade + offset - 1) as usize)
+                            .copied()
+                            .expect("variant sequence covers every 3-grade offset");
+                        format!("{name} {grade_letter}+{variant}")
+                    };
+                    items.insert(
+                        base,
+                        Item {
+                            base_id: base,
+                            name: display,
+                            category: Category::Mod,
+                            grade: None,
+                            note: None,
+                        },
+                    );
+                }
+            }
+        }
+
         Self { items }
     }
 }
@@ -279,5 +324,76 @@ mod tests {
             let found = get_catalogue().get(item.base_id).expect("round trip");
             assert_eq!(found.base_id, item.base_id);
         }
+    }
+
+    #[test]
+    fn a_three_grade_family_lays_out_as_block_plus_grade_times_five() {
+        // Wisdom Chip: block 0, 3 grades, 5 stat variants per grade.
+        let cat = get_catalogue();
+        assert_eq!(cat.get(0x3000).unwrap().name, "Wisdom Chip \u{3b1}");
+        assert_eq!(cat.get(0x3005).unwrap().name, "Wisdom Chip \u{3b2}");
+        assert_eq!(cat.get(0x300A).unwrap().name, "Wisdom Chip \u{3b3}");
+        for base in [0x3000, 0x3005, 0x300A] {
+            assert_eq!(cat.get(base).unwrap().category, crate::Category::Mod);
+        }
+    }
+
+    #[test]
+    fn stat_variants_are_suffixed_by_the_variant_sequence() {
+        // alpha: +30, +60, +120, +240. beta starts 30 higher.
+        let cat = get_catalogue();
+        assert_eq!(cat.get(0x3001).unwrap().name, "Wisdom Chip \u{3b1}+30");
+        assert_eq!(cat.get(0x3002).unwrap().name, "Wisdom Chip \u{3b1}+60");
+        assert_eq!(cat.get(0x3003).unwrap().name, "Wisdom Chip \u{3b1}+120");
+        assert_eq!(cat.get(0x3004).unwrap().name, "Wisdom Chip \u{3b1}+240");
+        assert_eq!(cat.get(0x3006).unwrap().name, "Wisdom Chip \u{3b2}+60");
+    }
+
+    #[test]
+    fn a_five_grade_family_has_one_base_per_grade_and_no_variants() {
+        // Drain Ram: block 105, 5 grades, no stat variants.
+        let cat = get_catalogue();
+        assert_eq!(cat.get(0x3069).unwrap().name, "Drain Ram \u{3b1}");
+        assert_eq!(cat.get(0x306A).unwrap().name, "Drain Ram \u{3b2}");
+        assert_eq!(cat.get(0x306D).unwrap().name, "Drain Ram \u{3b5}");
+    }
+
+    #[test]
+    fn the_last_mod_family_ends_at_0x30b8() {
+        // Defence ROM: block 180, 5 grades.
+        let cat = get_catalogue();
+        let last = cat.get(0x30B8).expect("Defence ROM epsilon");
+        assert_eq!(last.name, "Defence ROM \u{3b5}");
+        assert!(cat.get(0x30B9).is_none(), "mods stop at 0x30b8");
+    }
+
+    #[test]
+    fn every_mod_id_from_the_data_files_is_in_the_catalogue() {
+        let cat = get_catalogue();
+        let mods: serde_json::Value = serde_json::from_str(MODS_JSON).unwrap();
+        let mut expected = 0usize;
+        for family in mods["families"].as_array().unwrap() {
+            let block = family["block"].as_u64().unwrap() as u32;
+            let grades = family["grades"].as_u64().unwrap() as u32;
+            let span = if grades == 3 { 15 } else { 5 };
+            for offset in 0..span {
+                let base = 0x3000 | (block + offset);
+                assert!(
+                    cat.get(base).is_some(),
+                    "base 0x{base:04X} from family {} is missing",
+                    family["name"]
+                );
+                expected += 1;
+            }
+        }
+        assert_eq!(expected, 185, "the data files describe 185 mod ids");
+    }
+
+    #[test]
+    fn the_catalogue_holds_539_items() {
+        // 256 graded + 6 unique weapons, 21 styled, 32 cores, 45 boards,
+        // 185 mods. Task 5 checks this against the oracle's own count; this
+        // one fails with a number instead of a fixture mismatch.
+        assert_eq!(get_catalogue().len(), 539);
     }
 }

@@ -192,8 +192,16 @@ Per block: `checksum = Σ u32le(block+4 .. block+0xA000) mod 2³²`, stored at
 | `+0x77c` | 16×u32 | `BASE_LEVEL` (per species) |
 | `+0x7bc` | 16×u32 | `BASE_EXP` (per species) |
 | `+0x7fc` | 144×u32 | `BASE_SKILL` (16 species × 9 techniques, signed i32) |
-| `+0xa3c` | 176×u32 | `BASE_UPCNT` (16 species × 11 power-ups) |
-| `+0xafc`..`+0x9fff` | | zero padding |
+| `+0xa3c` | 176×u32 | `BASE_UPCNT` (16 species × 11 power-ups), ends `+0xcfc` |
+| `+0xcfc`..`+0x9fff` | | zero padding |
+
+> **Erosion note.** `dw4build.py` documents this padding as starting at
+> `+0x0afc` and defines `O_PAD_END = 0xAFC`. That is off by `0x200`: 176 u32
+> from `0xa3c` ends at `0xcfc`. Confirmed empirically against an `op.ps2`
+> synthesised with every power-up slot filled — its last non-zero byte is
+> `0xcf9`, and 278 non-zero bytes lie beyond `0xafc`. The constant is unused
+> (the builder starts from a zeroed buffer), so nothing is currently broken,
+> but `offsets.rs` must use `0xcfc`.
 
 The authoritative field semantics and their RE provenance are documented in
 `Decomp/DW4/pi-re/ghidra-projects/dw4/docs/08-save-format.md`; this table is the

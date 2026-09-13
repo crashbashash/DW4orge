@@ -25,6 +25,7 @@ HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 OUT = REPO / "crates/dw4core/tests/fixtures/mcd001"
 CAT_OUT = REPO / "crates/dw4core/tests/fixtures/catalogue"
+FLAG_OUT = REPO / "crates/dw4core/tests/fixtures/flags"
 
 # The real card, and the save inside it, as expected.json's provenance records.
 CARD = "memcards/Mcd001.ps2"
@@ -153,6 +154,99 @@ def dump_catalogue(d, out: Path) -> None:
     )
 
 
+def _gui_tables(editor: Path) -> dict:
+    """Pull the GUI's mirror and preset tables out of its source.
+
+    `save_editor_gui` imports tkinter at module scope, which is frequently
+    absent (it is on this machine), so the module cannot be imported. The tables
+    are plain literals, so parse the file and execute only the assignments we
+    need. This is deliberately narrow: it extracts named constants, not code.
+    """
+    import ast  # noqa: PLC0415
+
+    src = (editor / "save_editor_gui.py").read_text()
+    tree = ast.parse(src)
+    wanted = {
+        "_story_preset",
+        "STORY_PRESETS",
+        "FLAG_MIRRORS",
+        "FOLDER_MIRRORS",
+        "BOSS_LABELS",
+        "CHAPTER_LABELS",
+        "INTRO_LABELS",
+        "QUEST_LABELS",
+        "LOBBY_LABELS",
+        "FOLDER_LABELS",
+    }
+
+    def names_of(node):
+        if isinstance(node, ast.Assign):
+            return {t.id for t in node.targets if isinstance(t, ast.Name)}
+        return {getattr(node, "name", "")}
+
+    keep = [n for n in tree.body if names_of(n) & wanted]
+    found = {}
+    exec(  # noqa: S102
+        compile(ast.Module(body=keep, type_ignores=[]), "<gui-subset>", "exec"),
+        found,
+    )
+    return found
+
+
+def dump_flags(decomp: Path, out: Path) -> None:
+    """Both partial Python mirror tables, and both preset dictionaries."""
+    # Resolved at runtime from the path `import_reference` pushed, so static
+    # tools cannot see it - same as `dw4save` above.
+    import dw4build  # noqa: PLC0415  # type: ignore[import-not-found]
+
+    out.mkdir(parents=True, exist_ok=True)
+    gui = _gui_tables(decomp / "DW4_Save_Editor")
+
+    mirrors = {
+        "gui": {
+            name: {str(k): v for k, v in table.items()}
+            for name, table in gui["FLAG_MIRRORS"].items()
+        },
+        "gui_folders": {
+            name: {str(k): v for k, v in table.items()}
+            for name, table in gui["FOLDER_MIRRORS"].items()
+        },
+        "builder_normal": {str(k): v for k, v in dw4build.NORMAL_FLAG_MIRRORS.items()},
+        "folder_base": {"Normal": 518, "Hard": 530, "Very Hard": 542},
+    }
+    (out / "mirrors.json").write_text(json.dumps(mirrors, indent=1, sort_keys=True) + "\n")
+
+    def preset_map(presets):
+        """Normalise both preset shapes to {name: {flags, folders}}.
+
+        The builder stores `active_flags`/`active_folders` lists; the GUI stores
+        `{(kind, id): 0|1}`, including every label it knows, switched off.
+        """
+        normalised = {}
+        for name, preset in presets.items():
+            if "active_flags" in preset or "active_folders" in preset:
+                flags = sorted(preset.get("active_flags", []))
+                folders = sorted(preset.get("active_folders", []))
+            else:
+                flags = sorted(i for (kind, i), on in preset.items() if kind == "flag" and on)
+                folders = sorted(
+                    i for (kind, i), on in preset.items() if kind == "folder" and on
+                )
+            normalised[name] = {"flags": flags, "folders": folders}
+        return normalised
+
+    presets = {
+        "gui": preset_map(gui["STORY_PRESETS"]),
+        "builder": preset_map(dw4build.STORY_PRESETS),
+    }
+    (out / "presets.json").write_text(json.dumps(presets, indent=1, sort_keys=True) + "\n")
+
+    print(
+        f"wrote {out}/mirrors.json ({len(mirrors['builder_normal'])} builder rows, "
+        f"{sum(len(v) for v in mirrors['gui'].values())} gui rows) and presets.json"
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", default="/workspace/Decomp/DW4")
@@ -189,6 +283,7 @@ def main() -> None:
     assert expected["verify"], "the oracle says the checksum does not verify"
 
     dump_catalogue(d, CAT_OUT)
+    dump_flags(decomp, FLAG_OUT)
 
 
 if __name__ == "__main__":

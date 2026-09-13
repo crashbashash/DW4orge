@@ -368,7 +368,7 @@ pub const FOLDER_LABELS: [&str; 12] = [
     "Cliff Dungeon (W1, Mammothmon ID)",
     "Leomon rescue (W1)",
     "Ophanimon key",
-    "Sand Labrynth (W2, SkullGrey ID)",
+    "Sand Labyrinth (W2, SkullGrey ID)",
     "Ancient Ruins (W2, Scorpio ID)",
     "Gecko Path (W3, Shogun ID)",
     "Vine Tunnel (W3, MRS04 ID)",

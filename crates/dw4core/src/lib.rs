@@ -21,6 +21,7 @@
 //! // to_bytes recomputes both mirrored blocks' checksums.
 //! assert!(SaveData::parse(&save.to_bytes()).unwrap().verify());
 //! ```
+pub mod builder;
 pub mod catalogue;
 pub mod codes;
 pub mod error;
@@ -31,6 +32,7 @@ pub mod offsets;
 pub mod save;
 pub mod species;
 
+pub use builder::{SaveSpec, UNIQUE_DEFAULT, build_block, build_save};
 pub use catalogue::{Item, ItemCatalogue, describe_item_id, get_catalogue, invalid_reason};
 pub use codes::{
     CAP_BIT, CAP_DISK_COUNT, CAP_EXP, CAP_ITEM_BONUS, CAP_ITEM_MODS, CAP_LEVEL, CAP_TECH,

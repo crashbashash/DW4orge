@@ -82,9 +82,15 @@ impl FieldError {
 pub type Warning = FieldError;
 
 use crate::EMPTY;
-use crate::codes::{junk_tier_from_counter, level_threshold};
+use crate::catalogue::{category_label, invalid_reason};
+use crate::codes::{
+    CAP_BIT, CAP_DISK_COUNT, CAP_EXP, CAP_LEVEL, CAP_TECH, CAP_UPCNT, CAP_XDATA, Cap,
+    POWERUP_STATS, SEED_BONUS_MASK, TECHNIQUES, junk_tier_from_counter, level_threshold,
+    upcnt_safe_cap,
+};
 use crate::flags::{Difficulty, detect_difficulty};
-use crate::offsets::{BANK_SLOTS, DEVICE_SLOTS};
+use crate::item::{Category, build_item_id, category_of, split_item_id};
+use crate::offsets::{BANK_SLOTS, DEVICE_SLOTS, FLAG_COUNT, FOLDER_COUNT};
 use crate::save::SaveData;
 use crate::species::Species;
 use std::path::{Path, PathBuf};
@@ -441,6 +447,359 @@ impl Document {
             checksum_ok: self.loaded_checksums_ok,
         }
     }
+
+    /// Check an edit set, returning non-blocking warnings or every blocking
+    /// error.
+    ///
+    /// The Python `collect()` raises on the first problem. Reporting all of them
+    /// is deliberate: the frontend highlights one control per error, and fixing
+    /// fields one round-trip at a time is worse.
+    ///
+    /// # Errors
+    /// A non-empty `Vec<FieldError>` when any edit was rejected. Nothing is
+    /// written in that case.
+    pub fn validate(&self, edits: &EditSet, mode: Mode) -> Result<Vec<Warning>, Vec<FieldError>> {
+        let mut errors = Vec::new();
+        let mut warnings = Vec::new();
+        let adv = mode.is_advanced();
+
+        // Numeric scalars.
+        for (path, label, cap, value, safe_max) in [
+            (
+                "bit",
+                "BIT",
+                CAP_BIT,
+                i64::from(edits.bit),
+                CAP_BIT.normal_max,
+            ),
+            (
+                "xdata",
+                "X-Data",
+                CAP_XDATA,
+                i64::from(edits.xdata),
+                CAP_XDATA.normal_max,
+            ),
+            (
+                "level",
+                "Level",
+                CAP_LEVEL,
+                i64::from(edits.level),
+                CAP_LEVEL.normal_max,
+            ),
+            (
+                "exp",
+                "EXP",
+                CAP_EXP,
+                i64::from(edits.exp),
+                CAP_EXP.normal_max,
+            ),
+            (
+                "bank_bit",
+                "Bank balance",
+                CAP_BIT,
+                i64::from(edits.bank_bit),
+                CAP_BIT.normal_max,
+            ),
+        ] {
+            if let Some(e) = check_cap(path, label, cap, value, mode, safe_max) {
+                errors.push(e);
+            }
+        }
+
+        for (i, v) in edits.tech.iter().enumerate() {
+            if let Some(e) = check_cap(
+                &format!("tech[{i}]"),
+                TECHNIQUES[i],
+                CAP_TECH,
+                i64::from(*v),
+                mode,
+                CAP_TECH.normal_max,
+            ) {
+                errors.push(e);
+            }
+        }
+        for (i, v) in edits.upcnt.iter().enumerate() {
+            if let Some(e) = check_cap(
+                &format!("upcnt[{i}]"),
+                POWERUP_STATS[i],
+                CAP_UPCNT,
+                i64::from(*v),
+                mode,
+                upcnt_safe_cap(i),
+            ) {
+                errors.push(e);
+            }
+        }
+
+        // Disk counts. Unreachable while the field is `u16`, which cannot
+        // exceed the cap; kept so widening the field cannot silently lose the
+        // check.
+        for (i, c) in edits.disks.iter().enumerate() {
+            if let Some(e) = check_cap(
+                &format!("disks[{i}]"),
+                &format!("Disk {i}"),
+                CAP_DISK_COUNT,
+                i64::from(*c),
+                mode,
+                CAP_DISK_COUNT.normal_max,
+            ) {
+                errors.push(e);
+            }
+        }
+
+        // Item slots.
+        for (i, id) in edits.device.iter().enumerate() {
+            validate_item(*id, &format!("device[{i}]"), mode, &mut errors);
+        }
+        for (i, id) in edits.bank_items.iter().enumerate() {
+            validate_item(*id, &format!("bank_items[{i}]"), mode, &mut errors);
+        }
+
+        // Mod sockets: resolution is what can fail, so run it once and reuse.
+        let resolved = match resolve_mods(edits) {
+            Ok(r) => Some(r),
+            Err(e) => {
+                errors.push(e);
+                None
+            }
+        };
+
+        // Equipment index range.
+        for (label, index) in equip_indices(edits, resolved.as_ref()) {
+            if index != EMPTY && (index as usize) >= DEVICE_SLOTS && !adv {
+                errors.push(FieldError::error(
+                    format!("equip.{label}"),
+                    format!("slot {index} out of range 0..{}", DEVICE_SLOTS - 1),
+                ));
+            }
+        }
+
+        // Category sanity. Warnings only, and Normal mode only, matching the
+        // Python "these may behave oddly in-game" behaviour.
+        if !adv && let Some(r) = &resolved {
+            for (label, index) in equip_indices(edits, Some(r)) {
+                if index == EMPTY || (index as usize) >= DEVICE_SLOTS {
+                    continue;
+                }
+                let fid = r.device[index as usize];
+                if fid == EMPTY {
+                    continue;
+                }
+                let Some((_, want)) = EQUIP_CATEGORIES.iter().find(|(l, _)| *l == label) else {
+                    continue;
+                };
+                let cat = category_of(fid);
+                if !want.contains(&cat) {
+                    warnings.push(FieldError::warning(
+                        format!("equip.{label}"),
+                        format!(
+                            "{label} points at a {} (expected {})",
+                            category_label(cat.byte()),
+                            want.iter()
+                                .map(|c| category_label(c.byte()))
+                                .collect::<Vec<_>>()
+                                .join("/")
+                        ),
+                    ));
+                }
+            }
+        }
+
+        // Story index range.
+        for edit in &edits.story {
+            let (kind, limit) = match edit.kind {
+                StoryKind::Flag => ("flag", FLAG_COUNT),
+                StoryKind::Folder => ("folder", FOLDER_COUNT),
+            };
+            if (edit.index as usize) >= limit {
+                errors.push(FieldError::error(
+                    format!("story.{kind}[{}]", edit.index),
+                    format!(
+                        "{kind} index {} is out of range 0..{}",
+                        edit.index,
+                        limit - 1
+                    ),
+                ));
+            }
+        }
+
+        if errors.is_empty() {
+            Ok(warnings)
+        } else {
+            Err(errors)
+        }
+    }
+}
+
+/// Category an equipment slot requires.
+const WEAPON_CATEGORIES: [Category; 2] = [Category::Weapon, Category::Styled];
+
+/// The equipment slots holding a `device` index, with the categories each
+/// accepts. Used for the mismatch warning.
+const EQUIP_CATEGORIES: [(&str, &[Category]); 15] = [
+    ("weapon0", &WEAPON_CATEGORIES),
+    ("weapon1", &WEAPON_CATEGORIES),
+    ("weapon2", &WEAPON_CATEGORIES),
+    ("armor", &[Category::Core]),
+    ("sub", &[Category::Board]),
+    ("wmod0", &[Category::Mod]),
+    ("wmod1", &[Category::Mod]),
+    ("wmod2", &[Category::Mod]),
+    ("wmod3", &[Category::Mod]),
+    ("wmod4", &[Category::Mod]),
+    ("amod0", &[Category::Mod]),
+    ("amod1", &[Category::Mod]),
+    ("amod2", &[Category::Mod]),
+    ("amod3", &[Category::Mod]),
+    ("amod4", &[Category::Mod]),
+];
+
+/// Check one value against a cap, returning the message the user should see.
+fn check_cap(
+    path: &str,
+    label: &str,
+    cap: Cap,
+    value: i64,
+    mode: Mode,
+    safe_max: i64,
+) -> Option<FieldError> {
+    if mode.is_advanced() {
+        if cap.allows_advanced(value) {
+            return None;
+        }
+        return Some(FieldError::error(
+            path,
+            format!(
+                "{label}: {value} out of range {}..0x{:X} (data-type range)",
+                cap.dtype_min, cap.dtype_max
+            ),
+        ));
+    }
+    if (0..=safe_max).contains(&value) {
+        return None;
+    }
+    Some(FieldError::error(
+        path,
+        format!("{label}: {value} exceeds normal cap {safe_max}. Enable Advanced to go higher."),
+    ))
+}
+
+/// Check one item id: the `+N` bonus, and (Normal mode) whether it is a known
+/// non-crashing id.
+fn validate_item(id: u32, path: &str, mode: Mode, errors: &mut Vec<FieldError>) {
+    if id == EMPTY {
+        return;
+    }
+    let (base_id, seed, _mods) = split_item_id(id);
+    if seed > SEED_BONUS_MASK {
+        errors.push(FieldError::error(
+            format!("{path}.bonus"),
+            format!("+N {seed} out of range 0..{SEED_BONUS_MASK}"),
+        ));
+    }
+    if !mode.is_advanced()
+        && let Some(reason) = invalid_reason(base_id)
+    {
+        errors.push(FieldError::error(
+            path.to_string(),
+            format!("{reason}. Enable Advanced to assign anyway."),
+        ));
+    }
+}
+
+/// A [`EditSet`] with mod sockets resolved to device indices.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ResolvedMods {
+    /// The device folder, with any auto-added chip in place.
+    pub device: [u32; DEVICE_SLOTS],
+    /// Resolved weapon mod sockets.
+    pub wmods: [Option<u32>; 5],
+    /// Resolved armor mod sockets.
+    pub amods: [Option<u32>; 5],
+}
+
+/// Resolve mod sockets to device indices, adding absent chips to the device
+/// folder.
+///
+/// This is `_find_or_add_mod` (`save_editor_gui.py:1011`): reuse a slot already
+/// holding the chip, else fill the first empty slot, else fail. `validate` and
+/// `apply` both call this, so an accepted edit cannot be applied differently
+/// from the way it was checked.
+///
+/// # Errors
+/// [`FieldError`] naming the socket when no device slot is free.
+pub fn resolve_mods(edits: &EditSet) -> Result<ResolvedMods, FieldError> {
+    let mut device = edits.device;
+    let mut wmods = [None; 5];
+    let mut amods = [None; 5];
+
+    for (i, socket) in edits.wmods.iter().enumerate() {
+        if let Some(base_id) = socket {
+            let path = format!("equip.wmod{i}");
+            wmods[i] = Some(find_or_add_mod(&mut device, *base_id, &path)?);
+        }
+    }
+    for (i, socket) in edits.amods.iter().enumerate() {
+        if let Some(base_id) = socket {
+            let path = format!("equip.amod{i}");
+            amods[i] = Some(find_or_add_mod(&mut device, *base_id, &path)?);
+        }
+    }
+
+    Ok(ResolvedMods {
+        device,
+        wmods,
+        amods,
+    })
+}
+
+fn find_or_add_mod(
+    device: &mut [u32; DEVICE_SLOTS],
+    base_id: u32,
+    path: &str,
+) -> Result<u32, FieldError> {
+    for (i, slot) in device.iter().enumerate() {
+        if *slot != EMPTY && (*slot & 0xFFFF) == base_id {
+            return Ok(i as u32);
+        }
+    }
+    for (i, slot) in device.iter_mut().enumerate() {
+        if *slot == EMPTY {
+            *slot = build_item_id(base_id, 0, 0);
+            return Ok(i as u32);
+        }
+    }
+    Err(FieldError::error(
+        path,
+        format!("no free device-folder slot to add the mod chip 0x{base_id:04X}"),
+    ))
+}
+
+/// The `(label, index)` pairs for every equipment slot, using resolved mod
+/// indices when available.
+fn equip_indices(edits: &EditSet, resolved: Option<&ResolvedMods>) -> Vec<(&'static str, u32)> {
+    let mut out = vec![
+        ("weapon0", edits.weapons[0]),
+        ("weapon1", edits.weapons[1]),
+        ("weapon2", edits.weapons[2]),
+        ("armor", edits.armor),
+        ("sub", edits.sub),
+    ];
+    let wmods = resolved.map_or([None; 5], |r| r.wmods);
+    let amods = resolved.map_or([None; 5], |r| r.amods);
+    for (i, m) in wmods.iter().enumerate() {
+        out.push((
+            ["wmod0", "wmod1", "wmod2", "wmod3", "wmod4"][i],
+            m.unwrap_or(EMPTY),
+        ));
+    }
+    for (i, m) in amods.iter().enumerate() {
+        out.push((
+            ["amod0", "amod1", "amod2", "amod3", "amod4"][i],
+            m.unwrap_or(EMPTY),
+        ));
+    }
+    out
 }
 
 #[cfg(test)]
@@ -564,5 +923,171 @@ mod tests {
         assert_eq!(e.bank_bit, v.bank_bit);
         assert_eq!(e.disks, v.disks);
         assert_eq!(e.bank_items, v.bank_items);
+    }
+
+    #[test]
+    fn a_cap_above_the_normal_limit_is_an_error_at_its_own_path() {
+        let doc = fresh_document();
+        let edits = EditSet {
+            bit: 10_000_000,
+            ..Default::default()
+        };
+        let errs = doc.validate(&edits, Mode::Normal).unwrap_err();
+        assert_eq!(errs.len(), 1);
+        assert_eq!(errs[0].path, "bit");
+        assert_eq!(errs[0].severity, Severity::Error);
+    }
+
+    #[test]
+    fn the_same_cap_is_accepted_in_advanced_mode() {
+        let doc = fresh_document();
+        let edits = EditSet {
+            bit: 10_000_000,
+            ..Default::default()
+        };
+        assert!(doc.validate(&edits, Mode::Advanced).is_ok());
+    }
+
+    #[test]
+    fn every_bad_field_is_reported_not_just_the_first() {
+        // The Python collect() raises on the first problem. Reporting all of
+        // them is deliberate: the frontend highlights each path.
+        let doc = fresh_document();
+        let edits = EditSet {
+            bit: 20_000_000,
+            level: 5_000,
+            xdata: 20_000,
+            ..Default::default()
+        };
+        let errs = doc.validate(&edits, Mode::Normal).unwrap_err();
+        let paths: Vec<&str> = errs.iter().map(|e| e.path.as_str()).collect();
+        assert!(paths.contains(&"bit"), "{paths:?}");
+        assert!(paths.contains(&"level"), "{paths:?}");
+        assert!(paths.contains(&"xdata"), "{paths:?}");
+    }
+
+    #[test]
+    fn a_power_up_slot_uses_its_own_cap() {
+        // Slots 0 and 1 are HP/MP max: 99999. Every other slot is 9999.
+        let doc = fresh_document();
+        let ok = EditSet {
+            upcnt: [
+                99_999, 99_999, 9_999, 9_999, 9_999, 9_999, 9_999, 9_999, 9_999, 9_999, 9_999,
+            ],
+            ..Default::default()
+        };
+        assert!(doc.validate(&ok, Mode::Normal).is_ok());
+
+        let bad = EditSet {
+            upcnt: [1, 1, 10_000, 0, 0, 0, 0, 0, 0, 0, 0],
+            ..Default::default()
+        };
+        let errs = doc.validate(&bad, Mode::Normal).unwrap_err();
+        assert_eq!(errs.len(), 1);
+        assert_eq!(errs[0].path, "upcnt[2]");
+    }
+
+    #[test]
+    fn a_technique_may_be_negative_in_advanced_mode_only() {
+        let doc = fresh_document();
+        let neg = EditSet {
+            tech: [0, 0, -1, 0, 0, 0, 0, 0, 0],
+            ..Default::default()
+        };
+        assert_eq!(
+            doc.validate(&neg, Mode::Normal).unwrap_err()[0].path,
+            "tech[2]"
+        );
+        assert!(doc.validate(&neg, Mode::Advanced).is_ok());
+    }
+
+    #[test]
+    fn a_crash_item_is_rejected_in_normal_mode_and_allowed_in_advanced() {
+        let doc = fresh_document();
+        let mut device = [EMPTY; DEVICE_SLOTS];
+        device[0] = 0x0000_051B; // styled weapon: crashes on load
+        let edits = EditSet {
+            device,
+            ..Default::default()
+        };
+        let errs = doc.validate(&edits, Mode::Normal).unwrap_err();
+        assert_eq!(errs[0].path, "device[0]");
+        assert!(doc.validate(&edits, Mode::Advanced).is_ok());
+    }
+
+    #[test]
+    fn a_device_slot_bonus_beyond_eleven_bits_is_an_error_in_both_modes() {
+        let doc = fresh_document();
+        let mut device = [EMPTY; DEVICE_SLOTS];
+        device[2] = crate::item::build_item_id(0x0000, 0x800, 0);
+        let edits = EditSet {
+            device,
+            ..Default::default()
+        };
+        assert_eq!(
+            doc.validate(&edits, Mode::Normal).unwrap_err()[0].path,
+            "device[2].bonus"
+        );
+        assert_eq!(
+            doc.validate(&edits, Mode::Advanced).unwrap_err()[0].path,
+            "device[2].bonus"
+        );
+    }
+
+    #[test]
+    fn an_equipment_category_mismatch_is_a_warning_not_an_error() {
+        let doc = fresh_document();
+        let mut device = [EMPTY; DEVICE_SLOTS];
+        device[0] = 0x0000_0010; // a graded weapon
+        // armor must be a core (0x10); point it at the weapon instead
+        let edits = EditSet {
+            device,
+            armor: 0,
+            ..Default::default()
+        };
+        let warnings = doc.validate(&edits, Mode::Normal).expect("accepted");
+        assert_eq!(warnings.len(), 1);
+        assert_eq!(warnings[0].path, "equip.armor");
+        assert_eq!(warnings[0].severity, Severity::Warning);
+    }
+
+    #[test]
+    fn a_mod_socket_whose_chip_is_absent_is_added_to_the_first_free_slot() {
+        let mut device = [EMPTY; DEVICE_SLOTS];
+        device[5] = 0x0000_0100; // occupy slot 5 so 0 is the first free slot
+        let edits = EditSet {
+            device,
+            wmods: [Some(0x30A0), None, None, None, None],
+            ..Default::default()
+        };
+        let resolved = resolve_mods(&edits).expect("room available");
+        assert_eq!(resolved.wmods[0], Some(0));
+        assert_eq!(resolved.device[0], crate::item::build_item_id(0x30A0, 0, 0));
+    }
+
+    #[test]
+    fn a_mod_socket_reuses_an_existing_chip_rather_than_duplicating_it() {
+        let mut device = [EMPTY; DEVICE_SLOTS];
+        device[7] = crate::item::build_item_id(0x30A0, 3, 2);
+        let edits = EditSet {
+            device,
+            wmods: [Some(0x30A0), None, None, None, None],
+            ..Default::default()
+        };
+        let resolved = resolve_mods(&edits).expect("room available");
+        assert_eq!(resolved.wmods[0], Some(7));
+        assert_eq!(resolved.device[7], crate::item::build_item_id(0x30A0, 3, 2));
+    }
+
+    #[test]
+    fn a_mod_socket_with_no_free_slot_is_an_error() {
+        let edits = EditSet {
+            device: [0x0000_0010; DEVICE_SLOTS],
+            wmods: [Some(0x30A0), None, None, None, None],
+            ..Default::default()
+        };
+        let err = resolve_mods(&edits).unwrap_err();
+        assert_eq!(err.path, "equip.wmod0");
+        assert!(err.message.contains("no free device-folder slot"));
     }
 }

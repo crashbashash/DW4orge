@@ -14,12 +14,18 @@
 //! assert_eq!(save.bit(), 9_999_999);
 //! assert_eq!(save.device(0), dw4core::EMPTY);
 //! ```
+pub mod codes;
 pub mod error;
 pub mod name;
 pub mod offsets;
 pub mod save;
 pub mod species;
 
+pub use codes::{
+    CAP_BIT, CAP_DISK_COUNT, CAP_EXP, CAP_ITEM_BONUS, CAP_ITEM_MODS, CAP_LEVEL, CAP_TECH,
+    CAP_UPCNT, CAP_XDATA, Cap, MAX_LEVEL, POWERUP_STATS, Rarity, TECHNIQUES, color_for_seed,
+    level_from_exp, level_threshold, upcnt_safe_cap,
+};
 pub use error::{Error, Result};
 pub use name::{NAME_CHARS, decode_player_name, encode_player_name};
 pub use save::{SaveData, block_checksum, fix_checksums};

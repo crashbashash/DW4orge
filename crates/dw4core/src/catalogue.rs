@@ -228,6 +228,120 @@ pub fn get_catalogue() -> &'static ItemCatalogue {
     CATALOGUE.get_or_init(ItemCatalogue::load_from_embedded)
 }
 
+use crate::codes::{SEED_BONUS_MASK, color_for_seed};
+use crate::item::{
+    CAT_BOARD, CAT_CORE, CAT_MOD, CAT_MOD_EQUIPPED, CAT_STYLED, CAT_WEAPON, split_item_id,
+};
+
+/// A human label for a raw category byte, for ids outside the catalogue.
+#[must_use]
+pub fn category_label(category: u8) -> String {
+    match category {
+        CAT_WEAPON => "Weapon".to_owned(),
+        CAT_STYLED => "Weapon (styled)".to_owned(),
+        CAT_CORE => "Core (armor)".to_owned(),
+        CAT_BOARD => "Board (sub)".to_owned(),
+        CAT_MOD => "Mod (chip)".to_owned(),
+        other => format!("cat 0x{other:02x}"),
+    }
+}
+
+/// Why a base id is unsafe to write, or `None` if it is fine.
+///
+/// Only catalogue entries are accepted. Everything else is described by the
+/// confirmed glitch ranges, which is what keeps Normal mode from writing an
+/// item that blanks a menu or crashes the game on load.
+#[must_use]
+pub fn invalid_reason(base_id: u32) -> Option<String> {
+    if get_catalogue().get(base_id).is_some() {
+        return None;
+    }
+
+    let category = ((base_id >> 8) & 0xFF) as u8;
+    let low = (base_id & 0xFF) as u8;
+
+    match category {
+        CAT_STYLED => {
+            if (0x15..=0x1A).contains(&low) {
+                return Some("styled weapon: blank item".to_owned());
+            }
+            if (0x1B..=0x3E).contains(&low) {
+                return Some("styled weapon: CRASHES ON LOAD".to_owned());
+            }
+            if low == 0x3F {
+                return Some("styled weapon: blank '0' weapon (cannot hit)".to_owned());
+            }
+        }
+        CAT_CORE => {
+            if (0x20..=0x3F).contains(&low) {
+                return Some("core: blank/crash (0x26 crashes when selected)".to_owned());
+            }
+        }
+        CAT_BOARD => {
+            if (0x2D..=0x35).contains(&low) {
+                return Some("board: crashes opening devices folder".to_owned());
+            }
+            if (0x36..=0x3E).contains(&low) {
+                return Some("board: crash, but STRENGTH shows 9999".to_owned());
+            }
+            if low == 0x3F {
+                return Some("board: crash, but WISDOM shows 9999".to_owned());
+            }
+        }
+        CAT_MOD if low >= 0xB9 => {
+            return Some("mod: blank".to_owned());
+        }
+        CAT_MOD_EQUIPPED => {
+            return Some(
+                "mod: 'equipped' category byte (game-managed, not a real item)".to_owned(),
+            );
+        }
+        _ => {}
+    }
+
+    Some(format!("unknown item id 0x{base_id:04x}"))
+}
+
+/// Render a stored item id for display, valid or not.
+///
+/// A graded catalogue item gets its grade letter; a non-zero seed or mod count
+/// is appended as `(rarity +N, M mods)`.
+#[must_use]
+pub fn describe_item_id(full_id: u32) -> String {
+    if full_id == crate::EMPTY {
+        return "(empty)".to_owned();
+    }
+
+    let (base_id, seed, mod_count) = split_item_id(full_id);
+    let suffix = if seed == 0 && mod_count == 0 {
+        String::new()
+    } else {
+        format!(
+            " ({} +{}, {} mods)",
+            color_for_seed(seed).label(),
+            seed & SEED_BONUS_MASK,
+            mod_count
+        )
+    };
+
+    match get_catalogue().get(base_id) {
+        Some(item) => {
+            let grade = item
+                .grade
+                .map(|g| format!(" {}", GRADE_LETTER[g as usize]))
+                .unwrap_or_default();
+            format!("{}{grade}{suffix}", item.name)
+        }
+        None => {
+            let category = ((base_id >> 8) & 0xFF) as u8;
+            format!(
+                "[invalid] {} 0x{full_id:08x}{suffix}",
+                category_label(category)
+            )
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -395,5 +509,114 @@ mod tests {
         // 185 mods. Task 5 checks this against the oracle's own count; this
         // one fails with a number instead of a fixture mismatch.
         assert_eq!(get_catalogue().len(), 539);
+    }
+
+    #[test]
+    fn a_catalogue_entry_is_never_invalid() {
+        for item in get_catalogue().iter() {
+            assert_eq!(
+                invalid_reason(item.base_id),
+                None,
+                "0x{:04X} ({}) is in the catalogue but reported invalid",
+                item.base_id,
+                item.name
+            );
+        }
+    }
+
+    #[test]
+    fn the_styled_weapon_glitch_ranges_match_the_oracle() {
+        assert_eq!(
+            invalid_reason(0x0515).as_deref(),
+            Some("styled weapon: blank item")
+        );
+        assert_eq!(
+            invalid_reason(0x051A).as_deref(),
+            Some("styled weapon: blank item")
+        );
+        assert_eq!(
+            invalid_reason(0x051B).as_deref(),
+            Some("styled weapon: CRASHES ON LOAD")
+        );
+        assert_eq!(
+            invalid_reason(0x053E).as_deref(),
+            Some("styled weapon: CRASHES ON LOAD")
+        );
+        assert_eq!(
+            invalid_reason(0x053F).as_deref(),
+            Some("styled weapon: blank '0' weapon (cannot hit)")
+        );
+        // 0x0514 is the appraisal weapon and is safe.
+        assert_eq!(invalid_reason(0x0514), None);
+    }
+
+    #[test]
+    fn the_core_board_and_mod_ranges_match_the_oracle() {
+        assert_eq!(
+            invalid_reason(0x1020).as_deref(),
+            Some("core: blank/crash (0x26 crashes when selected)")
+        );
+        assert_eq!(
+            invalid_reason(0x202D).as_deref(),
+            Some("board: crashes opening devices folder")
+        );
+        assert_eq!(
+            invalid_reason(0x2036).as_deref(),
+            Some("board: crash, but STRENGTH shows 9999")
+        );
+        assert_eq!(
+            invalid_reason(0x203F).as_deref(),
+            Some("board: crash, but WISDOM shows 9999")
+        );
+        assert_eq!(invalid_reason(0x30B9).as_deref(), Some("mod: blank"));
+        assert_eq!(
+            invalid_reason(0x3400).as_deref(),
+            Some("mod: 'equipped' category byte (game-managed, not a real item)")
+        );
+        assert_eq!(
+            invalid_reason(0x44FF).as_deref(),
+            Some("unknown item id 0x44ff")
+        );
+    }
+
+    #[test]
+    fn describing_an_empty_slot_says_so() {
+        assert_eq!(describe_item_id(crate::EMPTY), "(empty)");
+    }
+
+    #[test]
+    fn describing_a_plain_weapon_appends_its_grade() {
+        assert_eq!(describe_item_id(0x0000_0000), "Battle Hawk \u{3b1}");
+        assert_eq!(describe_item_id(0x0000_0004), "Battle Hawk \u{3b5}");
+        assert_eq!(describe_item_id(0x0000_00FA), "Judgment");
+    }
+
+    #[test]
+    fn describing_a_decorated_item_shows_rarity_and_mods() {
+        assert_eq!(
+            describe_item_id(0x0005_0000),
+            "Battle Hawk \u{3b1} (white +0, 5 mods)"
+        );
+        // 0x0123_4000 -> base 0x4000, seed 0x012 (18, green), 3 mods.
+        assert_eq!(
+            describe_item_id(0x0123_4000),
+            "[invalid] cat 0x40 0x01234000 (green +18, 3 mods)"
+        );
+    }
+
+    #[test]
+    fn describing_an_unknown_base_id_falls_back_to_its_category_byte() {
+        assert_eq!(
+            describe_item_id(0x0000_0100),
+            "[invalid] cat 0x01 0x00000100"
+        );
+        assert_eq!(
+            describe_item_id(0x0000_4400),
+            "[invalid] cat 0x44 0x00004400"
+        );
+        // The "Weapon" label is unreachable in this branch: category 0x00
+        // covers 0x0000..=0x00FF in full, so every weapon id resolves to a
+        // catalogue entry before the fallback is consulted.
+        assert_eq!(describe_item_id(0x0000_00FF), "Nightmare Lance");
     }
 }

@@ -30,7 +30,7 @@ pub mod offsets;
 pub mod save;
 pub mod species;
 
-pub use catalogue::{Item, ItemCatalogue, get_catalogue};
+pub use catalogue::{Item, ItemCatalogue, describe_item_id, get_catalogue, invalid_reason};
 pub use codes::{
     CAP_BIT, CAP_DISK_COUNT, CAP_EXP, CAP_ITEM_BONUS, CAP_ITEM_MODS, CAP_LEVEL, CAP_TECH,
     CAP_UPCNT, CAP_XDATA, Cap, MAX_LEVEL, POWERUP_STATS, Rarity, TECHNIQUES, color_for_seed,

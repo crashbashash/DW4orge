@@ -768,6 +768,105 @@ fn mirror_story(data: &mut SaveData, edits: &EditSet) {
     data.set_raw_folders(&folders);
 }
 
+use std::fs;
+use std::io::Write as _;
+
+impl Document {
+    /// Read a bare 81,920-byte save file.
+    ///
+    /// Memory-card images are handled by the card backend (next plan); this is
+    /// the raw-file path only.
+    ///
+    /// # Errors
+    /// [`crate::Error::File`] if the file cannot be read, or
+    /// [`crate::Error::BadSaveSize`] if it is the wrong length.
+    pub fn load_raw(path: &Path) -> crate::Result<Self> {
+        let bytes = fs::read(path).map_err(|source| crate::Error::File {
+            path: path.to_path_buf(),
+            source,
+        })?;
+        let mut doc = Self::from_bytes(&bytes)?;
+        doc.path = Some(path.to_path_buf());
+        Ok(doc)
+    }
+
+    /// Write to `path`, atomically, keeping a `.bak` of the previous contents.
+    ///
+    /// The `.bak` is written once - before the first overwrite of an existing
+    /// file - and is never replaced by a later save in the same session, so it
+    /// holds the state the session started from (spec 3.5).
+    ///
+    /// # Errors
+    /// [`crate::Error::File`] if the file cannot be written, or
+    /// [`crate::Error::NoSave`] if the post-write verification read fails.
+    pub fn save(&mut self, path: &Path) -> crate::Result<()> {
+        let bytes = self.data.to_bytes();
+
+        if path.exists() {
+            let bak = backup_path(path);
+            if !bak.exists() {
+                fs::copy(path, &bak).map_err(|source| crate::Error::File {
+                    path: bak.clone(),
+                    source,
+                })?;
+            }
+        }
+
+        write_atomically(path, &bytes)?;
+
+        // Re-read and verify before reporting success.
+        let written = fs::read(path).map_err(|source| crate::Error::File {
+            path: path.to_path_buf(),
+            source,
+        })?;
+        let check = SaveData::parse(&written).map_err(|e| crate::Error::NoSave(e.to_string()))?;
+        if !check.verify() {
+            return Err(crate::Error::NoSave(format!(
+                "{}: checksum verification failed after writing",
+                path.display()
+            )));
+        }
+
+        self.path = Some(path.to_path_buf());
+        self.loaded_checksums_ok = true;
+        Ok(())
+    }
+}
+
+/// `save.raw` -> `save.raw.bak` (the extension is appended, not replaced).
+fn backup_path(path: &Path) -> PathBuf {
+    let mut name = path.file_name().unwrap_or_default().to_os_string();
+    name.push(".bak");
+    path.with_file_name(name)
+}
+
+/// Write via a temp file in the destination directory, then rename.
+fn write_atomically(path: &Path, bytes: &[u8]) -> crate::Result<()> {
+    let dir = path.parent().unwrap_or_else(|| Path::new("."));
+    let tmp = dir.join(format!(
+        ".{}.tmp",
+        path.file_name().unwrap_or_default().to_string_lossy()
+    ));
+    {
+        let mut f = fs::File::create(&tmp).map_err(|source| crate::Error::File {
+            path: tmp.clone(),
+            source,
+        })?;
+        f.write_all(bytes).map_err(|source| crate::Error::File {
+            path: tmp.clone(),
+            source,
+        })?;
+        f.sync_all().map_err(|source| crate::Error::File {
+            path: tmp.clone(),
+            source,
+        })?;
+    }
+    fs::rename(&tmp, path).map_err(|source| crate::Error::File {
+        path: path.to_path_buf(),
+        source,
+    })
+}
+
 /// Category an equipment slot requires.
 const WEAPON_CATEGORIES: [Category; 2] = [Category::Weapon, Category::Styled];
 

@@ -27,6 +27,7 @@ OUT = REPO / "crates/dw4core/tests/fixtures/mcd001"
 CAT_OUT = REPO / "crates/dw4core/tests/fixtures/catalogue"
 FLAG_OUT = REPO / "crates/dw4core/tests/fixtures/flags"
 BUILDER_OUT = REPO / "crates/dw4core/tests/fixtures/builder"
+DOC_OUT = REPO / "crates/dw4core/tests/fixtures/document"
 
 # The real card, and the save inside it, as expected.json's provenance records.
 CARD = "memcards/Mcd001.ps2"
@@ -172,6 +173,8 @@ def _gui_tables(editor: Path) -> dict:
         "STORY_PRESETS",
         "FLAG_MIRRORS",
         "FOLDER_MIRRORS",
+        "FLAG_OFF",
+        "FOLDER_OFF",
         "BOSS_LABELS",
         "CHAPTER_LABELS",
         "INTRO_LABELS",
@@ -293,6 +296,167 @@ def dump_builder(out: Path) -> None:
     )
 
 
+def _story_bytes(gui, raw, story, difficulty):
+    """Reproduce App.apply's story write, including the mirror copies.
+
+    Transcribed from `save_editor_gui.py:1234`. The GUI mirrors through its
+    *partial* tables (10 flags per difficulty), so the scripted edits below are
+    chosen from that intersection - the deliberate full-table divergence is
+    asserted separately on the Rust side.
+    """
+    fl = bytearray(raw[gui["FLAG_OFF"] : gui["FLAG_OFF"] + 1024])
+    fo = bytearray(raw[gui["FOLDER_OFF"] : gui["FOLDER_OFF"] + 12])
+    for (kind, i), val in story.items():
+        (fo if kind == "folder" else fl)[i] = val
+    for (kind, i), val in story.items():
+        if kind == "folder" and 0 <= i <= 9:
+            fl[gui["FOLDER_MIRRORS"][difficulty][i]] = val
+        elif kind == "flag" and i in gui["FLAG_MIRRORS"][difficulty]:
+            fl[gui["FLAG_MIRRORS"][difficulty][i]] = val
+    return fl, fo
+
+
+def dump_document(decomp: Path, out: Path, save_bytes: bytes) -> None:
+    """The Python editor's view, apply and cap table for the document layer.
+
+    `collect()` and `apply()` live in save_editor_gui.py, which imports tkinter
+    at module scope and cannot be imported here. So `apply`'s *byte semantics*
+    come from the real dw4save.SaveData, driven in the order App.apply uses
+    (`save_editor_gui.py:1197`), and its story step is transcribed literally.
+    """
+    import dw4save as d  # noqa: PLC0415  # type: ignore[import-not-found]
+
+    out.mkdir(parents=True, exist_ok=True)
+    gui = _gui_tables(decomp / "DW4_Save_Editor")
+    save = d.SaveData(bytearray(save_bytes))
+
+    # The scripted edit set. Chosen to avoid the deliberate divergences: Normal
+    # difficulty, and story flags that are inside the GUI's partial mirror
+    # table, so Python and the full Rust table agree exactly.
+    sp = 3
+    edits = {
+        "bit": 123_456,
+        "xdata": 789,
+        "junk": 26_000,
+        "level": 42,
+        "exp": d.level_threshold(42),
+        "tech": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        "upcnt": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110],
+        "name": "TST",
+        "species": sp,
+        "device": [
+            d.build_item_id(0x0001, 5, 2) if i == 0 else d.EMPTY
+            for i in range(d.DEVICE_SLOTS)
+        ],
+        "equip": {
+            "weapon0": 0,
+            "weapon1": d.EMPTY,
+            "weapon2": d.EMPTY,
+            "armor": d.EMPTY,
+            "sub": d.EMPTY,
+            "wmod0": d.EMPTY,
+            "wmod1": d.EMPTY,
+            "wmod2": d.EMPTY,
+            "wmod3": d.EMPTY,
+            "wmod4": d.EMPTY,
+            "amod0": d.EMPTY,
+            "amod1": d.EMPTY,
+            "amod2": d.EMPTY,
+            "amod3": d.EMPTY,
+            "amod4": d.EMPTY,
+        },
+        "story": {("flag", 0): 1, ("flag", 1): 1, ("folder", 0): 1},
+        "bank_bit": 55_555,
+        "disks": [i * 3 for i in range(12)],
+        "bank_items": [
+            d.build_item_id(0x3000, 1, 0) if i == 0 else d.EMPTY
+            for i in range(d.BANK_SLOTS)
+        ],
+    }
+
+    # --- apply, in App.apply order -------------------------------------
+    save.digimon_name = "p_" + d.SPECIES_MODEL[sp]
+    save.bit = edits["bit"]
+    save.xdata = edits["xdata"]
+    save.junk_counter = edits["junk"]
+    save.set_level(edits["level"], sp)
+    save.menu_level = edits["level"]
+    save.set_exp(edits["exp"], sp)
+    for i, v in enumerate(edits["tech"]):
+        save.set_skill(i, v, sp)
+    for i, v in enumerate(edits["upcnt"]):
+        save.set_upcnt(i, v, sp)
+    save.player_name = edits["name"]
+    for i, fid in enumerate(edits["device"]):
+        save.set_device(i, fid)
+    for i in range(len(edits["device"]), d.DEVICE_SAVE_SLOTS):
+        save.set_device(i, d.EMPTY)
+    for k, key in enumerate(("weapon0", "weapon1", "weapon2")):
+        save.set_weapon(k, edits["equip"][key])
+    save.set_armor(edits["equip"]["armor"])
+    save.set_sub(edits["equip"]["sub"])
+    for k in range(5):
+        save.set_wmod(k, edits["equip"][f"wmod{k}"])
+    for k in range(5):
+        save.set_amod(k, edits["equip"][f"amod{k}"])
+
+    fl, fo = _story_bytes(gui, save.raw, edits["story"], "Normal")
+    save.set_bytes(gui["FLAG_OFF"], bytes(fl))
+    save.set_bytes(gui["FOLDER_OFF"], bytes(fo))
+
+    save.bank_bit = edits["bank_bit"]
+    for i, c in enumerate(edits["disks"]):
+        save.set_disk_count(i, c)
+    for i, fid in enumerate(edits["bank_items"]):
+        save.set_bank_device(i, fid)
+    save.fix_checksums()
+
+    (out / "applied.raw").write_bytes(bytes(save.raw))
+
+    # --- the real cap table -------------------------------------------
+    verdicts = {}
+    for field in ("bit", "xdata", "level", "exp", "tech", "upcnt"):
+        entry = d.CAPS[field]
+        verdicts[field] = {
+            "normal_max": entry[0],
+            "dtype_max": entry[1],
+            "dtype_min": entry[2] if len(entry) > 2 else 0,
+        }
+    verdicts["upcnt_safe_cap"] = [d.upcnt_safe_cap(i) for i in range(11)]
+    (out / "validate.json").write_text(
+        json.dumps(verdicts, indent=1, sort_keys=True) + "\n"
+    )
+
+    # --- the view, read back through the real getters -------------------
+    view = {
+        "species": save.detect_species(),
+        "name": save.player_name,
+        "bit": save.bit,
+        "xdata": save.xdata,
+        "junk_counter": save.junk_counter,
+        "junk_tier": d.junk_tier_from_counter(save.junk_counter),
+        "level": save.level(sp),
+        "exp": save.exp(sp),
+        "tech": [save.skill(i, sp) for i in range(9)],
+        "upcnt": [save.upcnt(i, sp) for i in range(11)],
+        "device": [save.device(i) for i in range(d.DEVICE_SLOTS)],
+        "weapons": [save.weapon(i) for i in range(3)],
+        "armor": save.armor(),
+        "sub": save.sub(),
+        "wmods": [save.wmod(i) for i in range(5)],
+        "amods": [save.amod(i) for i in range(5)],
+        "bank_bit": save.bank_bit,
+        "disks": [save.disk_count(i) for i in range(12)],
+        "bank_items": [save.bank_device(i) for i in range(d.BANK_SLOTS)],
+    }
+    (out / "view.json").write_text(json.dumps(view, indent=1, sort_keys=True) + "\n")
+
+    print(
+        f"wrote {out}/ with applied.raw ({len(bytes(save.raw))} bytes), "
+        f"view.json and validate.json"
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", default="/workspace/Decomp/DW4")
@@ -314,13 +478,37 @@ def main() -> None:
     (OUT.parent / "PROVENANCE.md").write_text(
         "# Fixture provenance\n\n"
         "Generated by `tools/gen_fixtures.py`. Do not edit by hand.\n\n"
+        "The Python editor in `Decomp/DW4/DW4_Save_Editor` is the only known-good\n"
+        "implementation. These fixtures freeze its behaviour so the Rust core can be\n"
+        "tested without Python and without the read-only `Decomp/` tree.\n\n"
         "| Item | Source |\n| --- | --- |\n"
         f"| `mcd001/save.raw` | `{CARD}` -> `BASLUS-20836savedata/BASLUS-20836savedata`, "
         "extracted with the Python editor's `dw4save.load_any` |\n"
-        "| `mcd001/expected.json` | values read by the same module |\n\n"
-        "The Python editor in `Decomp/DW4/DW4_Save_Editor` is the only known-good\n"
-        "implementation; these fixtures freeze its reading of a real save so the Rust\n"
-        "core can be tested without Python.\n"
+        "| `mcd001/expected.json` | values read by the same module |\n"
+        "| `catalogue/*.json` | `dw4save.load_catalogue`, `describe_item_id` and "
+        "`invalid_reason` |\n"
+        "| `flags/mirrors.json` | `dw4build.NORMAL_FLAG_MIRRORS`, plus the GUI's "
+        "`FLAG_MIRRORS`/`FOLDER_MIRRORS` extracted by `ast` |\n"
+        "| `flags/presets.json` | `dw4build.STORY_PRESETS` and the GUI's, likewise |\n"
+        "| `builder/*.raw` | `dw4build.build_save` |\n"
+        "| `document/applied.raw`, `document/view.json` | `dw4save.SaveData`, driven in "
+        "`App.apply` order |\n"
+        "| `document/validate.json` | `dw4save.CAPS` and `dw4save.upcnt_safe_cap` |\n\n"
+        "## What is executed and what is transcribed\n\n"
+        "`dw4save.py` imports cleanly and is used directly. `save_editor_gui.py`\n"
+        "imports `tkinter` at module scope, which is not installed here, so it can\n"
+        "never be imported. Two consequences:\n\n"
+        "- Its plain-literal tables (`FLAG_MIRRORS`, `STORY_PRESETS`, the labels) are\n"
+        "  extracted by parsing the source with `ast` and executing only the\n"
+        "  assignments, never the code.\n"
+        "- `App.collect()` and `App.apply()` cannot be run at all. `apply`'s byte\n"
+        "  semantics are therefore produced by driving the real\n"
+        "  `dw4save.SaveData` setters in the order `App.apply` uses\n"
+        "  (`save_editor_gui.py:1197`), and its story-mirror step is transcribed\n"
+        "  from `save_editor_gui.py:1234`. The ordering is verified by\n"
+        "  `tests/document_parity.rs`, which requires byte-identical output; the\n"
+        "  scripted edit set is chosen so that the deliberate divergences in\n"
+        "  `docs/save-format.md` section 5 do not apply.\n"
     )
 
     n = len(bytes(save.raw))
@@ -331,6 +519,7 @@ def main() -> None:
     dump_catalogue(d, CAT_OUT)
     dump_flags(decomp, FLAG_OUT)
     dump_builder(BUILDER_OUT)
+    dump_document(decomp, DOC_OUT, bytes(save.raw))
 
 
 if __name__ == "__main__":

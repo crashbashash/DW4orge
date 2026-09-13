@@ -400,6 +400,75 @@ impl SaveData {
             .map(|i| self.bank_device(i))
             .collect()
     }
+
+    // ---- per-species tables ---------------------------------------------
+
+    /// The level stored for `species`.
+    #[must_use]
+    pub fn level(&self, species: Species) -> u32 {
+        self.get_u32(offsets::BASE_LEVEL + species.index() * 4)
+    }
+
+    /// Set the level for `species`.
+    pub fn set_level(&mut self, species: Species, value: u32) {
+        self.set_u32(offsets::BASE_LEVEL + species.index() * 4, value);
+    }
+
+    /// The EXP stored for `species`.
+    #[must_use]
+    pub fn exp(&self, species: Species) -> u32 {
+        self.get_u32(offsets::BASE_EXP + species.index() * 4)
+    }
+
+    /// Set the EXP for `species`.
+    pub fn set_exp(&mut self, species: Species, value: u32) {
+        self.set_u32(offsets::BASE_EXP + species.index() * 4, value);
+    }
+
+    /// The level of technique `slot` for `species`.
+    ///
+    /// **Signed**: the field is an i32, so `0xFFFFFFFF` reads as `-1`.
+    #[must_use]
+    pub fn skill(&self, species: Species, slot: usize) -> i32 {
+        assert!(
+            slot < offsets::TECHNIQUE_SLOTS,
+            "technique slot {slot} out of range"
+        );
+        let at = offsets::BASE_SKILL + (species.index() * offsets::TECHNIQUE_SLOTS + slot) * 4;
+        self.get_u32(at) as i32
+    }
+
+    /// Set the level of technique `slot` for `species`.
+    pub fn set_skill(&mut self, species: Species, slot: usize, value: i32) {
+        assert!(
+            slot < offsets::TECHNIQUE_SLOTS,
+            "technique slot {slot} out of range"
+        );
+        let at = offsets::BASE_SKILL + (species.index() * offsets::TECHNIQUE_SLOTS + slot) * 4;
+        self.set_u32(at, value as u32);
+    }
+
+    /// The power-up value in `slot` for `species`.
+    #[must_use]
+    pub fn upcnt(&self, species: Species, slot: usize) -> u32 {
+        assert!(
+            slot < offsets::POWERUP_SLOTS,
+            "power-up slot {slot} out of range"
+        );
+        self.get_u32(offsets::BASE_UPCNT + (species.index() * offsets::POWERUP_SLOTS + slot) * 4)
+    }
+
+    /// Set the power-up value in `slot` for `species`.
+    pub fn set_upcnt(&mut self, species: Species, slot: usize, value: u32) {
+        assert!(
+            slot < offsets::POWERUP_SLOTS,
+            "power-up slot {slot} out of range"
+        );
+        self.set_u32(
+            offsets::BASE_UPCNT + (species.index() * offsets::POWERUP_SLOTS + slot) * 4,
+            value,
+        );
+    }
 }
 
 /// `Σ u32le(block+4 .. block+0xA000) mod 2³²`.
@@ -658,5 +727,71 @@ mod tests {
         let mut save = SaveData::parse(&real_save()).unwrap();
         save.set_device(29, 0xDEAD_BEEF);
         assert_eq!(save.get_u32_block(offsets::DEVICE + 29 * 4, 1), 0xDEAD_BEEF);
+    }
+
+    #[test]
+    fn per_species_tables_are_indexed_by_species_and_slot() {
+        assert_eq!(offsets::BASE_LEVEL + 16 * 4, offsets::BASE_EXP);
+        assert_eq!(offsets::BASE_EXP + 16 * 4, offsets::BASE_SKILL);
+        assert_eq!(offsets::BASE_SKILL + 16 * 9 * 4, offsets::BASE_UPCNT);
+        assert_eq!(offsets::BASE_UPCNT + 16 * 11 * 4, offsets::PAD_END);
+    }
+
+    #[test]
+    fn a_fresh_save_has_level_one_everywhere() {
+        let save = SaveData::parse(&real_save()).unwrap();
+        for sp in crate::Species::ALL {
+            assert_eq!(save.level(sp), 1, "{sp:?}");
+            assert_eq!(save.exp(sp), 0, "{sp:?}");
+        }
+    }
+
+    #[test]
+    fn writing_one_species_leaves_the_others_alone() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        save.set_level(crate::Species::ImperialdramonPm, 999);
+        save.set_exp(crate::Species::ImperialdramonPm, 1_133_652_152);
+        assert_eq!(save.level(crate::Species::ImperialdramonPm), 999);
+        assert_eq!(save.exp(crate::Species::ImperialdramonPm), 1_133_652_152);
+        assert_eq!(save.level(crate::Species::Dorumon), 1);
+        assert_eq!(save.exp(crate::Species::Dorumon), 0);
+    }
+
+    #[test]
+    fn techniques_round_trip_through_the_signed_type() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        let dorumon = crate::Species::Dorumon;
+        assert_eq!(save.skill(dorumon, 0), 1);
+
+        for (slot, value) in [(0, -1), (1, 9_999), (2, i32::MAX), (3, i32::MIN), (4, 0)] {
+            save.set_skill(dorumon, slot, value);
+            assert_eq!(save.skill(dorumon, slot), value, "slot {slot}");
+        }
+    }
+
+    #[test]
+    fn a_minus_one_technique_is_ffffffff_in_the_block() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        // Agumon is species 0, so its first technique slot is exactly BASE_SKILL.
+        save.set_skill(crate::Species::Agumon, 0, -1);
+        assert_eq!(
+            save.get_u32(offsets::BASE_SKILL),
+            0xFFFF_FFFF,
+            "a signed -1 is stored as all ones"
+        );
+    }
+
+    #[test]
+    fn power_ups_are_indexed_per_species() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        let veemon = crate::Species::Veemon;
+        for slot in 0..11 {
+            assert_eq!(save.upcnt(veemon, slot), 0, "slot {slot}");
+        }
+        save.set_upcnt(veemon, 0, 99_999);
+        save.set_upcnt(veemon, 10, 9_999);
+        assert_eq!(save.upcnt(veemon, 0), 99_999);
+        assert_eq!(save.upcnt(veemon, 10), 9_999);
+        assert_eq!(save.upcnt(crate::Species::Dorumon, 0), 0);
     }
 }

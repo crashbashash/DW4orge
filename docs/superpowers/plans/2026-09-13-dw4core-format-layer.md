@@ -188,12 +188,19 @@ Create `crates/dw4core/src/lib.rs`:
 //! Offsets in this crate are **block-relative** unless a function says
 //! otherwise. All multi-byte values are little-endian.
 //!
-//! ```ignore
+//! ```
 //! # use dw4core::SaveData;
 //! let mut save = SaveData::parse(&vec![0u8; dw4core::SAVE_SIZE]).unwrap();
+//!
 //! save.set_bit(9_999_999);
 //! assert_eq!(save.bit(), 9_999_999);
+//!
+//! // EMPTY (0xFFFFFFFF) is how an unoccupied slot is written.
+//! save.set_device(0, dw4core::EMPTY);
 //! assert_eq!(save.device(0), dw4core::EMPTY);
+//!
+//! // to_bytes recomputes both mirrored blocks' checksums.
+//! assert!(SaveData::parse(&save.to_bytes()).unwrap().verify());
 //! ```
 pub mod error;
 
@@ -1083,9 +1090,9 @@ pub use error::{Error, Result};
 pub use save::{SaveData, block_checksum, fix_checksums};
 ```
 
-Leave the `lib.rs` doctest as ` ```ignore `: it uses `set_bit`, `bit` and
-`device`, which do not exist until Tasks 5 and 10. Task 11 flips it to a live
-doctest once the whole API is present.
+Leave the `lib.rs` doctest as ` ```ignore ` while the accessors are still missing
+(it uses `set_bit`, `bit` and `device`, added in Tasks 5 and 10). Task 11 flips
+it to a live doctest once the whole API is present.
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
@@ -2957,7 +2964,8 @@ Append to the `tests` module in `crates/dw4core/src/save.rs`:
     #[test]
     fn a_minus_one_technique_is_ffffffff_in_the_block() {
         let mut save = SaveData::parse(&real_save()).unwrap();
-        save.set_skill(crate::Species::Dorumon, 0, -1);
+        // Agumon is species 0, so its first technique slot is exactly BASE_SKILL.
+        save.set_skill(crate::Species::Agumon, 0, -1);
         assert_eq!(
             save.get_u32(offsets::BASE_SKILL),
             0xFFFF_FFFF,

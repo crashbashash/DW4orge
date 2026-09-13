@@ -7,12 +7,19 @@
 //! Offsets in this crate are **block-relative** unless a function says
 //! otherwise. All multi-byte values are little-endian.
 //!
-//! ```ignore
+//! ```
 //! # use dw4core::SaveData;
 //! let mut save = SaveData::parse(&vec![0u8; dw4core::SAVE_SIZE]).unwrap();
+//!
 //! save.set_bit(9_999_999);
 //! assert_eq!(save.bit(), 9_999_999);
+//!
+//! // EMPTY (0xFFFFFFFF) is how an unoccupied slot is written.
+//! save.set_device(0, dw4core::EMPTY);
 //! assert_eq!(save.device(0), dw4core::EMPTY);
+//!
+//! // to_bytes recomputes both mirrored blocks' checksums.
+//! assert!(SaveData::parse(&save.to_bytes()).unwrap().verify());
 //! ```
 pub mod codes;
 pub mod error;

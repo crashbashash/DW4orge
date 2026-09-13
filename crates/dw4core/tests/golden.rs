@@ -138,3 +138,35 @@ fn nicknames_agree_with_the_python_item_catalogue() {
         );
     }
 }
+
+#[test]
+fn per_species_tables_match_the_python_oracle() {
+    let e = expected();
+    let save =
+        dw4core::SaveData::parse(&std::fs::read(fixture_dir().join("save.raw")).unwrap()).unwrap();
+    let species = save.detect_species();
+
+    let levels: Vec<u32> = dw4core::Species::ALL
+        .into_iter()
+        .map(|s| save.level(s))
+        .collect();
+    assert_eq!(levels, u32s(&e["base_level"]));
+
+    let exps: Vec<u32> = dw4core::Species::ALL
+        .into_iter()
+        .map(|s| save.exp(s))
+        .collect();
+    assert_eq!(exps, u32s(&e["base_exp"]));
+
+    let skills: Vec<i32> = (0..9).map(|i| save.skill(species, i)).collect();
+    let expected_skills: Vec<i32> = e["base_skill_active"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|x| x.as_i64().unwrap() as i32)
+        .collect();
+    assert_eq!(skills, expected_skills);
+
+    let upcnts: Vec<u32> = (0..11).map(|i| save.upcnt(species, i)).collect();
+    assert_eq!(upcnts, u32s(&e["base_upcnt_active"]));
+}

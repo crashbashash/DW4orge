@@ -88,9 +88,9 @@ use crate::codes::{
     POWERUP_STATS, SEED_BONUS_MASK, TECHNIQUES, junk_tier_from_counter, level_threshold,
     upcnt_safe_cap,
 };
-use crate::flags::{Difficulty, detect_difficulty};
+use crate::flags::{Difficulty, MIRRORED_FOLDERS, MIRRORS, detect_difficulty, folder_mirror};
 use crate::item::{Category, build_item_id, category_of, split_item_id};
-use crate::offsets::{BANK_SLOTS, DEVICE_SLOTS, FLAG_COUNT, FOLDER_COUNT};
+use crate::offsets::{BANK_SLOTS, DEVICE_SAVE_SLOTS, DEVICE_SLOTS, FLAG_COUNT, FOLDER_COUNT};
 use crate::save::SaveData;
 use crate::species::Species;
 use std::path::{Path, PathBuf};
@@ -629,6 +629,143 @@ impl Document {
             Err(errors)
         }
     }
+
+    /// Validate, then apply. Nothing is written unless every edit is accepted.
+    ///
+    /// # Errors
+    /// The same `Vec<FieldError>` as [`Document::validate`]; the save is
+    /// untouched.
+    pub fn apply(&mut self, edits: &EditSet, mode: Mode) -> Result<Vec<Warning>, Vec<FieldError>> {
+        let warnings = self.validate(edits, mode)?;
+        apply_to(&mut self.data, edits);
+        Ok(warnings)
+    }
+}
+
+/// Write an edit set into a save.
+///
+/// The caller must have validated `edits` first. The write order follows
+/// `App.apply` (`save_editor_gui.py:1197`): species and model name, scalars,
+/// the per-species block, the device folder (with mods resolved into it),
+/// equipment, story with mirrors, then bank and disks.
+///
+/// HP/MP/MHP/MMP are never written: the game recomputes them from the loadout.
+fn apply_to(data: &mut SaveData, edits: &EditSet) {
+    let species = edits.species;
+
+    // Species -> DIGIMONNAME, only when it actually differs.
+    let model = species.model_name();
+    if data.digimon_name() != model {
+        data.set_digimon_name(&model);
+    }
+
+    data.set_bit(edits.bit);
+    data.set_xdata(edits.xdata);
+    data.set_junk_counter(edits.junk);
+    data.set_level(species, edits.level);
+    data.set_menu_level(edits.level);
+    data.set_exp(species, edits.exp);
+    for (i, v) in edits.tech.iter().enumerate() {
+        data.set_skill(species, i, *v);
+    }
+    for (i, v) in edits.upcnt.iter().enumerate() {
+        data.set_upcnt(species, i, *v);
+    }
+    data.set_player_name(&edits.name);
+
+    // Device folder, with mod sockets resolved against it. `resolve_mods`
+    // cannot fail here: `validate` already ran the same pass and returned early
+    // on error. Fall back to the un-resolved device list rather than panicking
+    // if that invariant is ever broken.
+    let resolved = resolve_mods(edits).ok();
+    let device = resolved.as_ref().map_or(edits.device, |r| r.device);
+    for (i, fid) in device.iter().enumerate() {
+        data.set_device(i, *fid);
+    }
+    // The reserved slots 30-35 are cleared, as the Python apply() does.
+    for i in DEVICE_SLOTS..DEVICE_SAVE_SLOTS {
+        data.set_device(i, EMPTY);
+    }
+
+    for (i, v) in edits.weapons.iter().enumerate() {
+        data.set_weapon(i, *v);
+    }
+    data.set_armor(edits.armor);
+    data.set_sub(edits.sub);
+    for (i, socket) in resolved
+        .as_ref()
+        .map_or([None; 5], |r| r.wmods)
+        .iter()
+        .enumerate()
+    {
+        data.set_weapon_mod(i, socket.unwrap_or(EMPTY));
+    }
+    for (i, socket) in resolved
+        .as_ref()
+        .map_or([None; 5], |r| r.amods)
+        .iter()
+        .enumerate()
+    {
+        data.set_armor_mod(i, socket.unwrap_or(EMPTY));
+    }
+
+    if !edits.story.is_empty() {
+        mirror_story(data, edits);
+    }
+
+    data.set_bank_bit(edits.bank_bit);
+    for (i, c) in edits.disks.iter().enumerate() {
+        data.set_disk_count(i, *c);
+    }
+    for (i, fid) in edits.bank_items.iter().enumerate() {
+        data.set_bank_device(i, *fid);
+    }
+}
+
+/// Write the story edits into the live flag/folder bytes, then write each edited
+/// bit's difficulty mirror.
+///
+/// The title screen restores active <- mirror on load, so an active-only edit
+/// reverts. Unlike the Python `apply`, which mirrors through the GUI's partial
+/// 10-flag table, this mirrors the **complete** table (spec 5.1) - the
+/// deliberate divergence.
+fn mirror_story(data: &mut SaveData, edits: &EditSet) {
+    let difficulty = match edits.difficulty {
+        DifficultyChoice::Fixed(d) => d,
+        DifficultyChoice::Auto => detect_difficulty(data.raw_flags()),
+    };
+
+    let mut flags = data.raw_flags().to_vec();
+    let mut folders = data.raw_folders().to_vec();
+
+    for edit in &edits.story {
+        let value = u8::from(edit.value);
+        match edit.kind {
+            StoryKind::Flag => flags[edit.index as usize] = value,
+            StoryKind::Folder => folders[edit.index as usize] = value,
+        }
+    }
+
+    for edit in &edits.story {
+        let value = u8::from(edit.value);
+        match edit.kind {
+            StoryKind::Flag => {
+                if let Some(row) = MIRRORS.iter().find(|r| r.active == u32::from(edit.index)) {
+                    flags[row.mirror_for(difficulty) as usize] = value;
+                }
+            }
+            StoryKind::Folder => {
+                if (edit.index as usize) < MIRRORED_FOLDERS
+                    && let Some(target) = folder_mirror(edit.index as usize, difficulty)
+                {
+                    flags[target as usize] = value;
+                }
+            }
+        }
+    }
+
+    data.set_raw_flags(&flags);
+    data.set_raw_folders(&folders);
 }
 
 /// Category an equipment slot requires.
@@ -1089,5 +1226,204 @@ mod tests {
         let err = resolve_mods(&edits).unwrap_err();
         assert_eq!(err.path, "equip.wmod0");
         assert!(err.message.contains("no free device-folder slot"));
+    }
+
+    #[test]
+    fn applying_writes_the_header_fields() {
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            species: Species::Agumon,
+            name: "ABC".to_string(),
+            bit: 12_345,
+            xdata: 678,
+            level: 42,
+            exp: crate::codes::level_threshold(42) as u32,
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        let d = doc.data();
+        assert_eq!(d.bit(), 12_345);
+        assert_eq!(d.xdata(), 678);
+        assert_eq!(d.level(Species::Agumon), 42);
+        assert_eq!(
+            d.menu_level(),
+            42,
+            "menu_level is written from the edited level"
+        );
+        assert_eq!(
+            d.exp(Species::Agumon),
+            crate::codes::level_threshold(42) as u32
+        );
+        assert_eq!(d.player_name(), "ABC");
+        assert_eq!(d.detect_species(), Species::Agumon);
+    }
+
+    #[test]
+    fn changing_species_rewrites_the_model_name() {
+        let mut doc = fresh_document();
+        assert_eq!(doc.data().digimon_name(), "p_dorumon");
+        let edits = EditSet {
+            species: Species::Veemon,
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        assert_eq!(doc.data().digimon_name(), "p_vmon");
+    }
+
+    #[test]
+    fn applying_clears_the_reserved_device_slots() {
+        // The Python apply() forces slots 30-35 (DEVICE_SAVE_SLOTS) to EMPTY.
+        // `SaveSpec::device` is an empty Vec by default, so set the reserved
+        // slot on the built save instead of indexing into the spec.
+        let bytes = crate::builder::build_save(&crate::builder::SaveSpec::default());
+        let mut doc = Document::from_bytes(&bytes).expect("parses");
+        doc.data_mut().set_device(33, 0x0000_0010);
+        assert_eq!(doc.data().device(33), 0x0000_0010);
+
+        assert!(doc.apply(&EditSet::default(), Mode::Normal).is_ok());
+        assert_eq!(doc.data().device(33), EMPTY);
+        assert_eq!(doc.data().device(34), EMPTY);
+        assert_eq!(doc.data().device(35), EMPTY);
+    }
+
+    #[test]
+    fn applying_a_mod_socket_adds_the_chip_and_points_at_it() {
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            wmods: [Some(0x30A0), None, None, None, None],
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        assert_eq!(doc.data().weapon_mod(0), 0, "the chip landed in slot 0");
+        assert_eq!(
+            doc.data().device(0),
+            crate::item::build_item_id(0x30A0, 0, 0)
+        );
+    }
+
+    #[test]
+    fn applying_never_writes_the_derived_stats() {
+        // HP/MP/MHP/MMP are recomputed by the game; the editor must not touch
+        // them. They live at +0x54..+0x63.
+        let mut doc = fresh_document();
+        let before = doc.data().to_bytes();
+        let edits = EditSet {
+            species: Species::Susanoomon,
+            level: 999,
+            bit: 9_999_999,
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        let after = doc.data().to_bytes();
+
+        for block in 0..2 {
+            let base = block * crate::BLOCK;
+            for off in 0x54..0x64 {
+                assert_eq!(
+                    before[base + off],
+                    after[base + off],
+                    "byte +0x{off:02X} of block {block} must not change"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn a_story_edit_writes_the_active_byte_and_its_mirror() {
+        // Flag 0 is in every difficulty's mirror set. Normal mirrors it to 699.
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            story: vec![StoryEdit::flag(0, true)],
+            difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        assert_eq!(doc.data().raw_flags()[0], 1);
+        assert_eq!(doc.data().raw_flags()[699], 1);
+    }
+
+    #[test]
+    fn story_edits_mirror_into_the_chosen_difficulty() {
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            story: vec![StoryEdit::flag(0, true)],
+            difficulty: DifficultyChoice::Fixed(Difficulty::VeryHard),
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        assert_eq!(doc.data().raw_flags()[0], 1);
+        assert_eq!(doc.data().raw_flags()[12], 1, "Very Hard mirror of flag 0");
+        assert_eq!(doc.data().raw_flags()[699], 0, "Normal mirror untouched");
+    }
+
+    #[test]
+    fn a_folder_edit_mirrors_to_its_flag() {
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            story: vec![StoryEdit::folder(2, true)],
+            difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        assert_eq!(doc.data().raw_folders()[2], 1);
+        assert_eq!(doc.data().raw_flags()[518 + 2], 1);
+    }
+
+    #[test]
+    fn a_story_bit_that_is_not_edited_keeps_its_stored_value() {
+        let mut doc = fresh_document();
+        let seed = EditSet {
+            story: vec![StoryEdit::flag(100, true), StoryEdit::flag(200, true)],
+            difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+            ..Default::default()
+        };
+        assert!(doc.apply(&seed, Mode::Normal).is_ok());
+
+        let partial = EditSet {
+            story: vec![StoryEdit::flag(100, false)],
+            difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+            ..Default::default()
+        };
+        assert!(doc.apply(&partial, Mode::Normal).is_ok());
+        assert_eq!(doc.data().raw_flags()[100], 0);
+        assert_eq!(doc.data().raw_flags()[200], 1, "untouched flag survives");
+    }
+
+    #[test]
+    fn apply_rejects_a_bad_edit_set_without_writing_anything() {
+        let mut doc = fresh_document();
+        let before = doc.data().to_bytes();
+        let edits = EditSet {
+            bit: 999_999_999,
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_err());
+        assert_eq!(
+            doc.data().to_bytes(),
+            before,
+            "a rejected edit writes nothing"
+        );
+    }
+
+    #[test]
+    fn both_mirrored_blocks_stay_identical_after_apply() {
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            bit: 5_000,
+            story: vec![StoryEdit::flag(0, true)],
+            difficulty: DifficultyChoice::Auto,
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        let bytes = doc.data().to_bytes();
+        assert_eq!(
+            &bytes[..crate::BLOCK],
+            &bytes[crate::BLOCK..],
+            "the two blocks must not drift"
+        );
+        // `to_bytes` returns a copy with the checksums fixed; `apply` itself
+        // does not recompute them, so verify the bytes that would be written.
+        let written = crate::SaveData::parse(&bytes).expect("reparses");
+        assert!(written.verify());
     }
 }

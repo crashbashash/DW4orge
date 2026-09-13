@@ -26,6 +26,7 @@ REPO = HERE.parent
 OUT = REPO / "crates/dw4core/tests/fixtures/mcd001"
 CAT_OUT = REPO / "crates/dw4core/tests/fixtures/catalogue"
 FLAG_OUT = REPO / "crates/dw4core/tests/fixtures/flags"
+BUILDER_OUT = REPO / "crates/dw4core/tests/fixtures/builder"
 
 # The real card, and the save inside it, as expected.json's provenance records.
 CARD = "memcards/Mcd001.ps2"
@@ -247,6 +248,45 @@ def dump_flags(decomp: Path, out: Path) -> None:
     )
 
 
+def dump_builder(out: Path) -> None:
+    """Saves synthesised by the Python builder, for byte-identity tests."""
+    # Resolved at runtime from the path `import_reference` pushed.
+    import dw4build  # noqa: PLC0415  # type: ignore[import-not-found]
+
+    out.mkdir(parents=True, exist_ok=True)
+
+    def write(name: str, spec: dict) -> None:
+        (out / name).write_bytes(dw4build.build_save(spec))
+
+    # `dw4build.fresh_spec()` leaves `"flags"` as None, and `build_block` does
+    # `bytearray(spec.get("flags", ...))` - because the key *exists* with value
+    # None, the default is not used and `bytearray(None)` raises TypeError. So a
+    # storyless fresh save has to be handed its 1024 zero bytes explicitly,
+    # which is exactly what `SaveSpec::default()` produces on the Rust side.
+    plain = dw4build.fresh_spec()
+    plain["flags"] = b"\x00" * 1024
+    write("fresh_plain.raw", plain)
+    write(
+        "fresh_story.raw",
+        dw4build.spec_with_story("Fresh (tutorial)", species=3, player_name="TST"),
+    )
+    write("maxed.raw", dw4build.spec_maxed("fresh", species=3, name="TST"))
+
+    # story_{i}.raw must line up with STORY_PRESETS[i] on the Rust side, so
+    # print the mapping and let the byte-identity test catch a mismatch.
+    for index, name in enumerate(dw4build.STORY_PRESETS):
+        write(
+            f"story_{index}.raw",
+            dw4build.spec_with_story(name, species=3, player_name="TST"),
+        )
+        print(f"  story_{index}.raw <- {name}")
+
+    print(
+        f"wrote {out}/ with fresh_plain.raw, fresh_story.raw, maxed.raw and "
+        f"{len(dw4build.STORY_PRESETS)} story saves"
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", default="/workspace/Decomp/DW4")
@@ -284,6 +324,7 @@ def main() -> None:
 
     dump_catalogue(d, CAT_OUT)
     dump_flags(decomp, FLAG_OUT)
+    dump_builder(BUILDER_OUT)
 
 
 if __name__ == "__main__":

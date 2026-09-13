@@ -104,6 +104,96 @@ impl SaveData {
             self.raw[at..at + data.len()].copy_from_slice(data);
         }
     }
+
+    // ---- header ----------------------------------------------------------
+
+    /// Save format version. Real saves are `4`.
+    #[must_use]
+    pub fn version(&self) -> u32 {
+        self.get_u32(offsets::VERSION)
+    }
+
+    /// `ISUSE`. Real saves are `1`.
+    #[must_use]
+    pub fn isuse(&self) -> u32 {
+        self.get_u32(offsets::ISUSE)
+    }
+
+    /// `UNIQUE`, a per-save id. **Not** a constant: real saves carry different
+    /// values (e.g. `0x700FFDAC`, `0x6096F82C`).
+    #[must_use]
+    pub fn unique(&self) -> u32 {
+        self.get_u32(offsets::UNIQUE)
+    }
+
+    // ---- character -------------------------------------------------------
+
+    /// `BIT`, the currency.
+    #[must_use]
+    pub fn bit(&self) -> u32 {
+        self.get_u32(offsets::BIT)
+    }
+
+    /// Set `BIT`.
+    pub fn set_bit(&mut self, value: u32) {
+        self.set_u32(offsets::BIT, value);
+    }
+
+    /// The `XDATA` counter.
+    #[must_use]
+    pub fn xdata(&self) -> u32 {
+        self.get_u32(offsets::XDATA)
+    }
+
+    /// Set `XDATA`.
+    pub fn set_xdata(&mut self, value: u32) {
+        self.set_u32(offsets::XDATA, value);
+    }
+
+    /// The menu-snapshot level. The game recomputes this on load.
+    #[must_use]
+    pub fn menu_level(&self) -> u32 {
+        self.get_u32(offsets::MENU_LEVEL)
+    }
+
+    /// Set the menu-snapshot level.
+    pub fn set_menu_level(&mut self, value: u32) {
+        self.set_u32(offsets::MENU_LEVEL, value);
+    }
+
+    /// The cumulative junk-shop donation counter (`BASE_COUNTER[1]`).
+    #[must_use]
+    pub fn junk_counter(&self) -> u32 {
+        self.get_u32(offsets::BASE_COUNTER + offsets::COUNTER_JUNK * 4)
+    }
+
+    /// Set the junk-shop donation counter.
+    pub fn set_junk_counter(&mut self, value: u32) {
+        self.set_u32(offsets::BASE_COUNTER + offsets::COUNTER_JUNK * 4, value);
+    }
+
+    /// The 16 raw bytes of `DIGIMONNAME`.
+    #[must_use]
+    pub fn digimon_name_raw(&self) -> &[u8] {
+        self.get_bytes(offsets::DIGIMON_NAME, 16)
+    }
+
+    /// The ASCII model stem, e.g. `p_dorumon`, up to the first NUL.
+    #[must_use]
+    pub fn digimon_name(&self) -> String {
+        let raw = self.digimon_name_raw();
+        let end = raw.iter().position(|&b| b == 0).unwrap_or(raw.len());
+        String::from_utf8_lossy(&raw[..end]).into_owned()
+    }
+
+    /// Write the model stem, NUL-padded to 16 bytes and truncated if longer.
+    pub fn set_digimon_name(&mut self, name: &str) {
+        let bytes = name.as_bytes();
+        let take = bytes.len().min(16);
+        let mut field = [0u8; 16];
+        field[..take].copy_from_slice(&bytes[..take]);
+        self.set_bytes(offsets::DIGIMON_NAME, &field);
+    }
 }
 
 /// `Σ u32le(block+4 .. block+0xA000) mod 2³²`.
@@ -225,5 +315,52 @@ mod tests {
         let once = raw.clone();
         fix_checksums(&mut raw);
         assert_eq!(raw, once);
+    }
+
+    #[test]
+    fn junk_counter_sits_at_counter_slot_one() {
+        assert_eq!(
+            offsets::BASE_COUNTER + offsets::COUNTER_JUNK * 4,
+            0x730,
+            "the junk counter is BASE_COUNTER[1]"
+        );
+    }
+
+    #[test]
+    fn header_and_currency_round_trip() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        assert_eq!(save.version(), 4);
+        assert_eq!(save.isuse(), 1);
+        // UNIQUE is a per-save id, not a constant. The golden test pins it
+        // against the oracle; here we only require that it is populated.
+        assert_ne!(save.unique(), 0, "a real save carries an id here");
+
+        save.set_bit(1_234);
+        save.set_xdata(5_678);
+        save.set_menu_level(42);
+        save.set_junk_counter(3_956_000);
+        assert_eq!(save.bit(), 1_234);
+        assert_eq!(save.xdata(), 5_678);
+        assert_eq!(save.menu_level(), 42);
+        assert_eq!(save.junk_counter(), 3_956_000);
+    }
+
+    #[test]
+    fn digimon_name_is_nul_terminated_ascii() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        assert_eq!(save.digimon_name(), "p_dorumon");
+
+        save.set_digimon_name("p_impdrapm");
+        assert_eq!(save.digimon_name(), "p_impdrapm");
+        assert_eq!(save.digimon_name_raw().len(), 16);
+        assert_eq!(&save.digimon_name_raw()[10..], &[0u8; 6]);
+    }
+
+    #[test]
+    fn set_digimon_name_truncates_to_sixteen_bytes() {
+        let mut save = SaveData::parse(&real_save()).unwrap();
+        save.set_digimon_name("p_this_stem_is_far_too_long");
+        assert_eq!(save.digimon_name_raw().len(), 16);
+        assert_eq!(save.digimon_name(), "p_this_stem_is_f");
     }
 }

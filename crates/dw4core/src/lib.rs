@@ -21,6 +21,7 @@
 //! // to_bytes recomputes both mirrored blocks' checksums.
 //! assert!(SaveData::parse(&save.to_bytes()).unwrap().verify());
 //! ```
+pub mod catalogue;
 pub mod codes;
 pub mod error;
 pub mod item;

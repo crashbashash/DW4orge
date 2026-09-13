@@ -1,0 +1,35 @@
+DW4orge
+Copyright (C) 2026 DW4orge contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version. See LICENSE.
+
+--------------------------------------------------------------------------------
+Third-party and derived material
+--------------------------------------------------------------------------------
+
+crates/dw4core/data/*.json
+
+    The Digimon World 4 item database: item names, ids, categories, grades and
+    mod-chip family layouts. Vendored verbatim from the reverse-engineering
+    work in Decomp/DW4/DW4_Save_Editor/data/. The names are the game's own
+    strings, extracted from AREA.AFS and the game executable's string table.
+
+crates/dw4core/tests/fixtures/
+
+    Golden test fixtures. fixtures/mcd001/save.raw is an 81,920-byte save
+    extracted from a real PlayStation 2 memory-card image, and
+    mcd001/expected.json is what the Python editor reads from it.
+    fixtures/builder/*.raw are saves synthesised by the Python editor's
+    dw4build.py.
+
+Decomp/ (not part of this repository's build)
+
+    The reverse-engineering artefacts these tables were derived from: Ghidra
+    findings, decoded Lua, save dumps and format documentation for
+    Digimon World 4 (USA, SLUS_208.36).
+
+Digimon World 4 and all related names are trademarks of their respective
+owners. This project is an unaffiliated fan tool and ships no game code.

@@ -16,8 +16,10 @@
 //! ```
 pub mod error;
 pub mod offsets;
+pub mod save;
 
 pub use error::{Error, Result};
+pub use save::{SaveData, block_checksum, fix_checksums};
 
 /// Size of one mirrored save block.
 pub const BLOCK: usize = offsets::BLOCK;

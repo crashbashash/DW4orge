@@ -819,7 +819,6 @@ to build or test the crate."
 
 - Create: `crates/dw4core/src/save.rs`
 - Modify: `crates/dw4core/src/lib.rs` (declare `pub mod save;` and re-export `SaveData`, `block_checksum`, `fix_checksums`)
-- Modify: `crates/dw4core/src/lib.rs` (flip the doctest fence from ` ```ignore ` to ` ``` `)
 - Test: inline `#[cfg(test)] mod tests` in `save.rs`, plus `crates/dw4core/tests/golden.rs`
 
 **Interfaces:**
@@ -1084,7 +1083,9 @@ pub use error::{Error, Result};
 pub use save::{SaveData, block_checksum, fix_checksums};
 ```
 
-Flip the doctest fence from ` ```ignore ` to ` ``` ` so the example now runs.
+Leave the `lib.rs` doctest as ` ```ignore `: it uses `set_bit`, `bit` and
+`device`, which do not exist until Tasks 5 and 10. Task 11 flips it to a live
+doctest once the whole API is present.
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
@@ -3068,7 +3069,13 @@ fn per_species_tables_match_the_python_oracle() {
 }
 ```
 
-- [ ] **Step 5: Write the cross-module property tests**
+- [ ] **Step 5: Activate the `lib.rs` doctest**
+
+Every method the crate-level example uses now exists. Flip the fence from
+` ```ignore ` to ` ``` ` and run `cargo test -p dw4core --doc` to confirm it
+executes and passes.
+
+- [ ] **Step 6: Write the cross-module property tests**
 
 Create `crates/dw4core/tests/properties.rs`:
 
@@ -3161,14 +3168,14 @@ proptest! {
 }
 ```
 
-- [ ] **Step 6: Run the tests to verify they pass**
+- [ ] **Step 7: Run the tests to verify they pass**
 
 Run: `cargo test -p dw4core`
-Expected: PASS — all inline tests, `golden`, `properties`, `smoke` and the doctest.
+Expected: PASS — all inline tests, `golden`, `properties`, `smoke` and the now-live doctest.
 
 If `writing_then_reading_back_preserves_every_other_byte` fails, the mirror invariant is broken: check that no accessor bypasses `set_u32`/`set_bytes`.
 
-- [ ] **Step 7: Run the full verification gate**
+- [ ] **Step 8: Run the full verification gate**
 
 Run:
 
@@ -3178,7 +3185,7 @@ cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings
 
 Expected: all three succeed. Do not commit if any fails.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add crates/dw4core/src/save.rs crates/dw4core/tests

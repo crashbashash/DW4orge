@@ -24,6 +24,7 @@
 pub mod builder;
 pub mod catalogue;
 pub mod codes;
+pub mod document;
 pub mod error;
 pub mod flags;
 pub mod item;

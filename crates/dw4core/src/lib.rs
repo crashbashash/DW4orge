@@ -24,6 +24,7 @@
 pub mod builder;
 pub mod catalogue;
 pub mod codes;
+pub mod document;
 pub mod error;
 pub mod flags;
 pub mod item;
@@ -38,6 +39,9 @@ pub use codes::{
     CAP_BIT, CAP_DISK_COUNT, CAP_EXP, CAP_ITEM_BONUS, CAP_ITEM_MODS, CAP_LEVEL, CAP_TECH,
     CAP_UPCNT, CAP_XDATA, Cap, MAX_LEVEL, POWERUP_STATS, Rarity, TECHNIQUES, color_for_seed,
     level_from_exp, level_threshold, upcnt_safe_cap,
+};
+pub use document::{
+    DifficultyChoice, EditSet, FieldError, Mode, Severity, StoryEdit, StoryKind, Warning,
 };
 pub use error::{Error, Result};
 pub use flags::{

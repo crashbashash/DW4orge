@@ -16,9 +16,10 @@
 //! are strict subsets of ours — both verified against the Python sources.
 
 use crate::offsets;
+use serde::{Deserialize, Serialize};
 
 /// The save's difficulty. Normal is `SYSgetDifficulty() == -1`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 pub enum Difficulty {
     Normal,
     Hard,

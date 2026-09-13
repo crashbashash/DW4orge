@@ -438,9 +438,10 @@ pub enum Difficulty { Normal, Hard, VeryHard }
 
 /// One of the 16 `MODEL_NAME` species. `from_model_stem` maps a `DIGIMONNAME`
 /// value to its index, falling back to `Dorumon`.
-pub enum Species { Agumon, Veemon, Girumon, Dorumon, WereGaruru, Hekabut,
-                   WarGrey, AngelR, Beelzeb, Alpha, BWarGrey, ImpdraFm,
-                   ImpdraPm, MetalGaru, DukeCrim, Susanoo }
+pub enum Species { Agumon, Veemon, Girumon, Dorumon, WereGarurumon,
+                   HerculesKabuterimon, WarGreymon, AngelRimon, Beelzemon,
+                   Alphamon, BlackWarGreymon, ImperialdramonFm,
+                   ImperialdramonPm, MetalGarurumon, DukeCrimson, Susanoomon }
 
 pub enum Severity { Error, Warning }
 

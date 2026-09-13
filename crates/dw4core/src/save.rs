@@ -173,6 +173,42 @@ impl SaveData {
         self.set_u32(offsets::BASE_COUNTER + offsets::COUNTER_JUNK * 4, value);
     }
 
+    // ---- story -----------------------------------------------------------
+
+    /// The raw `BASE_FLAG` bytes (`0x01` = set).
+    #[must_use]
+    pub fn raw_flags(&self) -> &[u8] {
+        self.get_bytes(offsets::BASE_FLAG, offsets::FLAG_COUNT)
+    }
+
+    /// The raw `BASE_FLAGFOLDER` bytes (`0x01` = SET).
+    #[must_use]
+    pub fn raw_folders(&self) -> &[u8] {
+        self.get_bytes(offsets::BASE_FLAG_FOLDER, offsets::FOLDER_COUNT)
+    }
+
+    /// Write the `BASE_FLAG` bytes to both blocks.
+    ///
+    /// # Panics
+    /// If `flags` is not exactly [`offsets::FLAG_COUNT`] long.
+    pub fn set_raw_flags(&mut self, flags: &[u8]) {
+        assert_eq!(flags.len(), offsets::FLAG_COUNT, "BASE_FLAG is 1024 bytes");
+        self.set_bytes(offsets::BASE_FLAG, flags);
+    }
+
+    /// Write the `BASE_FLAGFOLDER` bytes to both blocks.
+    ///
+    /// # Panics
+    /// If `folders` is not exactly [`offsets::FOLDER_COUNT`] long.
+    pub fn set_raw_folders(&mut self, folders: &[u8]) {
+        assert_eq!(
+            folders.len(),
+            offsets::FOLDER_COUNT,
+            "BASE_FLAGFOLDER is 12 bytes"
+        );
+        self.set_bytes(offsets::BASE_FLAG_FOLDER, folders);
+    }
+
     /// The 16 raw bytes of `DIGIMONNAME`.
     #[must_use]
     pub fn digimon_name_raw(&self) -> &[u8] {

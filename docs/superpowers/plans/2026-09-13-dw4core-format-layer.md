@@ -3298,3 +3298,34 @@ Known deviations from the spec's illustrative signatures, both deliberate and no
 **5. Out-of-scope confirmation**
 
 No task writes into `Decomp/`, and `tools/gen_fixtures.py` opens it read-only. Nothing in this plan parses the item JSON, implements a memory card, exposes `SaveView`, or touches Tauri or the frontend.
+
+---
+
+## Execution notes (2026-09-13)
+
+All 11 tasks landed on branch `feat/dw4core-format-layer`. Final state: 85 tests
+passing (67 unit, 9 golden, 7 property, 1 smoke, 1 doctest), `cargo fmt --check`
+clean, `cargo clippy --all-targets -- -D warnings` clean.
+
+Seven defects in this plan surfaced only when the code was actually compiled and
+run. Each is fixed inline above; recorded here so the next plan does not repeat
+them.
+
+| # | Task | Defect | Fix |
+| --- | --- | --- | --- |
+| 1 | 1 | `lib.rs` declared `pub mod offsets;` and derived `BLOCK` from it, but `offsets.rs` is not created until Task 2, so Task 1 could not compile | Task 1 defines `BLOCK` locally; Task 2 gained an explicit wiring step |
+| 2 | 4 | The crate-level doctest uses `set_bit`/`bit`/`device`, which do not exist until Tasks 5 and 10 | Kept ` ```ignore ` until Task 11, which activates it |
+| 3 | 4 | `FIELDS` laid out one field per line is not `rustfmt`-clean | `#[rustfmt::skip]`, because the table *is* the format documentation |
+| 4 | 9 | `category_of(0x03FF) == Weapon` — but `0x03FF`'s category byte is `0x03`, not `0x00`; graded weapons span `0x0000..=0x00FF` | Test uses `0x00FF`, plus an explicit `Unknown(0x03)` case |
+| 5 | 10 | The golden test for `armor` derived it from the `armor_mod` array for no reason | Reads the `armor` field directly |
+| 6 | 11 | `a_minus_one_technique_is_ffffffff_in_the_block` wrote Dorumon's (species 3) technique but read `BASE_SKILL`, which is Agumon's row | Writes species 0, so the offset read is the offset named |
+| 7 | 11 | The doctest asserted `device(0) == EMPTY` on a zeroed save, where `device(0)` is `0` | Writes `EMPTY` and reads it back; also shows `to_bytes` repairing checksums |
+
+The common thread in 2 and 4–7: assertions about *values* were written from
+reasoning rather than from a run. Three of them (`0x03FF`, the species row, the
+zeroed `device`) were arithmetically checkable by hand and were still wrong.
+
+Nothing about the format itself changed during execution: every offset, the
+`0xCFC` padding boundary, the checksum, the fullwidth name encoding and the
+level curve all held up against the real card.
+

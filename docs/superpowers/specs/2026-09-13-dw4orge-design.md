@@ -24,7 +24,7 @@ build or runtime dependency.
 #### In scope
 
 - Feature parity with the Python editor: character, device folder, equipment,
-  disks, story flags/folders, bank, raw edits, and from-scratch save synthesis.
+  disks, story flags/folders, bank, and from-scratch save synthesis.
 - `.ps2` memory-card images (read and in-place write) and raw 81920-byte saves.
 - Normal (safe) and Advanced (guard-rails off) editing modes.
 - A headless CLI over the same core library.
@@ -34,8 +34,10 @@ build or runtime dependency.
 
 - Exposing RE data the Python editor never surfaced (no flag-xref browser, no
   enemy/item database browser, no Lua tooling).
-- Save diffing, batch generation, a struct inspector, or hex editing of
-  anything other than the 0xA000 save block through the existing raw-edit path.
+- Save diffing, batch generation, struct or hex inspection, and raw offset
+  editing. Raw offset editing existed in the Python tool purely as a
+  development aid while the format was being reverse-engineered, and is
+  deliberately not carried over.
 - Editing fields the game recomputes on load (HP/MP and all derived stats).
 - Any modification of the `Decomp/` tree.
 
@@ -135,7 +137,7 @@ Rust owns the file; TypeScript owns the draft.
 ### 3.4 IPC surface
 
 `open_save`, `new_save`, `get_view`, `validate_edits`, `save`, `save_as`,
-`export_raw`, `app_info`.
+`app_info`.
 
 All payload types derive `serde::Serialize`/`Deserialize` and `ts_rs::TS`. A
 Rust test regenerates the `.ts` bindings and fails if the checked-in output
@@ -312,11 +314,11 @@ result is shown as a badge and can be overridden in the UI.
 
 ---
 
-## 5. Correcting the Python implementation
+## 5. Deliberate divergences from the Python implementation
 
-The Python editor is the only known-good implementation, but it contains three
-internal inconsistencies. DW4orge deliberately resolves all three, and the
-divergence is recorded here and in the README.
+The Python editor is the only known-good implementation. DW4orge resolves
+three internal inconsistencies in it and drops one feature, all deliberately;
+the divergence is recorded here and in the README.
 
 1. **Mirror table.** `dw4build.NORMAL_FLAG_MIRRORS` covers ~30 flags;
    `save_editor_gui.FLAG_MIRRORS` covers 8 and omits 18/19, 88–97, 319–331,
@@ -345,6 +347,11 @@ divergence is recorded here and in the README.
    always writes Normal mirrors, silently locking new saves to Normal. DW4orge
    adds a difficulty selector to New Save and writes the matching mirror set,
    defaulting to Normal.
+4. **Raw offset editing is dropped.** The Python tool's advanced "Raw edits"
+   tab accepted free-form `offset = value` pairs (u32 or `:u8`) against the
+   block. It existed as a development aid while the block layout was still
+   being mapped and is not carried over (see §1). Advanced **mode** remains: it
+   still unlocks glitch/crash item IDs and values above the in-game caps.
 
 Everything else is intended to be behaviourally identical to the Python editor.
 
@@ -402,7 +409,6 @@ impl Document {
     pub fn validate(&self, edits: &EditSet, mode: Mode) -> Result<Vec<Warning>, Vec<FieldError>>;
     pub fn apply(&mut self, edits: &EditSet, mode: Mode) -> Result<Vec<Warning>, Vec<FieldError>>;
     pub fn save(&mut self, path: &Path) -> Result<()>;
-    pub fn export_raw(&self, path: &Path) -> Result<()>;
 }
 
 pub enum Mode { Normal, Advanced }
@@ -494,7 +500,7 @@ and story-preset composition.
 
 - Top bar: open, save, save as, dirty indicator, Normal↔Advanced toggle,
   light/dark toggle (defaults to the OS preference).
-- Left sidebar: Character, Items, Equipment, Disks, Story, Bank, Advanced.
+- Left sidebar: Character, Items, Equipment, Disks, Story, Bank.
 - Summary card: species, player name, level, BIT, X-Data, junk tier, detected
   difficulty with override, and checksum OK/mismatch.
 - Status bar: open file path, last write result, error count.
@@ -511,7 +517,6 @@ and story-preset composition.
 | Disks | 12 owned counts, 0–65535 |
 | Story | difficulty selector with detected badge, preset dropdown, grouped flag/folder checkboxes (intro, chapters, bosses, quests, lobby, folders) and a live mirror preview |
 | Bank | balance plus 96 slots, reusing the Items row widget |
-| Advanced | raw `offset = value` (`:u8` suffix supported) editor plus a read-only hex view of the 0xA000 block with jump-to-offset |
 
 New Save is a dialog (species, name, story preset, difficulty). Destructive and
 unsaved-changes actions use confirm dialogs; validation failures surface both
@@ -609,8 +614,8 @@ and records that `crates/dw4core/data/*.json` is vendored verbatim from
 8. **Tauri shell** — commands, state, capabilities, error mapping, file
    dialogs, `ts-rs` bindings.
 9. **Frontend shell** — layout, theming, draft store, undo/redo, IPC layer.
-10. **Frontend sections** — Character, Items, Equipment, Disks, Story, Bank,
-    Advanced; New Save dialog; confirm dialogs.
+10. **Frontend sections** — Character, Items, Equipment, Disks, Story, Bank;
+    New Save dialog; confirm dialogs.
 11. **Polish** — keyboard shortcuts, inline validation, empty/error states,
     accessibility pass.
 12. **Release** — icons, README, NOTICE, `release.yml`, first tagged build for

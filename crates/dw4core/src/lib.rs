@@ -24,6 +24,7 @@
 pub mod catalogue;
 pub mod codes;
 pub mod error;
+pub mod flags;
 pub mod item;
 pub mod name;
 pub mod offsets;
@@ -37,6 +38,7 @@ pub use codes::{
     level_from_exp, level_threshold, upcnt_safe_cap,
 };
 pub use error::{Error, Result};
+pub use flags::{Difficulty, Mirror, detect_difficulty, folder_mirror, mirror_of};
 pub use item::{Category, build_item_id, category_of, is_empty, split_item_id};
 pub use name::{NAME_CHARS, decode_player_name, encode_player_name};
 pub use save::{SaveData, block_checksum, fix_checksums};

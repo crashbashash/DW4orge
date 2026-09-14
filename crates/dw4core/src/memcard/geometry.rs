@@ -237,8 +237,7 @@ impl Geometry {
         absolute as usize * self.pages_per_cluster * self.raw_page_size
     }
 
-    /// Map an offset within a cluster's *data* to an offset in the image.
-    ///
+    /// Map an offset within a cluster's *data* to an offset in the image.    ///
     /// A cluster's data is `pages_per_cluster` page-sized runs separated by
     /// spare areas, so offset 512 within a cluster is **not** 512 bytes into
     /// the image: it is one whole raw page further on. Treating a cluster as a
@@ -255,6 +254,12 @@ impl Geometry {
     #[must_use]
     pub fn is_data_cluster(&self, relative: u32) -> bool {
         relative < self.alloc_end
+    }
+
+    /// The first absolute page of a **relative** (data-area) cluster.
+    #[must_use]
+    pub fn cluster_first_page(&self, relative: u32) -> usize {
+        (self.alloc_offset + relative) as usize * self.pages_per_cluster
     }
 
     /// Read one cluster's **data** (no spare area) out of `image`.

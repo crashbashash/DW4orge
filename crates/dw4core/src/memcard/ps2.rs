@@ -193,4 +193,86 @@ impl Ps2Memcard {
 
         Ok(out)
     }
+
+    /// Write `data` over `dir`/`file`, in place.
+    ///
+    /// Only the clusters the file already occupies are touched; every other
+    /// byte of the image is left alone. Each written page gets a freshly
+    /// computed ECC and zeroed trailing spare bytes, which reproduces the
+    /// original image exactly when the content is unchanged.
+    ///
+    /// The save is a fixed 81,920 bytes, so its chain is always long enough.
+    /// A longer write is refused rather than allowed to run off the chain.
+    ///
+    /// # Errors
+    /// [`Error::BadCard`] if the chain is too short for `data`.
+    pub fn write_save(&mut self, dir: &str, file: &str, data: &[u8]) -> Result<(), Error> {
+        let located = self.locate(dir, file)?;
+
+        let needed = data.len().div_ceil(self.geometry.cluster_size).max(1);
+        if located.chain.len() < needed {
+            return Err(Error::BadCard(format!(
+                "{dir}/{file}: {} bytes need {needed} clusters but the chain has {}",
+                data.len(),
+                located.chain.len()
+            )));
+        }
+
+        let mut written = 0usize;
+        for cluster in &located.chain {
+            if written >= data.len() {
+                break;
+            }
+            let take = (data.len() - written).min(self.geometry.cluster_size);
+            self.write_cluster(*cluster, &data[written..written + take]);
+            written += take;
+        }
+
+        Ok(())
+    }
+
+    /// Write one data-area cluster, recomputing each page's ECC.
+    fn write_cluster(&mut self, relative: u32, data: &[u8]) {
+        // `relative`, not absolute: the data area starts at `alloc_offset`, so
+        // treating this as an absolute cluster writes into the FAT region.
+        let first_page = self.geometry.cluster_first_page(relative);
+        let page_size = self.geometry.page_size;
+
+        for i in 0..self.geometry.pages_per_cluster {
+            let start = i * page_size;
+            if start >= data.len() {
+                break;
+            }
+            let end = (start + page_size).min(data.len());
+            self.write_page(first_page + i, &data[start..end]);
+        }
+    }
+
+    /// Write one page's data and spare area, in place.
+    ///
+    /// A partial page keeps the bytes after `data`, rather than zeroing them:
+    /// only the save's own bytes should ever change.
+    fn write_page(&mut self, page: usize, data: &[u8]) {
+        let at = self.geometry.page_offset(page);
+        let page_size = self.geometry.page_size;
+
+        let mut buf = self.image[at..at + page_size].to_vec();
+        buf[..data.len()].copy_from_slice(data);
+        self.image[at..at + page_size].copy_from_slice(&buf);
+
+        if !self.geometry.has_spare() {
+            return;
+        }
+
+        let spare = crate::memcard::ecc::page_spare(&buf);
+        let spare_at = at + page_size;
+        self.image[spare_at..spare_at + spare.len()].copy_from_slice(&spare);
+        // Zero the rest of the spare area, as the reference does. On a real
+        // card those bytes are already zero, which is what makes an unchanged
+        // rewrite reproduce the image byte for byte.
+        let raw_end = at + self.geometry.raw_page_size;
+        for b in &mut self.image[spare_at + spare.len()..raw_end] {
+            *b = 0;
+        }
+    }
 }

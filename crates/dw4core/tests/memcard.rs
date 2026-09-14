@@ -6,6 +6,17 @@
 //! to the real card, so these tests run against the real thing.
 mod common;
 
+/// The first index at which two byte slices differ, if any.
+///
+/// Assertions on the whole image must not print it: a failure here would dump
+/// 8.6 MB into the test log and bury the actual message.
+fn first_difference(a: &[u8], b: &[u8]) -> Option<usize> {
+    if a.len() != b.len() {
+        return Some(a.len().min(b.len()));
+    }
+    a.iter().zip(b).position(|(x, y)| x != y)
+}
+
 #[test]
 fn the_fixture_rebuilds_the_real_card() {
     let card = common::memcard_fixture();
@@ -333,4 +344,126 @@ fn the_other_files_in_the_save_directory_are_readable() {
     assert_eq!(icon.len(), 34_156);
     let sys = mem.read_save(SAVE_DIR, "icon.sys").expect("reads");
     assert_eq!(sys.len(), 964);
+}
+
+#[test]
+fn rewriting_the_same_save_leaves_the_card_byte_identical() {
+    // The strongest write test available without hardware: read, write the
+    // identical bytes back, and require all 8.6 MB to be unchanged. This is
+    // what proves the ECC and spare-area handling reproduce the original.
+    let card = common::memcard_fixture();
+    let mut mem = Ps2Memcard::from_image(card.clone()).expect("opens");
+    let save = mem.read_save(SAVE_DIR, SAVE_FILE).expect("reads");
+    mem.write_save(SAVE_DIR, SAVE_FILE, &save).expect("writes");
+    if let Some(at) = first_difference(mem.image(), &card) {
+        panic!(
+            "an unchanged rewrite altered the card at 0x{at:X} (page {}): {} vs {}",
+            at / common::CARD_PAGE_SIZE,
+            mem.image()[at],
+            card[at]
+        );
+    }
+}
+
+#[test]
+fn a_modified_save_writes_and_reads_back() {
+    let card = common::memcard_fixture();
+    let mut mem = Ps2Memcard::from_image(card).expect("opens");
+
+    let mut save = mem.read_save(SAVE_DIR, SAVE_FILE).expect("reads");
+    save[0x68] ^= 0xFF; // the BIT field, to be sure the bytes moved
+    mem.write_save(SAVE_DIR, SAVE_FILE, &save).expect("writes");
+
+    let back = Ps2Memcard::from_image(mem.image().to_vec())
+        .expect("reopens")
+        .read_save(SAVE_DIR, SAVE_FILE)
+        .expect("re-reads");
+    assert_eq!(back, save);
+}
+
+#[test]
+fn writing_the_save_disturbs_nothing_outside_its_own_clusters() {
+    let card = common::memcard_fixture();
+    let mut mem = Ps2Memcard::from_image(card.clone()).expect("opens");
+    let located = mem.locate(SAVE_DIR, SAVE_FILE).expect("found");
+
+    // Every page holding the save's own clusters.
+    let geometry = *mem.geometry();
+    let mut own_pages = std::collections::HashSet::new();
+    for cluster in &located.chain {
+        let absolute = geometry.alloc_offset + cluster;
+        let first = absolute as usize * geometry.pages_per_cluster;
+        for p in 0..geometry.pages_per_cluster {
+            own_pages.insert(first + p);
+        }
+    }
+
+    let mut save = mem.read_save(SAVE_DIR, SAVE_FILE).expect("reads");
+    save[0x68] ^= 0xFF;
+    mem.write_save(SAVE_DIR, SAVE_FILE, &save).expect("writes");
+
+    let page = geometry.raw_page_size;
+    let mut checked = 0usize;
+    for n in 0..card.len() / page {
+        if own_pages.contains(&n) {
+            continue;
+        }
+        if let Some(at) = first_difference(
+            &card[n * page..(n + 1) * page],
+            &mem.image()[n * page..(n + 1) * page],
+        ) {
+            panic!(
+                "page {n} is outside the save but changed at +0x{at:X}: {} vs {}",
+                card[n * page + at],
+                mem.image()[n * page + at]
+            );
+        }
+        checked += 1;
+    }
+    assert_eq!(
+        checked,
+        16_384 - own_pages.len(),
+        "every other page checked"
+    );
+}
+
+#[test]
+fn a_save_that_does_not_fit_the_chain_is_refused() {
+    let card = common::memcard_fixture();
+    let mut mem = Ps2Memcard::from_image(card.clone()).expect("opens");
+    // One cluster longer than the file's 80-cluster chain.
+    let too_big = vec![0u8; 81 * 1024];
+    let err = mem.write_save(SAVE_DIR, SAVE_FILE, &too_big).unwrap_err();
+    assert!(matches!(err, dw4core::Error::BadCard(_)), "{err:?}");
+    if let Some(at) = first_difference(mem.image(), &card) {
+        panic!("a refused write changed the card at 0x{at:X}");
+    }
+}
+
+#[test]
+fn the_written_pages_carry_valid_ecc() {
+    let card = common::memcard_fixture();
+    let mut mem = Ps2Memcard::from_image(card).expect("opens");
+    let located = mem.locate(SAVE_DIR, SAVE_FILE).expect("found");
+
+    let mut save = mem.read_save(SAVE_DIR, SAVE_FILE).expect("reads");
+    save[0x10] = b'X'; // change the model name, so ECC must change
+    mem.write_save(SAVE_DIR, SAVE_FILE, &save).expect("writes");
+
+    let geometry = *mem.geometry();
+    for cluster in &located.chain {
+        let absolute = geometry.alloc_offset + cluster;
+        let first = absolute as usize * geometry.pages_per_cluster;
+        for p in 0..geometry.pages_per_cluster {
+            let at = geometry.page_offset(first + p);
+            let data = &mem.image()[at..at + geometry.page_size];
+            let spare = &mem.image()[at + geometry.page_size..at + geometry.raw_page_size];
+            assert_eq!(
+                dw4core::memcard::page_spare(data),
+                spare,
+                "page {} of a rewritten save must carry matching ECC",
+                first + p
+            );
+        }
+    }
 }

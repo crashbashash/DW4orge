@@ -150,6 +150,7 @@ pinned by a Vitest test whose vectors come from the Rust tests.
 | `story.ts` | group sizes, folder-mirror bases, preset application, mirror preview | `flags.rs`, `document.rs` |
 | `mods.ts` | `find_or_add_mod` / `resolve_mods` preview | `document.rs` |
 | `techniques.ts` | the nine `TECHNIQUES` names | `codes.rs` |
+| `disks.ts` | the twelve `DISKFOLDER` names | `save_editor_gui.DISK_LABELS`, `FLAG_MAP.md` §11 |
 | `caps.ts`, `format.ts`, `num.ts`, `editSet.ts` | field limits, hex/number formatting, an empty `EditSet` | `document.rs`, `ui.rs` |
 
 `storyGroups` throws if the flat label list is not the known 33 entries, so a

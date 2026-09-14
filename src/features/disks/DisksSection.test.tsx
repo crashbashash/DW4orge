@@ -32,12 +32,13 @@ async function setup() {
 }
 
 describe('DisksSection', () => {
-  it('renders twelve counts and writes an edit', async () => {
+  it('renders twelve named counts and writes an edit', async () => {
     await setup();
-    expect(screen.getByLabelText('Disk 12')).toBeTruthy();
+    expect(screen.getByLabelText('Key Chain')).toBeTruthy();
+    expect(screen.getByLabelText('HP Disk α')).toBeTruthy();
     expect(screen.getByTestId('disk0').textContent).toBe('0');
 
-    const disk = screen.getByLabelText('Disk 1');
+    const disk = screen.getByLabelText('HP Disk α');
     await userEvent.clear(disk);
     await userEvent.type(disk, '9{Enter}');
     expect(screen.getByTestId('disk0').textContent).toBe('9');

@@ -4,6 +4,7 @@ import { SectionCard } from '../../components/SectionCard';
 import { useEditor } from '../../app/EditorProvider';
 import { errorsByPath } from '../../app/selectors';
 import { capFor } from '../../lib/caps';
+import { DISK_LABELS } from '../../lib/disks';
 import { formatNumber } from '../../lib/num';
 
 function setDisk(disks: EditSet['disks'], index: number, value: number): EditSet['disks'] {
@@ -40,7 +41,7 @@ export function DisksSection() {
         {draft.disks.map((count, index) => (
           <NumberField
             key={index}
-            label={`Disk ${index + 1}`}
+            label={DISK_LABELS[index] ?? `Disk ${index + 1}`}
             value={count}
             onChange={(value) => setField({ disks: setDisk(draft.disks, index, value) }, `disks[${index}]`)}
             error={errors.get(`disks[${index}]`)}

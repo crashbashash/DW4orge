@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
+    "check:contrast": "node tools/check_contrast.mjs",
     "tauri": "tauri"
   },
   "dependencies": {
@@ -25,7 +26,6 @@
     "@tauri-apps/cli": "^2.11.4",
     "@testing-library/react": "^16",
     "@testing-library/user-event": "^14",
-    "@types/node": "^26.5.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6",

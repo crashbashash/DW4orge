@@ -10,9 +10,11 @@
 //! plan and asserted by `tests/memcard.rs`.
 
 mod ecc;
+mod entry;
 mod geometry;
 
 pub use ecc::{ECC_CHUNK, ECC_CHUNK_BYTES, ecc_chunk, page_spare};
+pub use entry::{ENTRY_SIZE, Entry, MODE_DIR, MODE_EXISTS, MODE_FILE, MODE_HIDDEN};
 pub use geometry::{CardKind, Geometry, SB_MAGIC, SB_SIZE, Superblock};
 
 /// The directory holding the save, inside the card.

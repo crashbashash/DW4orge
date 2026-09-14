@@ -55,7 +55,7 @@ fn the_real_superblock_parses_to_the_measured_values() {
     assert_eq!(sb.card_type, 2);
     assert_eq!(sb.card_flags, 43);
 
-    let g = Geometry::from_superblock(&sb);
+    let g = Geometry::from_superblock(&sb, CardKind::WithSpare);
     assert_eq!(g.page_size, 512);
     assert_eq!(g.spare_size, 16);
     assert_eq!(g.raw_page_size, 528);
@@ -63,11 +63,12 @@ fn the_real_superblock_parses_to_the_measured_values() {
     assert_eq!(g.fat_per_cluster, 256);
     assert_eq!(g.total_pages(), 16_384);
 
-    // Addressing: page 1 starts one raw page in; cluster 0 is the first data
-    // cluster, at alloc_offset.
+    // Addresses are strided by the RAW page size (528), not the data size
+    // (512): a cluster is two 528-byte pages apart, not 1024 bytes.
     assert_eq!(g.page_offset(1), 528);
-    assert_eq!(g.cluster_offset(0), 41 * 1024);
-    assert_eq!(g.cluster_offset(2), 43 * 1024);
+    assert_eq!(g.cluster_offset(0), 41 * 2 * 528);
+    assert_eq!(g.cluster_offset(2), 43 * 2 * 528);
+    assert_eq!(g.total_pages() * g.raw_page_size, 8_650_752);
 }
 
 #[test]
@@ -135,4 +136,72 @@ fn the_trailing_four_spare_bytes_are_zero_on_in_use_pages() {
             "page {n} trailing spare bytes"
         );
     }
+}
+
+use dw4core::memcard::Entry;
+
+/// The real card's geometry, so offsets in tests cannot drift from the code.
+fn real_geometry() -> Geometry {
+    let card = common::memcard_fixture();
+    let sb = Superblock::parse(&card).expect("superblock");
+    Geometry::from_superblock(&sb, CardKind::WithSpare)
+}
+
+/// Byte offset of entry `slot` (0-based) within relative cluster `cluster`.
+fn entry_offset(cluster: u32, slot: usize) -> usize {
+    real_geometry().cluster_data_offset(cluster, slot * 512)
+}
+
+#[test]
+fn the_root_directory_entry_decodes() {
+    // Cluster 0 (relative) holds the root directory. Its `.` entry has length
+    // 3 and cluster 0.
+    let card = common::memcard_fixture();
+    let at = entry_offset(0, 0);
+    let root = Entry::parse(&card[at..at + 512]).expect("the root entry decodes");
+    assert_eq!(root.name(), ".");
+    assert_eq!(root.length(), 3, "the root bounds its children by this");
+    assert_eq!(root.cluster(), 0);
+    assert!(root.is_dir());
+    assert!(root.exists());
+    assert!(!root.is_file());
+    assert!(root.is_dot());
+}
+
+#[test]
+fn the_dot_dot_entry_decodes_and_is_filtered_as_a_dot_entry() {
+    let card = common::memcard_fixture();
+    let at = entry_offset(0, 1);
+    let e = Entry::parse(&card[at..at + 512]).expect("decodes");
+    assert_eq!(e.name(), "..");
+    assert!(e.is_dir());
+    assert!(
+        e.is_dot(),
+        "`..` must be filtered out of a directory listing like `.`"
+    );
+}
+
+#[test]
+fn the_save_directory_entry_decodes() {
+    let card = common::memcard_fixture();
+    let at = entry_offset(1, 0);
+    let e = Entry::parse(&card[at..at + 512]).expect("decodes");
+    assert_eq!(e.name(), "BASLUS-20836savedata");
+    assert_eq!(e.cluster(), 2);
+    assert_eq!(e.length(), 5, "five entries including . and ..");
+    assert!(e.is_dir());
+}
+
+#[test]
+fn an_entry_round_trips_through_parse_and_encode() {
+    let card = common::memcard_fixture();
+    let at = entry_offset(1, 0);
+    let original = &card[at..at + 512];
+    let e = Entry::parse(original).expect("decodes");
+    let encoded = e.encode();
+    let reparsed = Entry::parse(&encoded).expect("re-decodes");
+    assert_eq!(e, reparsed);
+    // The whole 512-byte slot survives, so timestamps and the fields this crate
+    // does not interpret are preserved on write.
+    assert_eq!(encoded, original[..512], "the slot round-trips verbatim");
 }

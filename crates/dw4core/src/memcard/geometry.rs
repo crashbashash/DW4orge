@@ -147,15 +147,18 @@ impl Superblock {
 /// Derived sizes and addressing for a card.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Geometry {
+    /// Which image form this is. Determines the on-image page stride.
+    pub kind: CardKind,
     /// Bytes of page data.
     pub page_size: usize,
     /// Pages per cluster.
     pub pages_per_cluster: usize,
-    /// Bytes of spare area per page: `(page_size / 128) * 4`.
+    /// ECC bytes a page's spare area holds: `(page_size / 128) * 4`.
     pub spare_size: usize,
-    /// Page data plus spare area.
+    /// On-image stride of one page: `page_size + spare_size` for a hardware
+    /// dump, `page_size` for a data-only image.
     pub raw_page_size: usize,
-    /// Bytes per cluster: `page_size * pages_per_cluster`.
+    /// Bytes of cluster **data**: `page_size * pages_per_cluster`.
     pub cluster_size: usize,
     /// u32 entries per FAT cluster.
     pub fat_per_cluster: usize,
@@ -168,24 +171,37 @@ pub struct Geometry {
 }
 
 impl Geometry {
-    /// Derive the geometry from a parsed superblock.
+    /// Derive the geometry from a parsed superblock and the image form.
     #[must_use]
-    pub fn from_superblock(sb: &Superblock) -> Self {
+    pub fn from_superblock(sb: &Superblock, kind: CardKind) -> Self {
         let page_size = usize::from(sb.page_size);
         let pages_per_cluster = usize::from(sb.pages_per_cluster);
         let spare_size = (page_size / 128) * 4;
         let cluster_size = page_size * pages_per_cluster;
         Self {
+            kind,
             page_size,
             pages_per_cluster,
             spare_size,
-            raw_page_size: page_size + spare_size,
+            // The stride is what actually separates consecutive pages in the
+            // image. A data-only image simply has no spare area between them.
+            raw_page_size: if kind.has_spare() {
+                page_size + spare_size
+            } else {
+                page_size
+            },
             cluster_size,
             fat_per_cluster: cluster_size / 4,
             clusters_per_card: sb.clusters_per_card,
             alloc_offset: sb.alloc_offset,
             alloc_end: sb.alloc_end,
         }
+    }
+
+    /// Whether this image carries per-page ECC bytes at all.
+    #[must_use]
+    pub fn has_spare(&self) -> bool {
+        self.kind.has_spare()
     }
 
     /// Total pages in the image.
@@ -207,13 +223,32 @@ impl Geometry {
     /// easiest mistake to make here.
     #[must_use]
     pub fn cluster_offset(&self, relative: u32) -> usize {
-        (self.alloc_offset + relative) as usize * self.cluster_size
+        self.absolute_cluster_offset(self.alloc_offset + relative)
     }
 
     /// Byte offset of an **absolute** cluster number, used for FAT clusters.
+    ///
+    /// A cluster is `pages_per_cluster` pages, and pages are `raw_page_size`
+    /// apart — which is not the same as `cluster_size` when a spare area is
+    /// present. Computing this from `cluster_size` silently reads every
+    /// cluster from the wrong offset.
     #[must_use]
     pub fn absolute_cluster_offset(&self, absolute: u32) -> usize {
-        absolute as usize * self.cluster_size
+        absolute as usize * self.pages_per_cluster * self.raw_page_size
+    }
+
+    /// Map an offset within a cluster's *data* to an offset in the image.
+    ///
+    /// A cluster's data is `pages_per_cluster` page-sized runs separated by
+    /// spare areas, so offset 512 within a cluster is **not** 512 bytes into
+    /// the image: it is one whole raw page further on. Treating a cluster as a
+    /// contiguous block reads every entry after the first page from the wrong
+    /// place.
+    #[must_use]
+    pub fn cluster_data_offset(&self, relative: u32, offset_in_cluster: usize) -> usize {
+        let page = offset_in_cluster / self.page_size;
+        let within = offset_in_cluster % self.page_size;
+        self.cluster_offset(relative) + page * self.raw_page_size + within
     }
 
     /// Whether `relative` is inside the data area.

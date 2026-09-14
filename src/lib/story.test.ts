@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { StoryPreset } from '../bindings';
 import appInfoJson from '../ipc/fixtures/app_info.json';
-import { applyPresetToStory, folderMirrorFlag, mirrorPreview, storyGroups } from './story';
+import { applyPresetToStory, folderMirrorFlag, mirrorPreview, storyForDifficulty, storyGroups } from './story';
 
 const labels = appInfoJson.ui.flag_labels;
 const groups = storyGroups(labels);
@@ -68,8 +68,41 @@ describe('applyPresetToStory', () => {
   });
 });
 
+describe('storyForDifficulty', () => {
+  // A live block whose only story bits are a Normal-mirrored flag and folder,
+  // plus a shared lobby flag that no difficulty mirrors.
+  const live = {
+    flags: new Array(1024).fill(false) as boolean[],
+    folders: new Array(12).fill(false) as boolean[],
+  };
+  live.flags[699] = true; // flag 0's Normal mirror
+  live.flags[518] = true; // folder 0's Normal mirror
+  live.flags[24] = true; // lobby flag, not mirrored
+
+  it('reads a difficulty story out of its own mirror column', () => {
+    const normal = storyForDifficulty(live.flags, live.folders, 'Normal', appInfoJson.ui.mirrors);
+    expect(normal.flags[0]).toBe(true);
+    expect(normal.folders[0]).toBe(true);
+    expect(normal.flags[24]).toBe(true);
+  });
+
+  it('shows a difficulty with no stored column as empty, not as the live flags', () => {
+    const hard = storyForDifficulty(live.flags, live.folders, 'Hard', appInfoJson.ui.mirrors);
+    expect(hard.flags[0]).toBe(false);
+    expect(hard.folders[0]).toBe(false);
+    // Non-mirrored bits are shared, so they survive the difficulty switch.
+    expect(hard.flags[24]).toBe(true);
+  });
+
+  it('does not mutate the live arrays it is given', () => {
+    const flags = [...live.flags];
+    storyForDifficulty(flags, live.folders, 'Normal', appInfoJson.ui.mirrors);
+    expect(flags).toEqual(live.flags);
+  });
+});
+
 describe('mirrorPreview', () => {
-  it('lists the mirror target for each edited bit at the chosen difficulty', () => {
+  it('lists the mirror target for each edited bit at the chosen difficulty and below', () => {
     const preview = mirrorPreview(
       [
         { kind: 'flag', index: 66, value: true },
@@ -78,12 +111,42 @@ describe('mirrorPreview', () => {
       appInfoJson.ui.mirrors,
       'Hard',
     );
-    expect(preview).toContainEqual({ flag: 73, value: true });
-    expect(preview).toContainEqual({ flag: 530, value: true });
+    expect(preview).toContainEqual({ difficulty: 'Normal', flag: 707, value: true });
+    expect(preview).toContainEqual({ difficulty: 'Hard', flag: 73, value: true });
+    expect(preview).toContainEqual({ difficulty: 'Normal', flag: 518, value: true });
+    expect(preview).toContainEqual({ difficulty: 'Hard', flag: 530, value: true });
+    // An edit made on Hard must never reach Very Hard.
+    expect(preview.some((row) => row.difficulty === 'VeryHard')).toBe(false);
+  });
+
+  it('copies a Very Hard edit into all three columns', () => {
+    const preview = mirrorPreview(
+      [{ kind: 'flag', index: 66, value: true }],
+      appInfoJson.ui.mirrors,
+      'VeryHard',
+    );
+    expect(preview).toEqual([
+      { difficulty: 'Normal', flag: 707, value: true },
+      { difficulty: 'Hard', flag: 73, value: true },
+      { difficulty: 'VeryHard', flag: 77, value: true },
+    ]);
+  });
+
+  it('keeps a Normal edit on Normal alone', () => {
+    const preview = mirrorPreview(
+      [{ kind: 'flag', index: 66, value: true }],
+      appInfoJson.ui.mirrors,
+      'Normal',
+    );
+    expect(preview).toEqual([{ difficulty: 'Normal', flag: 707, value: true }]);
   });
 
   it('skips a bit that has no mirror', () => {
-    const preview = mirrorPreview([{ kind: 'flag', index: 999, value: true }], appInfoJson.ui.mirrors, 'Normal');
+    const preview = mirrorPreview(
+      [{ kind: 'flag', index: 999, value: true }],
+      appInfoJson.ui.mirrors,
+      'Normal',
+    );
     expect(preview).toEqual([]);
   });
 });

@@ -1,12 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import type { OpenResult } from '../bindings';
+import type { AppInfo, OpenResult } from '../bindings';
+import appInfoJson from '../ipc/fixtures/app_info.json';
 import openResultJson from '../ipc/fixtures/open_result.raw.json';
 import { EMPTY } from '../lib/items';
-import { defaultSaveName, diffStory, initialState, reducer, storyDraftFromView, toEditSet, viewToEditSet } from './store';
+import {
+  defaultSaveName,
+  diffStory,
+  initialState,
+  reducer,
+  resolveDifficulty,
+  storyDraftFromView,
+  storyDraftsFromView,
+  toEditSet,
+  viewToEditSet,
+} from './store';
 
 // SAFETY: the fixture is rendered from a real OpenResult by `dw4ipc` and is
 // pinned by `crates/dw4ipc/tests/ui_fixtures.rs`.
 const openResult = openResultJson as unknown as OpenResult;
+// SAFETY: `app_info.json` is rendered from `dw4ipc::app_info()` and pinned by
+// `crates/dw4ipc/tests/ui_fixtures.rs`.
+const appInfo = appInfoJson as unknown as AppInfo;
+
+/** A store with app-info loaded, so the mirror table is available. */
+function withAppInfo() {
+  return reducer(initialState, { type: 'appInfo', info: appInfo });
+}
 
 describe('defaultSaveName', () => {
   it('offers a memory-card name for a new save', () => {
@@ -48,6 +67,28 @@ describe('storyDraftFromView', () => {
     expect(draft.folders.every((f, i) => f === (openResult.view.story_folders[i] !== 0))).toBe(true);
     expect(draft.flags[1]).toBe(true);
     expect(draft.flags[0]).toBe(false);
+  });
+});
+
+describe('storyDraftsFromView', () => {
+  it('reads each difficulty out of its own mirror column', () => {
+    const drafts = storyDraftsFromView(openResult.view, appInfo.ui.mirrors);
+    // Flag 1 is mirrored by every difficulty; only Normal's column is stored.
+    expect(drafts.Normal.flags[1]).toBe(true);
+    expect(drafts.Hard.flags[1]).toBe(false);
+    expect(drafts.VeryHard.flags[1]).toBe(false);
+    // A lobby flag has no mirror, so every difficulty shares the live value.
+    expect(drafts.Hard.flags[24]).toBe(true);
+    expect(drafts.VeryHard.flags[24]).toBe(true);
+  });
+});
+
+describe('resolveDifficulty', () => {
+  it('follows the detected difficulty for auto', () => {
+    const loaded = reducer(withAppInfo(), { type: 'loaded', result: openResult });
+    expect(resolveDifficulty('auto', loaded.session)).toBe('Normal');
+    expect(resolveDifficulty({ fixed: 'VeryHard' }, loaded.session)).toBe('VeryHard');
+    expect(resolveDifficulty('auto', null)).toBe('Normal');
   });
 });
 
@@ -94,5 +135,29 @@ describe('reducer', () => {
     const changed = reducer(loaded, { type: 'difficulty', difficulty: { fixed: 'Hard' } });
     expect(changed.difficulty).toEqual({ fixed: 'Hard' });
     expect(changed.history.past).toHaveLength(1);
+  });
+
+  it('re-seeds the visible story from the selected difficulty', () => {
+    const loaded = reducer(withAppInfo(), { type: 'loaded', result: openResult });
+    expect(loaded.story?.flags[1]).toBe(true);
+
+    const changed = reducer(loaded, { type: 'difficulty', difficulty: { fixed: 'Hard' } });
+    // The card stores no Hard column, so the mirrored bit reads off...
+    expect(changed.story?.flags[1]).toBe(false);
+    // ...while the shared lobby flag survives the switch.
+    expect(changed.story?.flags[24]).toBe(true);
+    // And the diff is taken against Hard's baseline, so nothing looks modified.
+    expect(diffStory(changed.story!, changed.session!.baselines.Hard)).toEqual([]);
+
+    const undone = reducer(changed, { type: 'undo' });
+    expect(undone.story?.flags[1]).toBe(true);
+  });
+
+  it('diffs a story edit against the difficulty on screen', () => {
+    const loaded = reducer(withAppInfo(), { type: 'loaded', result: openResult });
+    const onHard = reducer(loaded, { type: 'difficulty', difficulty: { fixed: 'Hard' } });
+    const edited = reducer(onHard, { type: 'story', kind: 'flag', index: 1, value: true });
+    expect(toEditSet(edited).story).toEqual([{ kind: 'flag', index: 1, value: true }]);
+    expect(toEditSet(edited).difficulty).toEqual({ fixed: 'Hard' });
   });
 });

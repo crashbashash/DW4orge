@@ -57,10 +57,10 @@ store, `src/app/store.ts`, holds:
 
 | Field | Meaning |
 | --- | --- |
-| `session` | the loaded `SaveView`, its path/source, and the **baseline** draft and story it started from |
+| `session` | the loaded `SaveView`, its path/source, the **baseline** draft, and each difficulty's **stored story** (`baselines`) |
 | `draft` | the wire `EditSet` being edited |
-| `story` | two boolean arrays (1024 flags, 12 folders) |
-| `difficulty` | `auto` or a fixed `Difficulty` |
+| `story` | two boolean arrays (1024 flags, 12 folders) for the **selected difficulty** |
+| `difficulty` | `auto` or a fixed `Difficulty`; selects which difficulty's story the Story tab shows and edits |
 | `mode` | `normal` / `advanced` |
 | `validation` | the last `ValidationReport` |
 | `history` | undo/redo stacks |
@@ -75,6 +75,17 @@ Two conversions are the whole contract with Rust:
 - **`buildEditSet(draft, story, baselineStory, difficulty)`** emits the wire
   payload, with `story` containing **only the bits that differ** from the
   baseline (`diffStory`). A bit the user never touched is never written.
+
+A save keeps one live flag/folder block plus three per-difficulty mirror
+columns, and the title screen restores `active ← mirror` on load, so a
+difficulty's mirror column *is* its stored story. `session.baselines` therefore
+holds one `StoryDraft` per difficulty, produced by
+`storyDraftsFromView(view, mirrors)` (the live bytes with that difficulty's
+column overlaid). The Story tab edits one difficulty at a time: changing the
+difficulty selector **re-seeds** `story` from that difficulty's baseline — which
+is what makes the checkboxes show the selected difficulty's flags — and Undo
+restores the previous view. Rust mirrors each edit into the chosen difficulty
+and every lower one, so editing Very Hard also completes Normal and Hard.
 
 `EditorProvider` (`src/app/EditorProvider.tsx`) owns the reducer and the async
 orchestration — open/new/save/saveAs/speciesStats — and exposes it as

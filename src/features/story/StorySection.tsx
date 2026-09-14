@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SectionCard } from '../../components/SectionCard';
 import { SelectField } from '../../components/SelectField';
 import { useEditor } from '../../app/EditorProvider';
-import { diffStory } from '../../app/store';
+import { diffStory, resolveDifficulty } from '../../app/store';
 import { applyPresetToStory, mirrorPreview, storyGroups } from '../../lib/story';
 
 const DIFFICULTIES = ['Normal', 'Hard', 'VeryHard'] as const;
@@ -31,9 +31,8 @@ export function StorySection() {
   const groups = storyGroups(appInfo.ui.flag_labels);
   const governed = groups.flatMap((group) => group.flags.map((flag) => flag.flag));
 
-  const pending = diffStory(story, session.baselineStory);
-  const activeDifficulty =
-    state.difficulty === 'auto' ? session.view.difficulty : state.difficulty.fixed;
+  const activeDifficulty = resolveDifficulty(state.difficulty, session);
+  const pending = diffStory(story, session.baselines[activeDifficulty]);
   const preview = mirrorPreview(pending, appInfo.ui.mirrors, activeDifficulty);
 
   const difficultyValue = state.difficulty === 'auto' ? 'auto' : state.difficulty.fixed;
@@ -66,6 +65,12 @@ export function StorySection() {
           }}
         />
       </div>
+
+      <p className="muted">
+        Story is stored per difficulty, so these checkboxes show{' '}
+        {DIFFICULTY_LABELS[activeDifficulty]}&apos;s flags. Saving a difficulty also
+        fills in the easier ones, so a harder mode stays usable.
+      </p>
 
       {groups.map((group) => (
         <fieldset key={group.key}>
@@ -113,8 +118,8 @@ export function StorySection() {
         ) : (
           <ul className="mirror-preview">
             {preview.map((row, index) => (
-              <li key={`${row.flag}-${index}`}>
-                flag {row.flag} ={' '}
+              <li key={`${row.difficulty}-${row.flag}-${index}`}>
+                {DIFFICULTY_LABELS[row.difficulty]} · flag {row.flag} ={' '}
                 <span className={row.value ? 'mirror-set' : 'mirror-clear'}>
                   {row.value ? 'set' : 'cleared'}
                 </span>

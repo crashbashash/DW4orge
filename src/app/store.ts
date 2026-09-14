@@ -1,7 +1,9 @@
 import type {
   AppInfo,
+  Difficulty,
   DifficultyChoice,
   EditSet,
+  Mirror,
   Mode,
   OpenResult,
   SaveView,
@@ -11,7 +13,7 @@ import type {
 } from '../bindings';
 import type { ValidationReport } from '../ipc/backend';
 import { socketBaseId } from '../lib/items';
-import type { StoryDraft } from '../lib/story';
+import { storyForDifficulty, type StoryDraft } from '../lib/story';
 import type { History, Snapshot } from './history';
 import { record, redo, undo } from './history';
 import type { Theme } from './theme';
@@ -24,7 +26,14 @@ export type Session = {
   source: SourceKind;
   view: SaveView;
   baseline: EditSet;
-  baselineStory: StoryDraft;
+  /**
+   * The story each difficulty is stored with, one entry per difficulty.
+   *
+   * The Story tab edits one difficulty at a time, so the visible draft is
+   * re-seeded from here whenever the difficulty selector changes; the entry
+   * also supplies that difficulty's diff baseline.
+   */
+  baselines: Record<Difficulty, StoryDraft>;
 };
 
 /**
@@ -134,12 +143,44 @@ export function viewToEditSet(view: SaveView): EditSet {
   };
 }
 
-/** The boolean story draft a view starts from. */
+/** The live/active story draft a view starts from. */
 export function storyDraftFromView(view: SaveView): StoryDraft {
   return {
     flags: view.story_flags.map((byte) => byte !== 0),
     folders: view.story_folders.map((byte) => byte !== 0),
   };
+}
+
+/**
+ * Each difficulty's stored story, read from the save's mirror columns.
+ *
+ * The live bytes are the shared base; `storyForDifficulty` overlays the
+ * selected difficulty's mirrored bits on top of them.
+ */
+export function storyDraftsFromView(
+  view: SaveView,
+  mirrors: readonly Mirror[],
+): Record<Difficulty, StoryDraft> {
+  const live = storyDraftFromView(view);
+  return {
+    Normal: storyForDifficulty(live.flags, live.folders, 'Normal', mirrors),
+    Hard: storyForDifficulty(live.flags, live.folders, 'Hard', mirrors),
+    VeryHard: storyForDifficulty(live.flags, live.folders, 'VeryHard', mirrors),
+  };
+}
+
+/**
+ * The difficulty a selector value resolves to.
+ *
+ * `auto` follows the save's detected difficulty, which is what the Rust side
+ * does too, so the draft shown and the mirrors written always agree.
+ */
+export function resolveDifficulty(
+  choice: DifficultyChoice,
+  session: Session | null,
+): Difficulty {
+  if (choice === 'auto') return session?.view.difficulty ?? 'Normal';
+  return choice.fixed;
 }
 
 /** The story bits that differ from the baseline, as the wire wants them. */
@@ -184,7 +225,13 @@ export function toEditSet(state: StoreState): EditSet {
   if (!state.draft || !state.story || !state.session) {
     throw new Error('no draft to serialise');
   }
-  return buildEditSet(state.draft, state.story, state.session.baselineStory, state.difficulty);
+  const difficulty = resolveDifficulty(state.difficulty, state.session);
+  return buildEditSet(
+    state.draft,
+    state.story,
+    state.session.baselines[difficulty],
+    state.difficulty,
+  );
 }
 
 function snapshotOf(state: StoreState): Snapshot | null {
@@ -209,13 +256,13 @@ function edit(
   };
 }
 
-function sessionFrom(result: OpenResult): Session {
+function sessionFrom(result: OpenResult, mirrors: readonly Mirror[]): Session {
   return {
     path: result.path,
     source: result.source,
     view: result.view,
     baseline: viewToEditSet(result.view),
-    baselineStory: storyDraftFromView(result.view),
+    baselines: storyDraftsFromView(result.view, mirrors),
   };
 }
 
@@ -231,12 +278,13 @@ export function reducer(state: StoreState, action: Action): StoreState {
       return { ...state, appInfo: action.info, status: 'ready' };
 
     case 'loaded': {
+      const mirrors = state.appInfo?.ui.mirrors ?? [];
       return {
         ...state,
         status: 'ready',
-        session: sessionFrom(action.result),
+        session: sessionFrom(action.result, mirrors),
         draft: viewToEditSet(action.result.view),
-        story: storyDraftFromView(action.result.view),
+        story: storyDraftsFromView(action.result.view, mirrors)[action.result.view.difficulty],
         difficulty: { fixed: action.result.view.difficulty },
         validation: { errors: [], warnings: [] },
         history: { past: [], future: [], tag: null },
@@ -290,10 +338,15 @@ export function reducer(state: StoreState, action: Action): StoreState {
 
     case 'difficulty': {
       const current = snapshotOf(state);
-      if (!current) return state;
+      if (!current || !state.session) return state;
+      // Switching the selector shows that difficulty's stored story: the draft
+      // is re-seeded from its baseline rather than carrying the previous
+      // difficulty's edits along. Undo restores them.
+      const stored = state.session.baselines[resolveDifficulty(action.difficulty, state.session)];
       return {
         ...state,
         difficulty: action.difficulty,
+        story: { flags: [...stored.flags], folders: [...stored.folders] },
         history: record(state.history, current, null),
       };
     }
@@ -323,19 +376,21 @@ export function reducer(state: StoreState, action: Action): StoreState {
     case 'busy':
       return { ...state, status: action.busy ? 'busy' : state.session ? 'ready' : 'loading' };
 
-    case 'saved':
+    case 'saved': {
+      const mirrors = state.appInfo?.ui.mirrors ?? [];
       return {
         ...state,
         status: 'ready',
-        session: sessionFrom(action.result),
+        session: sessionFrom(action.result, mirrors),
         draft: viewToEditSet(action.result.view),
-        story: storyDraftFromView(action.result.view),
+        story: storyDraftsFromView(action.result.view, mirrors)[action.result.view.difficulty],
         difficulty: { fixed: action.result.view.difficulty },
         validation: { errors: [], warnings: [] },
         history: { past: [], future: [], tag: null },
         lastWrite: { path: action.result.path, message: action.message },
         error: null,
       };
+    }
 
     case 'failed':
       return { ...state, status: state.session ? 'ready' : 'loading', error: action.message };

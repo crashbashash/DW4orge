@@ -57,6 +57,21 @@ describe('StorySection', () => {
     expect(screen.getByTestId('difficulty').textContent).toBe('Hard');
   });
 
+  it('shows the selected difficulty stored story when the difficulty changes', async () => {
+    await setup();
+    const tutorial = () => screen.getByLabelText(/tutorial \(fresh start\)/i) as HTMLInputElement;
+    // The card is a Normal save: flag 1 is live and its Normal mirror is set.
+    expect(tutorial().checked).toBe(true);
+
+    await userEvent.click(screen.getByRole('button', { name: /difficulty/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Hard' }));
+
+    // The card has no Hard mirror column stored, so the mirrored bit reads off.
+    expect(tutorial().checked).toBe(false);
+    // A lobby flag has no mirror at all, so it is shared and stays checked.
+    expect((screen.getByLabelText(/lobby flag 24/i) as HTMLInputElement).checked).toBe(true);
+  });
+
   it('keeps the mirror writes behind a collapsed toggle', async () => {
     await setup();
     const summary = screen.getByText(/mirror writes/i);
@@ -71,6 +86,6 @@ describe('StorySection', () => {
     const rows = screen
       .getAllByRole('listitem')
       .map((item) => item.textContent?.replace(/\s+/g, ' ').trim());
-    expect(rows).toContain('flag 707 = set');
+    expect(rows).toContain('Normal · flag 707 = set');
   });
 });

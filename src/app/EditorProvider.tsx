@@ -17,6 +17,7 @@ import {
   defaultSaveName,
   initialState,
   reducer,
+  resolveDifficulty,
   type SectionId,
   type StoreState,
 } from './store';
@@ -75,7 +76,8 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const edits = useMemo(() => {
     if (!state.draft || !state.story || !state.session) return null;
-    return buildEditSet(state.draft, state.story, state.session.baselineStory, state.difficulty);
+    const baseline = state.session.baselines[resolveDifficulty(state.difficulty, state.session)];
+    return buildEditSet(state.draft, state.story, baseline, state.difficulty);
   }, [state.draft, state.story, state.difficulty, state.session]);
 
   // Authoritative validation, debounced. The local cap checks in the sections

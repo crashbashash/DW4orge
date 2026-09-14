@@ -1,5 +1,5 @@
 import type { FieldError } from '../bindings';
-import { diffStory, type StoreState } from './store';
+import { diffStory, resolveDifficulty, type StoreState } from './store';
 
 /**
  * Whether the draft differs from what was loaded.
@@ -10,7 +10,8 @@ import { diffStory, type StoreState } from './store';
  */
 export function dirty(state: StoreState): boolean {
   if (!state.draft || !state.story || !state.session) return false;
-  if (diffStory(state.story, state.session.baselineStory).length > 0) return true;
+  const difficulty = resolveDifficulty(state.difficulty, state.session);
+  if (diffStory(state.story, state.session.baselines[difficulty]).length > 0) return true;
 
   const current = { ...state.draft, story: [], difficulty: state.difficulty };
   const baseline = {

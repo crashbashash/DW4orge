@@ -5,6 +5,7 @@ import { CharacterSection } from '../features/character/CharacterSection';
 import { DisksSection } from '../features/disks/DisksSection';
 import { EquipmentSection } from '../features/equipment/EquipmentSection';
 import { ItemsSection } from '../features/items/ItemsSection';
+import { StorySection } from '../features/story/StorySection';
 import { useEditor } from './EditorProvider';
 import { TopBar } from './TopBar';
 import { useShortcuts } from './useShortcuts';
@@ -56,6 +57,7 @@ function SectionView() {
   if (state.section === 'items') return <ItemsSection />;
   if (state.section === 'equipment') return <EquipmentSection />;
   if (state.section === 'disks') return <DisksSection />;
+  if (state.section === 'story') return <StorySection />;
   return (
     <section className="card">
       <h2>{state.section}</h2>

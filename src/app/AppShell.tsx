@@ -12,7 +12,7 @@ import { TopBar } from './TopBar';
 import { useShortcuts } from './useShortcuts';
 
 export function AppShell() {
-  const { state, open, save, saveAs, undo, redo } = useEditor();
+  const { state, open, save, saveAs, undo, redo, clearError } = useEditor();
 
   useShortcuts({
     open: () => void open(),
@@ -28,6 +28,14 @@ export function AppShell() {
       <div className="body">
         <Sidebar />
         <main className="main">
+          {state.error ? (
+            <div className="banner danger" role="alert">
+              <span>{state.error}</span>
+              <button type="button" onClick={clearError}>
+                Dismiss
+              </button>
+            </div>
+          ) : null}
           {state.session ? (
             <>
               <SummaryCard />

@@ -9,6 +9,7 @@ export function TopBar() {
   const [confirm, setConfirm] = useState<null | 'open' | 'new'>(null);
   const [newOpen, setNewOpen] = useState(false);
   const isDirty = dirty(state);
+  const busy = state.status === 'busy';
 
   // A dirty draft is only discarded after an explicit confirmation.
   const requestOpen = () => {
@@ -23,21 +24,21 @@ export function TopBar() {
   return (
     <header className="topbar">
       <h1 className="brand">DW4orge</h1>
-      <button type="button" onClick={requestOpen}>
+      <button type="button" onClick={requestOpen} disabled={busy}>
         Open
       </button>
       {canLoadSample ? (
-        <button type="button" onClick={() => void openSample()}>
+        <button type="button" onClick={() => void openSample()} disabled={busy}>
           Load sample save
         </button>
       ) : null}
-      <button type="button" onClick={requestNew} disabled={!state.appInfo}>
+      <button type="button" onClick={requestNew} disabled={!state.appInfo || busy}>
         New
       </button>
-      <button type="button" onClick={() => void save()} disabled={!state.session}>
+      <button type="button" onClick={() => void save()} disabled={!state.session || busy}>
         Save
       </button>
-      <button type="button" onClick={() => void saveAs()} disabled={!state.draft}>
+      <button type="button" onClick={() => void saveAs()} disabled={!state.draft || busy}>
         Save As
       </button>
       <span

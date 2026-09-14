@@ -158,6 +158,23 @@ h2 {
   padding: 12px;
 }
 
+/* A failed open/save/validation pass, above the sections. */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: 8px 12px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  background: var(--surface-raised);
+  color: var(--danger);
+}
+
+.banner > span {
+  flex: 1;
+  min-width: 0;
+}
+
 .summary {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));

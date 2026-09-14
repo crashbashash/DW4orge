@@ -44,7 +44,7 @@ export function TopBar() {
         className={isDirty ? 'dirty' : 'dirty clean'}
         title={isDirty ? 'Unsaved changes' : 'No changes'}
         aria-label={isDirty ? 'Unsaved changes' : 'No changes'}
-        role="status"
+        role="img"
       />
       <span className="spacer" />
       <button

@@ -148,8 +148,6 @@ Known gaps, roughly in priority order:
   measurement in `docs/save-format.md` comes from the NTSC-U image.
 - [ ] **Build a GameCube save editor.** DW4orge is only setup to work with PS2.
 - [ ] **Native Wayland without the compatibility hook**, on a real compositor.
-- [ ] **`AppInfo.name` reports `"dw4ipc"`** — it is the service crate's package
-  name, not the product name.
 - [ ] **Packaging for Arch and Flatpak.** The `.deb` and `.rpm` do not install on
   Arch-based distros, so those users are limited to the AppImage.
 

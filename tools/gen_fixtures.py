@@ -28,6 +28,7 @@ CAT_OUT = REPO / "crates/dw4core/tests/fixtures/catalogue"
 FLAG_OUT = REPO / "crates/dw4core/tests/fixtures/flags"
 BUILDER_OUT = REPO / "crates/dw4core/tests/fixtures/builder"
 DOC_OUT = REPO / "crates/dw4core/tests/fixtures/document"
+CARD_OUT = REPO / "crates/dw4core/tests/fixtures/mcd001/card"
 
 # The real card, and the save inside it, as expected.json's provenance records.
 CARD = "memcards/Mcd001.ps2"
@@ -457,6 +458,54 @@ def dump_document(decomp: Path, out: Path, save_bytes: bytes) -> None:
     )
 
 
+def dump_memcard(decomp: Path, out: Path) -> None:
+    """The real card, stored sparsely.
+
+    16,032 of its 16,384 pages are entirely 0xFF, so committing only the 352
+    that are not reconstructs the card exactly. The assertion at the end proves
+    the reconstruction is lossless; without it a sparse fixture would be a
+    silent corruption risk.
+    """
+    card = (decomp / CARD).read_bytes()
+    page = 528
+    if len(card) % page != 0:
+        sys.exit(f"{CARD}: size {len(card)} is not a multiple of {page}")
+
+    total = len(card) // page
+    fill = b"\xff" * page
+    indices = [i for i in range(total) if card[i * page : (i + 1) * page] != fill]
+    blob = b"".join(card[i * page : (i + 1) * page] for i in indices)
+
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "pages.bin").write_bytes(blob)
+    (out / "card.json").write_text(
+        json.dumps(
+            {
+                "page_size": page,
+                "total_pages": total,
+                "fill": 255,
+                "pages": indices,
+            },
+            indent=1,
+        )
+        + "\n"
+    )
+
+    # Prove the fixture is lossless before trusting it. Not an `assert`: that
+    # is stripped under `python -O`, and this check is the only thing standing
+    # between a sparse fixture and silent corruption.
+    rebuilt = bytearray(b"\xff" * (total * page))
+    for n, i in enumerate(indices):
+        rebuilt[i * page : (i + 1) * page] = blob[n * page : (n + 1) * page]
+    if bytes(rebuilt) != card:
+        sys.exit("sparse reconstruction is not byte-identical; refusing to write it")
+
+    print(
+        f"wrote {out}/pages.bin ({len(blob)} bytes) and card.json "
+        f"({len(indices)} of {total} pages kept; {total * page} -> {len(blob)} bytes)"
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", default="/workspace/Decomp/DW4")
@@ -520,6 +569,7 @@ def main() -> None:
     dump_flags(decomp, FLAG_OUT)
     dump_builder(BUILDER_OUT)
     dump_document(decomp, DOC_OUT, bytes(save.raw))
+    dump_memcard(decomp, CARD_OUT)
 
 
 if __name__ == "__main__":

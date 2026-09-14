@@ -348,6 +348,9 @@ fn socket_base_id(device: &[u32; DEVICE_SLOTS], index: u32) -> Option<u32> {
 pub struct Document {
     data: SaveData,
     path: Option<PathBuf>,
+    /// The card this was loaded from, if it was one. A new `.ps2` is created by
+    /// copying this, which is the Python `save_memcard` semantics.
+    source_card: Option<PathBuf>,
     /// Whether the bytes as loaded had valid checksums.
     loaded_checksums_ok: bool,
 }
@@ -363,8 +366,30 @@ impl Document {
         Ok(Self {
             data,
             path: None,
+            source_card: None,
             loaded_checksums_ok,
         })
+    }
+
+    /// Load a save from a card image or a bare file, deciding by content.
+    ///
+    /// A `.ps2` memory card and an 81,920-byte raw save go through the same
+    /// entry point; the file's own bytes decide which it is.
+    ///
+    /// # Errors
+    /// [`crate::Error::File`] if unreadable, or whatever the container reports.
+    pub fn load(path: &Path) -> crate::Result<Self> {
+        let bytes = crate::memcard::load_save(path)?;
+        let mut doc = Self::from_bytes(&bytes)?;
+        doc.path = Some(path.to_path_buf());
+        // Remember the card, so Save As to a new .ps2 can copy it.
+        if crate::memcard::is_memcard(&fs::read(path).map_err(|source| crate::Error::File {
+            path: path.to_path_buf(),
+            source,
+        })?) {
+            doc.source_card = Some(path.to_path_buf());
+        }
+        Ok(doc)
     }
 
     /// The underlying save.
@@ -792,15 +817,22 @@ impl Document {
 
     /// Write to `path`, atomically, keeping a `.bak` of the previous contents.
     ///
+    /// The container is chosen from `path`, as [`crate::memcard::render_container`]
+    /// describes: an existing card is rewritten in place, a new `.ps2` is created
+    /// by copying the card this document was loaded from, and anything else is a
+    /// bare 81,920-byte save.
+    ///
     /// The `.bak` is written once - before the first overwrite of an existing
     /// file - and is never replaced by a later save in the same session, so it
     /// holds the state the session started from (spec 3.5).
     ///
     /// # Errors
-    /// [`crate::Error::File`] if the file cannot be written, or
-    /// [`crate::Error::NoSave`] if the post-write verification read fails.
+    /// [`crate::Error::File`] if the file cannot be written,
+    /// [`crate::Error::NoSave`] if a new `.ps2` has no source card or the
+    /// post-write verification fails.
     pub fn save(&mut self, path: &Path) -> crate::Result<()> {
-        let bytes = self.data.to_bytes();
+        let save = self.data.to_bytes();
+        let bytes = crate::memcard::render_container(path, self.source_card.as_deref(), &save)?;
 
         if path.exists() {
             let bak = backup_path(path);
@@ -814,11 +846,9 @@ impl Document {
 
         write_atomically(path, &bytes)?;
 
-        // Re-read and verify before reporting success.
-        let written = fs::read(path).map_err(|source| crate::Error::File {
-            path: path.to_path_buf(),
-            source,
-        })?;
+        // Re-read through the same content dispatch, so a card is verified as a
+        // card and a raw file as a raw file.
+        let written = crate::memcard::load_save(path)?;
         let check = SaveData::parse(&written).map_err(|e| crate::Error::NoSave(e.to_string()))?;
         if !check.verify() {
             return Err(crate::Error::NoSave(format!(

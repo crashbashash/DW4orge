@@ -24,6 +24,7 @@ pub fn run() {
             commands::save,
             commands::save_as,
             commands::app_info,
+            commands::species_stats,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DW4orge");

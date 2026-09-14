@@ -23,6 +23,8 @@ target
 # Node / Vite frontend
 node_modules/
 dist/
+.vitest/
+*.tsbuildinfo
 
 # Tauri
 src-tauri/target/

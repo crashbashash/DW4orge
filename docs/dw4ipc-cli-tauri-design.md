@@ -22,7 +22,7 @@ Spec references: `docs/save-format.md` §3.1 (layout), §3.2 (boundaries),
 | # | Decision | Choice |
 | --- | --- | --- |
 | 1 | Tauri shell cannot compile here (no `webkit2gtk-4.1`) | Put commands + payloads in a pure `dw4ipc` crate; `src-tauri` is a thin excluded shell proven by `cargo check` on a host |
-| 2 | IPC surface | Confirm the spec's seven commands; add `OpenResult` (file identity) and `IpcError` wrappers |
+| 2 | IPC surface | Confirm the spec's seven commands; add `OpenResult` (file identity) and `IpcError` wrappers. Plan 6 later added an eighth, `species_stats`, for the Character selector's species switch. |
 | 3 | CLI output | Five verbs, human-readable by default, global `--json` sharing the IPC payloads; exit 0/1/2 |
 | 4 | `ts-rs` derives | Feature-gated in `dw4core` (`ts`), generation test owned by `dw4ipc` |
 | 5 | Static UI data the frontend needs (catalogue, caps, mirrors, labels, presets) | `app_info()` returns it once in `AppInfo.ui`; `OpenResult` stays lean |
@@ -107,6 +107,13 @@ pub struct OpenResult {
     pub view: SaveView,
 }
 
+pub struct SpeciesStats {       // response-only; added by plan 6
+    pub level: u32,
+    pub exp: u32,               // lifted to the level threshold in Normal mode
+    pub tech: [i32; 9],
+    pub upcnt: [u32; 11],
+}
+
 pub struct AppInfo {
     pub name: String,
     pub version: String,
@@ -184,6 +191,7 @@ The seven operations, as methods:
 | `save(edits: EditSet, mode: Mode) -> Result<OpenResult, IpcError>` | re-validates and applies the draft, then writes over the loaded path; writes nothing on rejection (spec §3.3). A pathless (`new`) session returns `Unsupported { "no path; use save_as" }` |
 | `save_as(path, edits: EditSet, mode: Mode) -> Result<OpenResult, IpcError>` | the same draft/validate/apply/write to a new path; card-from-raw needs the source card |
 | `app_info() -> AppInfo` | static; carries `ui: UiData`; never fails |
+| `species_stats(species, mode) -> Result<SpeciesStats, IpcError>` | one species' stored level/EXP/techniques/power-ups, with `view`'s Normal-mode EXP lift. Added in plan 6 for the Character selector. |
 
 Non-IPC service calls, used only by the CLI: `verify(path) -> VerifyReport`
 (parse + checksums; card also ECC/chain/directory) and

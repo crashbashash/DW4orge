@@ -4,12 +4,12 @@ use std::path::Path;
 
 use dw4core::document::Document;
 use dw4core::{
-    Difficulty, DifficultyChoice, EditSet, Mode, SaveData, SaveSpec, SaveView, Warning, build_save,
-    spec_with_story,
+    Difficulty, DifficultyChoice, EditSet, Mode, SaveData, SaveSpec, SaveView, Species, Warning,
+    build_save, level_threshold, spec_with_story,
 };
 
 use crate::error::IpcError;
-use crate::payload::{NewSaveRequest, OpenResult, SourceKind};
+use crate::payload::{NewSaveRequest, OpenResult, SourceKind, SpeciesStats};
 
 /// A save being edited, plus where it came from.
 ///
@@ -107,6 +107,31 @@ impl EditorSession {
     /// [`IpcError::NoOpenDocument`] if nothing is open.
     pub fn view(&self, mode: Mode) -> Result<SaveView, IpcError> {
         Ok(self.doc_ref()?.view(mode))
+    }
+
+    /// The stored progression for one species.
+    ///
+    /// Applies the same Normal-mode EXP lift as [`Self::view`], so a species
+    /// switch shows what the view would show if that species were active.
+    ///
+    /// # Errors
+    /// [`IpcError::NoOpenDocument`] if nothing is open.
+    pub fn species_stats(&self, species: Species, mode: Mode) -> Result<SpeciesStats, IpcError> {
+        let data = self.doc_ref()?.data();
+        let level = data.level(species);
+        let mut exp = data.exp(species);
+        if !mode.is_advanced() {
+            let threshold = level_threshold(level);
+            if i64::from(exp) < threshold && threshold <= i64::from(u32::MAX) {
+                exp = threshold as u32;
+            }
+        }
+        Ok(SpeciesStats {
+            level,
+            exp,
+            tech: std::array::from_fn(|i| data.skill(species, i)),
+            upcnt: std::array::from_fn(|i| data.upcnt(species, i)),
+        })
     }
 
     /// Validate authoritatively. Writes nothing, even on success.

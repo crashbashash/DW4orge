@@ -208,3 +208,43 @@ fn save_as_creates_a_ps2_with_or_without_a_source_card() {
     assert_eq!(saved.source, dw4ipc::SourceKind::Memcard);
     assert_eq!(std::fs::read(&out).unwrap().len(), 8_650_752);
 }
+
+#[test]
+fn species_stats_read_the_requested_block_only() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let target = dir.path().join("out.raw");
+
+    let mut session = EditorSession::new_session();
+    session.open(&raw_fixture()).expect("opens");
+
+    // Edit Dorumon, leaving every other species' block untouched.
+    let mut edits = session.view(Mode::Normal).expect("view").to_edit_set();
+    edits.species = Species::Dorumon;
+    edits.level = 50;
+    edits.exp = u32::try_from(dw4core::level_threshold(50)).expect("fits u32");
+    session
+        .save_as(&target, &edits, Mode::Normal)
+        .expect("saves");
+
+    let dorumon = session
+        .species_stats(Species::Dorumon, Mode::Normal)
+        .expect("stats");
+    assert_eq!(dorumon.level, 50);
+    assert_eq!(dorumon.exp, edits.exp);
+
+    let agumon = session
+        .species_stats(Species::Agumon, Mode::Normal)
+        .expect("stats");
+    assert_eq!(agumon.level, 1, "another species' block must be untouched");
+}
+
+#[test]
+fn species_stats_need_an_open_document() {
+    let session = EditorSession::new_session();
+    assert_eq!(
+        session
+            .species_stats(Species::Dorumon, Mode::Normal)
+            .unwrap_err(),
+        dw4ipc::IpcError::NoOpenDocument
+    );
+}

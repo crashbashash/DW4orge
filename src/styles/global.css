@@ -1,0 +1,509 @@
+:root {
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+select,
+input {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 3px 6px;
+}
+
+h1,
+h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.ok {
+  color: var(--ok);
+}
+
+.danger {
+  color: var(--danger);
+}
+
+/* Layout --------------------------------------------------------------- */
+
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: 8px 12px;
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  margin-right: 4px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.dirty {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--warning);
+}
+
+.dirty.clean {
+  background: transparent;
+  border: 1px solid var(--border);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  min-height: 0;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  border-right: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+
+.nav-button {
+  text-align: left;
+}
+
+.nav-button.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.main {
+  overflow: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.empty {
+  margin: auto;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-actions {
+  display: flex;
+  gap: var(--gap);
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* Cards and fields ----------------------------------------------------- */
+
+.card,
+.summary {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  align-items: end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.field .label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* Labels that are proper nouns from the game (the disks) keep their case, so
+   the Greek α/β/γ are not upper-cased into Α/Β/Γ. */
+.preserve-case .label {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.field .value {
+  font-variant-numeric: tabular-nums;
+}
+
+.statusbar {
+  display: flex;
+  gap: var(--gap);
+  align-items: center;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border);
+}
+
+.status-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 45%;
+}
+
+.status-write {
+  color: var(--ok);
+}
+
+.status-errors {
+  margin-left: auto;
+}
+
+/* Sections ------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.field-message {
+  font-size: 11px;
+}
+
+.field-message.warning {
+  color: var(--warning);
+}
+
+.select-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  text-align: left;
+}
+
+h3 {
+  margin: 16px 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+/* Items ---------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+/* A grid of fields can precede the tabs (Bank) or the story groups; keep the
+   neighbouring hint text and legends off it. */
+.grid + .tabs,
+.grid + fieldset {
+  margin-top: 14px;
+}
+
+.tabs button.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+
+.item-row .slot {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 22px;
+}
+
+.item-row .item-name {
+  flex: 1 1 150px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-picker {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.item-row .type-select {
+  flex: 0 0 130px;
+  min-width: 112px;
+}
+
+.item-row .rarity-select {
+  flex: 0 0 104px;
+  min-width: 92px;
+}
+
+.select-popover {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The combo field reads as one control: an editable box with the same caret as
+   the selects, so typing filters the list in place. */
+.combo-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.combo-group:focus-within {
+  border-color: var(--accent);
+}
+
+.combo-group input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background: transparent;
+}
+
+.combo-toggle {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  padding: 3px 6px;
+  color: var(--text-muted);
+}
+
+.caret {
+  color: var(--text-muted);
+}
+
+.item-row .field {
+  min-width: 74px;
+}
+
+/* Story ---------------------------------------------------------------- */
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  margin: 0 0 10px;
+}
+
+legend {
+  padding: 0 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 4px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.mirror-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* 'flag 707 = cleared' must stay on one line. */
+.mirror-preview li {
+  white-space: nowrap;
+}
+
+/* Dev-facing readout of the flag bytes the mirror system also writes. */
+.mirror-writes > summary {
+  cursor: pointer;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.mirror-writes[open] > summary {
+  margin-bottom: 8px;
+}
+
+.mirror-note {
+  margin: 0 0 8px;
+  max-width: 78ch;
+  font-size: 12px;
+}
+
+.mirror-set {
+  color: var(--ok);
+}
+
+.mirror-clear {
+  color: var(--text-muted);
+}
+
+/* Modals --------------------------------------------------------------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 55%);
+}
+
+.modal {
+  width: min(560px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.modal-body {
+  margin: 8px 0 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--gap);
+}
+
+/* Select and search popovers ------------------------------------------- */
+
+/* react-aria-components renders these unstyled and into a portal, so without
+   a surface of their own the options draw straight over the page text. */
+.popover {
+  z-index: 1000;
+  min-width: var(--trigger-width, 180px);
+  max-width: min(420px, 90vw);
+  padding: 4px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 45%);
+}
+
+.listbox {
+  max-height: 300px;
+  overflow: auto;
+  outline: none;
+}
+
+.listbox-item {
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listbox-item[data-focused] {
+  background: var(--surface-sunken);
+}
+
+.listbox-item[data-selected] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}

@@ -142,7 +142,13 @@ Rust owns the file; TypeScript owns the draft.
 ### 3.4 IPC surface
 
 `open_save`, `new_save`, `get_view`, `validate_edits`, `save`, `save_as`,
-`app_info`.
+`app_info`, `species_stats`.
+
+`species_stats(species, mode) -> SpeciesStats` reads one species' stored block
+from the open document, applying the same Normal-mode EXP lift as `get_view`.
+It exists so the Character section can show another species' level, EXP,
+techniques and power-ups when the selector changes (`_load_species_stats` parity),
+which no other command can express.
 
 Payloads are defined in `crates/dw4ipc` and derive
 `serde::Serialize`/`Deserialize` plus `ts_rs::TS`; `dw4core`'s data types gain
@@ -341,7 +347,7 @@ result is shown as a badge and can be overridden in the UI.
 ## 5. Deliberate divergences from the Python implementation
 
 The Python editor is the only known-good implementation. DW4orge deviates from
-it in three deliberate ways — two behavioural, one a feature it drops — and
+it in the deliberate ways below — behavioural, plus one feature it drops — and
 records each here.
 
 1. **Mirror table.** The Python editor carries two different *partial* mirror
@@ -367,6 +373,23 @@ records each here.
    block. It existed as a development aid while the block layout was still
    being mapped and is not carried over (see §1). Advanced **mode** remains: it
    still unlocks glitch/crash item IDs and values above the in-game caps.
+
+4. **No silent clamping in the frontend.** The Python `collect()` clamps BIT to
+   the Normal cap (`_clamp_bit`) and rewrites the widget. DW4orge shows the
+   typed value and an inline error instead, so a save never persists a number
+   the user did not enter. The authoritative caps are unchanged; only the
+   silent rewrite is dropped.
+
+5. **A mode change does not reload species stats.** The Python editor re-reads
+   the stored EXP when Advanced is toggled (via `_load_species_stats`), which
+   shows a lower value than Normal's lifted one. DW4orge keeps the draft across
+   a toggle — mode affects validation and the cap hints only — because
+   re-projecting would discard unsaved edits. Switching *species* still reloads
+   that species' stored block, through `species_stats`.
+
+6. **Techniques are labelled with the `codes::TECHNIQUES` names** (`blunt`,
+   `slash`, …), as the Python editor labels them. The names are not in any IPC
+   payload, so the frontend mirrors the nine strings.
 
 ### Story presets
 
@@ -752,13 +775,19 @@ and story-preset composition.
 | Character | species, player name, BIT, X-Data, junk tier, level, EXP, 9 techniques, 11 power-ups with per-slot safe caps |
 | Items | device folder, 30 slots in 3 pages × 10 rows: bucket, searchable item picker, rarity colour and seed-derived `+N`, mod count; Advanced allows raw hex IDs |
 | Equipment | 3 weapons, armor, board, 5 weapon mods, 5 armor mods; pickers filtered to the correct category, live mismatch warnings, mod chips auto-added to inventory |
-| Disks | 12 owned counts, 0–65535 |
+| Disks | the 12 named `DISKFOLDER` counts (HP/MP Disk α–γ, Cure, Raise, Gate, Recovery, B. Pack, Key Chain), 0–65535 |
 | Story | difficulty selector with detected badge, preset dropdown, grouped flag/folder checkboxes (intro, chapters, bosses, quests, lobby, folders) and a live mirror preview |
-| Bank | balance plus 96 slots, reusing the Items row widget |
+| Bank | balance plus 96 slots in 8 pages of 12, matching the in-game bank, reusing the Items row widget |
 
 New Save is a dialog (species, name, story preset, difficulty). Destructive and
 unsaved-changes actions use confirm dialogs; validation failures surface both
 inline on the offending control and in the status bar.
+
+**Implemented** (plan 6). The app runs in a plain browser against a fixture-
+backed mock, and in the Tauri shell against the real commands. The concrete
+architecture — the backend seam, store, validation flow and the game knowledge
+mirrored in `src/lib/` — is recorded in
+[`docs/frontend-design.md`](frontend-design.md).
 
 ---
 

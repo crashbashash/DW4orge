@@ -1,0 +1,78 @@
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, expect, it } from 'vitest';
+import { EditorProvider, useEditor } from '../../app/EditorProvider';
+import { BackendProvider } from '../../ipc/context';
+import { createMockBackend, type MockOptions } from '../../ipc/mock';
+import { CharacterSection } from './CharacterSection';
+
+function Harness() {
+  const { state, openSample } = useEditor();
+  return (
+    <>
+      <button type="button" onClick={() => void openSample()}>
+        load
+      </button>
+      {state.session ? <CharacterSection /> : null}
+    </>
+  );
+}
+
+async function setup(options: MockOptions = {}) {
+  render(
+    <BackendProvider backend={createMockBackend(options)}>
+      <EditorProvider>
+        <Harness />
+      </EditorProvider>
+    </BackendProvider>,
+  );
+  await userEvent.click(screen.getByRole('button', { name: 'load' }));
+  await screen.findByText('Character');
+}
+
+describe('CharacterSection', () => {
+  it('reloads the target species stats on a species switch', async () => {
+    await setup({
+      speciesStats: () => ({
+        level: 42,
+        exp: 5000,
+        tech: [2, 2, 2, 2, 2, 2, 2, 2, 2],
+        upcnt: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      }),
+    });
+
+    expect((screen.getByLabelText('Level') as HTMLInputElement).value).toBe('1');
+    await userEvent.click(screen.getByRole('button', { name: /species/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Agumon' }));
+
+    await waitFor(() =>
+      expect((screen.getByLabelText('Level') as HTMLInputElement).value).toBe('42'),
+    );
+    expect((screen.getByLabelText('EXP') as HTMLInputElement).value).toBe('5000');
+  });
+
+  it('syncs EXP to the level threshold', async () => {
+    await setup();
+    const level = screen.getByLabelText('Level');
+    await userEvent.clear(level);
+    await userEvent.type(level, '2{Enter}');
+    await waitFor(() =>
+      expect((screen.getByLabelText('EXP') as HTMLInputElement).value).toBe('341'),
+    );
+  });
+
+  it('limits the player name to three characters', async () => {
+    await setup();
+    const name = screen.getByLabelText('Player name');
+    await userEvent.clear(name);
+    await userEvent.type(name, 'abcdef');
+    expect((name as HTMLInputElement).value).toBe('abc');
+  });
+
+  it('labels the nine techniques with the codes::TECHNIQUES names', async () => {
+    await setup();
+    for (const name of ['blunt', 'slash', 'stab', 'bash', 'shot', 'crush', 'blast', 'heal', 'force']) {
+      expect(screen.getByLabelText(name)).toBeTruthy();
+    }
+  });
+});

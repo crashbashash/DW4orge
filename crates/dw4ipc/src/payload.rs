@@ -42,6 +42,24 @@ pub struct OpenResult {
     pub view: SaveView,
 }
 
+/// One species' stored progression, for the Character section's species
+/// selector.
+///
+/// Mirrors the per-species half of `SaveView`, so switching species can show
+/// that block's values without a `get_view` round-trip (`_load_species_stats`,
+/// `save_editor_gui.py:776`). Response-only: nothing deserialises it.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
+pub struct SpeciesStats {
+    /// Level stored for this species.
+    pub level: u32,
+    /// EXP for this species, lifted to the level threshold in Normal mode.
+    pub exp: u32,
+    /// The 9 techniques, signed.
+    pub tech: [i32; 9],
+    /// The 11 power-ups.
+    pub upcnt: [u32; 11],
+}
+
 /// Static application identity plus the tables the UI needs.
 ///
 /// Serialize-only: `UiData` carries `FlagLabel` and `StoryPreset`, which hold

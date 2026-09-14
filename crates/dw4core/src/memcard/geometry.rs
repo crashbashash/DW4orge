@@ -256,4 +256,20 @@ impl Geometry {
     pub fn is_data_cluster(&self, relative: u32) -> bool {
         relative < self.alloc_end
     }
+
+    /// Read one cluster's **data** (no spare area) out of `image`.
+    ///
+    /// Gathers `pages_per_cluster` page-data runs, skipping each page's spare
+    /// area, because a cluster is not a contiguous block of a spare-bearing
+    /// image. Returns `None` if any page lies outside `image`.
+    #[must_use]
+    pub fn read_cluster(&self, image: &[u8], absolute: u32) -> Option<Vec<u8>> {
+        let mut out = Vec::with_capacity(self.cluster_size);
+        for i in 0..self.pages_per_cluster {
+            let page = absolute as usize * self.pages_per_cluster + i;
+            let at = self.page_offset(page);
+            out.extend_from_slice(image.get(at..at + self.page_size)?);
+        }
+        Some(out)
+    }
 }

@@ -205,3 +205,85 @@ fn an_entry_round_trips_through_parse_and_encode() {
     // does not interpret are preserved on write.
     assert_eq!(encoded, original[..512], "the slot round-trips verbatim");
 }
+
+use dw4core::memcard::{CHAIN_END, FatTable, UNALLOCATED};
+
+fn real_fat(card: &[u8]) -> FatTable {
+    let sb = Superblock::parse(card).expect("superblock");
+    let g = Geometry::from_superblock(&sb, CardKind::WithSpare);
+    FatTable::from_card(card, &sb, &g).expect("fat")
+}
+
+#[test]
+fn the_fat_reports_the_measured_layout() {
+    let card = common::memcard_fixture();
+    let fat = real_fat(&card);
+    assert_eq!(fat.fat_clusters(), &(9u32..=40).collect::<Vec<_>>());
+    assert_eq!(fat.cluster_count(), 8192, "32 fat clusters x 256 entries");
+}
+
+#[test]
+fn the_save_file_chain_has_eighty_clusters_and_terminates() {
+    // 81,920 bytes over a 1,024-byte cluster is exactly 80 clusters.
+    let card = common::memcard_fixture();
+    let fat = real_fat(&card);
+    let chain = fat.chain(38).expect("the chain walks");
+    assert_eq!(chain.len(), 80, "81920 / 1024");
+    assert_eq!(chain[0], 38, "starts where the directory entry says");
+    assert_eq!(chain[79], 117, "and runs to the measured last cluster");
+    assert_eq!(
+        fat.next(*chain.last().expect("non-empty")),
+        None,
+        "the last cluster ends the chain"
+    );
+    // The allocated bit is masked off when a value is read.
+    assert_eq!(fat.raw_entry(38), 0x8000_0027, "cluster 38 links to 39");
+    assert_eq!(fat.next(38), Some(39));
+}
+
+#[test]
+fn a_free_cluster_ends_a_chain_in_both_encodings() {
+    // A real card uses two spellings for a free cluster: 0xFFFFFFFF, and
+    // 0x7FFFFFFF which is already CHAIN_END. Both must terminate a walk.
+    assert_eq!(CHAIN_END, 0x7FFF_FFFF);
+    assert_eq!(UNALLOCATED, 0xFFFF_FFFF);
+
+    let card = common::memcard_fixture();
+    let fat = real_fat(&card);
+    let free = (0..fat.cluster_count())
+        .find(|n| fat.raw_entry(*n) == UNALLOCATED)
+        .expect("the card has free clusters");
+    assert_eq!(fat.next(free), None);
+
+    // 0x7FFFFFFF needs no masking, and also ends the chain.
+    let already_end = (0..fat.cluster_count())
+        .find(|n| fat.raw_entry(*n) == CHAIN_END)
+        .expect("the card has CHAIN_END entries");
+    assert_eq!(fat.next(already_end), None);
+}
+
+#[test]
+fn a_chain_never_runs_past_the_data_area() {
+    let card = common::memcard_fixture();
+    let fat = real_fat(&card);
+    let sb = Superblock::parse(&card).expect("superblock");
+    assert!(
+        fat.chain(2)
+            .expect("walks")
+            .iter()
+            .all(|c| *c < sb.alloc_end),
+        "every cluster of the save directory is inside the data area"
+    );
+}
+
+#[test]
+fn a_chain_that_leaves_the_data_area_is_refused() {
+    let card = common::memcard_fixture();
+    let fat = real_fat(&card);
+    let sb = Superblock::parse(&card).expect("superblock");
+    let err = fat.chain(sb.alloc_end).unwrap_err();
+    assert!(
+        matches!(err, dw4core::Error::BadClusterChain { .. }),
+        "{err:?}"
+    );
+}

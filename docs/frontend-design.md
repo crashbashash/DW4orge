@@ -197,16 +197,17 @@ There is no browser and no `webkit2gtk` in the development container, so:
 
 - **No visual check.** Layout, colour and focus behaviour are unverified here;
   they are exercised by running `npm run dev` on a machine with a browser.
-- **The Tauri shell is compiled and packaged, but not launched.** `src-tauri` is
-  excluded from the root workspace, so it has its own gate: `cargo check
-  --all-targets`, `cargo clippy -D warnings` and `cargo fmt --check` are clean
-  there, and the `tauri` job in `ci.yml` repeats the check on every push. A Linux
-  `.deb` has also been built locally (`npx tauri build --bundles deb`) and
-  inspected: the control metadata, the `usr/share/applications` entry and the
-  32/128/256 hicolor icons are all correct, so the bundle config and icon wiring
-  are proven for Linux. Windows and macOS bundles have **not** been built, and the
-  app is never started here (there is no display), so the window, the dialog
-  plugin and the capability file remain unexercised.
+- **The Tauri shell is compiled, packaged and launched — on Linux only, and only
+  under a virtual display.** `src-tauri` is excluded from the root workspace and
+  has its own gate: `cargo check --all-targets`, `cargo clippy -D warnings` and
+  `cargo fmt --check` are clean there, and `ci.yml` repeats the check on every
+  push. `npx tauri build --bundles deb` produces `DW4orge_0.1.0_amd64.deb`, whose
+  control metadata, `.desktop` entry and 32/128/256 hicolor icons were inspected.
+  The app has also been driven end to end under Xvfb: it renders, opens a card
+  through the native file dialog, and saves an edit that `dw4cli verify` reports
+  as checksum-ok with no ECC mismatches. **Not covered:** Windows and macOS
+  bundles (never built), and any real desktop — so window-manager behaviour, the
+  taskbar/window icon and the native dialog on those platforms are unexercised.
 - **The workflows have never run.** They are actionlint-clean and every action
   is pinned to a commit, but there is no GitHub access here, so `ci.yml` and
   `release.yml` are unexercised and the first `v*` tag is cut by hand.

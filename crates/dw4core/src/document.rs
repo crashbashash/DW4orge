@@ -1223,6 +1223,25 @@ mod tests {
     }
 
     #[test]
+    fn a_disk_count_uses_the_in_game_nine_cap_in_normal_mode() {
+        let doc = fresh_document();
+        let at_cap = EditSet {
+            disks: [9; 12],
+            ..Default::default()
+        };
+        assert!(doc.validate(&at_cap, Mode::Normal).is_ok());
+
+        let over = EditSet {
+            disks: [10; 12],
+            ..Default::default()
+        };
+        let errs = doc.validate(&over, Mode::Normal).unwrap_err();
+        assert_eq!(errs[0].path, "disks[0]");
+        // Advanced still accepts what the u16 can hold.
+        assert!(doc.validate(&over, Mode::Advanced).is_ok());
+    }
+
+    #[test]
     fn every_bad_field_is_reported_not_just_the_first() {
         // The Python collect() raises on the first problem. Reporting all of
         // them is deliberate: the frontend highlights each path.

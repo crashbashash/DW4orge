@@ -28,14 +28,20 @@ function setDisk(disks: EditSet['disks'], index: number, value: number): EditSet
 
 export function DisksSection() {
   const { state, setField } = useEditor();
-  const { draft, appInfo } = state;
+  const { draft, appInfo, mode } = state;
   if (!draft || !appInfo) return null;
 
   const errors = errorsByPath(state);
-  // The field is a `u16`, so 65,535 is the data-type limit in both modes, not
-  // just a Normal-mode cap. Capping here stops serde rejecting an overlarge
-  // number after the editor has already accepted it.
-  const diskMax = capFor(appInfo.ui.caps, 'disks')?.cap.normal_max;
+  // Normal mode matches the game and caps a count at 9. Advanced keeps the
+  // field's full u16; the box still stops at that, so serde never sees a value
+  // the type cannot hold.
+  const diskCap = capFor(appInfo.ui.caps, 'disks')?.cap;
+  const diskMax =
+    diskCap === undefined
+      ? undefined
+      : mode === 'normal'
+        ? diskCap.normal_max
+        : diskCap.dtype_max;
 
   return (
     <SectionCard title="Disks">

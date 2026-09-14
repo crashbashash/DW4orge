@@ -103,13 +103,21 @@ export function StorySection() {
 
       <details className="card mirror-writes">
         <summary>Mirror writes ({DIFFICULTY_LABELS[activeDifficulty]})</summary>
+        <p className="muted mirror-note">
+          The game restores story flags from these backup “mirror” flags when it loads a save, so an
+          edit only sticks if the mirror is written too. These are the mirrors your current changes
+          will write.
+        </p>
         {preview.length === 0 ? (
           <p className="muted">No story changes yet.</p>
         ) : (
           <ul className="mirror-preview">
             {preview.map((row, index) => (
               <li key={`${row.flag}-${index}`}>
-                flag {row.flag} ← {row.value ? '1' : '0'}
+                flag {row.flag} ={' '}
+                <span className={row.value ? 'mirror-set' : 'mirror-clear'}>
+                  {row.value ? 'set' : 'cleared'}
+                </span>
               </li>
             ))}
           </ul>

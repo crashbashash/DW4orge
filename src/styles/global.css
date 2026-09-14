@@ -418,6 +418,20 @@ legend {
   margin-bottom: 8px;
 }
 
+.mirror-note {
+  margin: 0 0 8px;
+  max-width: 78ch;
+  font-size: 12px;
+}
+
+.mirror-set {
+  color: var(--ok);
+}
+
+.mirror-clear {
+  color: var(--text-muted);
+}
+
 /* Modals --------------------------------------------------------------- */
 
 .modal-overlay {

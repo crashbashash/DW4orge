@@ -67,7 +67,10 @@ describe('StorySection', () => {
     await userEvent.click(summary);
 
     expect(details.open).toBe(true);
-    // Active flag 66 mirrors to 707 on Normal.
-    expect(screen.getByText('flag 707 ← 1')).toBeTruthy();
+    // Active flag 66 mirrors to 707 on Normal, and the entry says so in words.
+    const rows = screen
+      .getAllByRole('listitem')
+      .map((item) => item.textContent?.replace(/\s+/g, ' ').trim());
+    expect(rows).toContain('flag 707 = set');
   });
 });

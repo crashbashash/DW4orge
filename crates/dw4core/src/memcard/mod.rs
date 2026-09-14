@@ -12,6 +12,7 @@
 mod ecc;
 mod entry;
 mod fat;
+mod format;
 mod geometry;
 mod ps2;
 mod raw;
@@ -24,6 +25,7 @@ pub use entry::{
     MODE_HIDDEN, MODE_ROOT_DOTDOT, MODE_SAVE_DIR_DOTDOT,
 };
 pub use fat::{ALLOCATED_BIT, CHAIN_END, FatTable, UNALLOCATED};
+pub use format::format_card;
 pub use geometry::{CardKind, Geometry, SB_MAGIC, SB_SIZE, Superblock};
 pub use ps2::{LocatedFile, Ps2Memcard};
 pub use raw::RawFile;

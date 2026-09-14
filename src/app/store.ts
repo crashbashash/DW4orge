@@ -27,6 +27,18 @@ export type Session = {
   baselineStory: StoryDraft;
 };
 
+/**
+ * The filename the Save As dialog should offer.
+ *
+ * A pathless session is a brand-new save, so it defaults to a `.ps2` memory
+ * card — the form PCSX2 mounts. An already-open file keeps its own name, so a
+ * raw save stays raw on Save As.
+ */
+export function defaultSaveName(path: string | null): string {
+  if (!path) return 'save.ps2';
+  return path.split(/[\\/]/).pop() || 'save.ps2';
+}
+
 export type StoreState = {
   status: 'loading' | 'ready' | 'busy';
   appInfo: AppInfo | null;

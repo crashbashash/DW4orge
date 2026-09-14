@@ -1,4 +1,4 @@
-//! The player name: a `0xFFFF` marker then up to three fullwidth code points.
+//! The player name: a `0xFFFF` marker then up to eight fullwidth code points.
 //!
 //! The save stores `PLAYERNAME` as UTF-16 in which the printable ASCII range has
 //! been shifted into the fullwidth forms block. `A` is `0xFF21`, `!` is
@@ -10,10 +10,13 @@ use crate::offsets;
 use crate::save::SaveData;
 
 /// How many characters a player name can hold.
-pub const NAME_CHARS: usize = 3;
+///
+/// Measured from the save writer `FUN_003ee6d0`: the copy loop fills at most
+/// eight `u16` slots, NUL-padding the rest, then writes the `0xFFFF` marker.
+pub const NAME_CHARS: usize = 8;
 
-/// Bytes of the `PLAYERNAME` field.
-pub const NAME_FIELD_LEN: usize = 8;
+/// Bytes of the `PLAYERNAME` field: the marker plus [`NAME_CHARS`] UTF-16 units.
+pub const NAME_FIELD_LEN: usize = 2 + NAME_CHARS * 2;
 
 /// The marker occupying the first `u16` of the field.
 const NAME_MARKER: u16 = 0xFFFF;
@@ -47,7 +50,7 @@ pub fn fullwidth_to_char(unit: u16) -> char {
     char::from_u32(o).unwrap_or('\u{FFFD}')
 }
 
-/// Encode a name into the 8-byte field: marker, up to 3 chars, NUL padding.
+/// Encode a name into the field: marker, up to [`NAME_CHARS`] chars, NUL padding.
 #[must_use]
 pub fn encode_player_name(text: &str) -> [u8; NAME_FIELD_LEN] {
     let mut out = [0u8; NAME_FIELD_LEN];
@@ -84,7 +87,7 @@ impl SaveData {
         decode_player_name(self.get_bytes(offsets::PLAYER_NAME, NAME_FIELD_LEN))
     }
 
-    /// Write the player name, truncating to 3 characters.
+    /// Write the player name, truncating to 8 characters.
     pub fn set_player_name(&mut self, text: &str) {
         self.set_bytes(offsets::PLAYER_NAME, &encode_player_name(text));
     }
@@ -133,8 +136,31 @@ mod tests {
     }
 
     #[test]
-    fn names_longer_than_three_are_truncated() {
-        assert_eq!(decode_player_name(&encode_player_name("abcdef")), "abc");
+    fn eight_characters_fill_the_whole_field() {
+        let field = encode_player_name("abcdefgh");
+        assert_eq!(field.len(), NAME_FIELD_LEN);
+        assert_eq!(&field[..2], &[0xFF, 0xFF]);
+        assert_eq!(&field[2..4], &0xFF41u16.to_le_bytes());
+        assert_eq!(&field[16..18], &0xFF48u16.to_le_bytes());
+        assert_eq!(decode_player_name(&field), "abcdefgh");
+    }
+
+    #[test]
+    fn names_longer_than_eight_are_truncated() {
+        assert_eq!(
+            decode_player_name(&encode_player_name("abcdefghij")),
+            "abcdefgh"
+        );
+    }
+
+    #[test]
+    fn the_field_length_matches_the_offset_table() {
+        // The offset map names the padding after the field; it must not claim
+        // bytes the codec writes, or the two would silently disagree.
+        assert_eq!(
+            crate::offsets::PLAYER_NAME_PAD - crate::offsets::PLAYER_NAME,
+            NAME_FIELD_LEN
+        );
     }
 
     #[test]

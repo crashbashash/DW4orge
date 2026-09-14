@@ -4,6 +4,7 @@ import { Modal } from '../../components/Modal';
 import { SelectField } from '../../components/SelectField';
 import { TextField } from '../../components/TextField';
 import { useEditor } from '../../app/EditorProvider';
+import { PLAYER_NAME_MAX } from '../../lib/name';
 import { SPECIES } from '../../lib/species';
 
 const DIFFICULTIES: readonly Difficulty[] = ['Normal', 'Hard', 'VeryHard'];
@@ -51,7 +52,7 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
           options={SPECIES.map((entry) => ({ value: entry, label: entry }))}
           onChange={setSpecies}
         />
-        <TextField label="Player name" value={name} maxLength={3} onChange={setName} />
+        <TextField label="Player name" value={name} maxLength={PLAYER_NAME_MAX} onChange={setName} />
 
         <SelectField
           label="Story preset"

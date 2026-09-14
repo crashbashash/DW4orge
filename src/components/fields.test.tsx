@@ -25,6 +25,24 @@ describe('NumberField', () => {
     expect(input.value).toBe('5');
   });
 
+  it('clamps a value above max on commit', async () => {
+    const onChange = vi.fn();
+    render(<NumberField label="BIT" value={0} onChange={onChange} max={9_999} />);
+    const input = screen.getByLabelText('BIT');
+    await userEvent.clear(input);
+    await userEvent.type(input, '10000{Enter}');
+    expect(onChange).toHaveBeenCalledWith(9_999);
+  });
+
+  it('leaves a value above max alone when no max is given', async () => {
+    const onChange = vi.fn();
+    render(<NumberField label="BIT" value={0} onChange={onChange} />);
+    const input = screen.getByLabelText('BIT');
+    await userEvent.clear(input);
+    await userEvent.type(input, '10000{Enter}');
+    expect(onChange).toHaveBeenCalledWith(10000);
+  });
+
   it('shows the first error', () => {
     render(
       <NumberField

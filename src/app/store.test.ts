@@ -2,11 +2,22 @@ import { describe, expect, it } from 'vitest';
 import type { OpenResult } from '../bindings';
 import openResultJson from '../ipc/fixtures/open_result.raw.json';
 import { EMPTY } from '../lib/items';
-import { diffStory, initialState, reducer, storyDraftFromView, toEditSet, viewToEditSet } from './store';
+import { defaultSaveName, diffStory, initialState, reducer, storyDraftFromView, toEditSet, viewToEditSet } from './store';
 
 // SAFETY: the fixture is rendered from a real OpenResult by `dw4ipc` and is
 // pinned by `crates/dw4ipc/tests/ui_fixtures.rs`.
 const openResult = openResultJson as unknown as OpenResult;
+
+describe('defaultSaveName', () => {
+  it('offers a memory-card name for a new save', () => {
+    expect(defaultSaveName(null)).toBe('save.ps2');
+  });
+
+  it('keeps an existing file name so a raw save stays raw', () => {
+    expect(defaultSaveName('/tmp/Mcd001.ps2')).toBe('Mcd001.ps2');
+    expect(defaultSaveName('C:\\saves\\out.raw')).toBe('out.raw');
+  });
+});
 
 describe('viewToEditSet', () => {
   const view = openResult.view;

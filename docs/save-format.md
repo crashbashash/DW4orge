@@ -192,7 +192,7 @@ Per block: `checksum = Σ u32le(block+4 .. block+0xA000) mod 2³²`, stored at
 | `+0x08` | u32 | `ISUSE` |
 | `+0x0c` | u32 | `UNIQUE`, a per-save id — **varies** (`0x6096F82C`, `0x700FFDAC` observed) |
 | `+0x10` | 16 B | `DIGIMONNAME` (ASCII model stem, `p_<stem>`) |
-| `+0x30` | 8 B | `PLAYERNAME` (u16 `0xFFFF` marker + up to 3 fullwidth chars) |
+| `+0x30` | 18 B | `PLAYERNAME` (u16 `0xFFFF` marker + up to 8 fullwidth chars) |
 | `+0x50` | u32 | `LEVEL` (menu snapshot) |
 | `+0x54`–`+0x60` | 4×u32 | `HP`/`MHP`/`MP`/`MMP` (**derived, never edited**) |
 | `+0x64` | u32 | `XDATA` |

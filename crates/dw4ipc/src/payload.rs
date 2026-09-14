@@ -22,7 +22,7 @@ pub enum SourceKind {
 pub struct NewSaveRequest {
     /// Species for the new character.
     pub species: Species,
-    /// Player name, at most 3 fullwidth characters.
+    /// Player name, at most 8 fullwidth characters.
     pub name: String,
     /// A `STORY_PRESETS` name, or `None` for a storyless save.
     pub story: Option<String>,

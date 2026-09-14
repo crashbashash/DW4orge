@@ -32,11 +32,14 @@ export function DisksSection() {
   if (!draft || !appInfo) return null;
 
   const errors = errorsByPath(state);
-  const max = capFor(appInfo.ui.caps, 'disks')?.cap.normal_max;
+  // The field is a `u16`, so 65,535 is the data-type limit in both modes, not
+  // just a Normal-mode cap. Capping here stops serde rejecting an overlarge
+  // number after the editor has already accepted it.
+  const diskMax = capFor(appInfo.ui.caps, 'disks')?.cap.normal_max;
 
   return (
     <SectionCard title="Disks">
-      <p className="muted">Owned disk counts, 0–{formatNumber(max ?? 65_535)}.</p>
+      <p className="muted">Owned disk counts, 0–{formatNumber(diskMax ?? 65_535)}.</p>
       <div className="grid preserve-case">
         {draft.disks.map((count, index) => (
           <NumberField
@@ -45,6 +48,7 @@ export function DisksSection() {
             value={count}
             onChange={(value) => setField({ disks: setDisk(draft.disks, index, value) }, `disks[${index}]`)}
             error={errors.get(`disks[${index}]`)}
+            max={diskMax}
           />
         ))}
       </div>

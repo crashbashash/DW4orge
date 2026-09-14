@@ -180,7 +180,7 @@ pub enum DifficultyChoice {
 pub struct EditSet {
     /// Species to switch to. Rewrites `DIGIMONNAME` when it changes.
     pub species: Species,
-    /// Player name, at most 3 fullwidth characters.
+    /// Player name, at most 8 fullwidth characters.
     pub name: String,
     /// Currency.
     pub bit: u32,

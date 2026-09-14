@@ -7,11 +7,14 @@ import { createMockBackend, type MockOptions } from '../../ipc/mock';
 import { CharacterSection } from './CharacterSection';
 
 function Harness() {
-  const { state, openSample } = useEditor();
+  const { state, openSample, setMode } = useEditor();
   return (
     <>
       <button type="button" onClick={() => void openSample()}>
         load
+      </button>
+      <button type="button" onClick={() => setMode('advanced')}>
+        advanced
       </button>
       {state.session ? <CharacterSection /> : null}
     </>
@@ -61,12 +64,29 @@ describe('CharacterSection', () => {
     );
   });
 
-  it('limits the player name to three characters', async () => {
+  it('limits the player name to eight characters', async () => {
     await setup();
     const name = screen.getByLabelText('Player name');
     await userEvent.clear(name);
-    await userEvent.type(name, 'abcdef');
-    expect((name as HTMLInputElement).value).toBe('abc');
+    await userEvent.type(name, 'abcdefghij');
+    expect((name as HTMLInputElement).value).toBe('abcdefgh');
+  });
+
+  it('caps a value box at the Normal-mode maximum', async () => {
+    await setup();
+    const bit = screen.getByLabelText('BIT') as HTMLInputElement;
+    await userEvent.clear(bit);
+    await userEvent.type(bit, '99999999{Enter}');
+    await waitFor(() => expect(bit.value).toBe('9999999'));
+  });
+
+  it('leaves the value box uncapped in Advanced mode', async () => {
+    await setup();
+    await userEvent.click(screen.getByRole('button', { name: 'advanced' }));
+    const bit = screen.getByLabelText('BIT') as HTMLInputElement;
+    await userEvent.clear(bit);
+    await userEvent.type(bit, '99999999{Enter}');
+    await waitFor(() => expect(bit.value).toBe('99999999'));
   });
 
   it('labels the nine techniques with the codes::TECHNIQUES names', async () => {

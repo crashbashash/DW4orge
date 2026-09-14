@@ -39,8 +39,19 @@ export interface Backend {
   openSample?: () => Promise<OpenResult>;
 }
 
-export const SAVE_FILTERS = [
+/** The open dialog lists every container first, then each kind alone. */
+export const OPEN_FILTERS = [
   { name: 'PS2 memory card / raw save', extensions: ['ps2', 'raw', 'bin'] },
+  { name: 'PS2 memory card', extensions: ['ps2'] },
+  { name: 'Raw save', extensions: ['raw', 'bin'] },
+];
+
+/**
+ * The save dialog offers a memory card first, because that is what a new save
+ * should be: `render_container` builds a card for a fresh `.ps2`, and a card is
+ * what PCSX2 can mount. Raw remains selectable for a bare 81,920-byte block.
+ */
+export const SAVE_FILTERS = [
   { name: 'PS2 memory card', extensions: ['ps2'] },
   { name: 'Raw save', extensions: ['raw', 'bin'] },
 ];

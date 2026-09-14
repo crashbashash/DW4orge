@@ -11,7 +11,7 @@ export type NewSaveRequest = {
  */
 species: Species, 
 /**
- * Player name, at most 3 fullwidth characters.
+ * Player name, at most 8 fullwidth characters.
  */
 name: string, 
 /**

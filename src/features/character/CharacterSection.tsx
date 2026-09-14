@@ -1,13 +1,14 @@
-import type { AppInfo, EditSet, Mode, Species } from '../../bindings';
+import type { EditSet, Species } from '../../bindings';
 import { NumberField } from '../../components/NumberField';
 import { SectionCard } from '../../components/SectionCard';
 import { SelectField } from '../../components/SelectField';
 import { TextField } from '../../components/TextField';
 import { useEditor } from '../../app/EditorProvider';
 import { errorsByPath } from '../../app/selectors';
-import { capFor, powerupCap } from '../../lib/caps';
+import { capHint, normalMax, normalPowerupMax } from '../../lib/caps';
 import { JUNK_TIERS, junkThreshold, junkTierFromCounter } from '../../lib/junk';
 import { levelThreshold } from '../../lib/level';
+import { PLAYER_NAME_MAX } from '../../lib/name';
 import { formatNumber } from '../../lib/num';
 import { SPECIES } from '../../lib/species';
 import { TECHNIQUES } from '../../lib/techniques';
@@ -28,18 +29,20 @@ function setUpcnt(upcnt: readonly number[], index: number, value: number): EditS
   return next as unknown as EditSet['upcnt'];
 }
 
-function normalHint(appInfo: AppInfo, field: string, mode: Mode): string | undefined {
-  if (mode !== 'normal') return undefined;
-  const cap = capFor(appInfo.ui.caps, field);
-  return cap ? `max ${formatNumber(cap.cap.normal_max)}` : undefined;
-}
-
 export function CharacterSection() {
   const { state, setField, speciesStats } = useEditor();
   const { draft, appInfo, mode } = state;
   if (!draft || !appInfo) return null;
 
   const errors = errorsByPath(state);
+
+  // Normal mode caps the boxes at what the validator accepts; Advanced leaves
+  // them uncapped so a higher value can reach the data-type check in Rust.
+  const bitMax = normalMax(appInfo.ui.caps, 'bit', mode);
+  const xdataMax = normalMax(appInfo.ui.caps, 'xdata', mode);
+  const levelMax = normalMax(appInfo.ui.caps, 'level', mode);
+  const expMax = normalMax(appInfo.ui.caps, 'exp', mode);
+  const techMax = normalMax(appInfo.ui.caps, 'tech', mode);
 
   const onSpecies = async (species: Species) => {
     // Reproduce `_load_species_stats`: show the block the new species stores.
@@ -71,7 +74,7 @@ export function CharacterSection() {
         <TextField
           label="Player name"
           value={draft.name}
-          maxLength={3}
+          maxLength={PLAYER_NAME_MAX}
           onChange={(name) => setField({ name }, 'name')}
           error={errors.get('name')}
         />
@@ -80,14 +83,16 @@ export function CharacterSection() {
           value={draft.bit}
           onChange={(bit) => setField({ bit }, 'bit')}
           error={errors.get('bit')}
-          hint={normalHint(appInfo, 'bit', mode)}
+          max={bitMax}
+          hint={capHint(bitMax)}
         />
         <NumberField
           label="X-Data"
           value={draft.xdata}
           onChange={(xdata) => setField({ xdata }, 'xdata')}
           error={errors.get('xdata')}
-          hint={normalHint(appInfo, 'xdata', mode)}
+          max={xdataMax}
+          hint={capHint(xdataMax)}
         />
         <SelectField
           label="Junk shop tier"
@@ -103,14 +108,16 @@ export function CharacterSection() {
           value={draft.level}
           onChange={onLevel}
           error={errors.get('level')}
-          hint={normalHint(appInfo, 'level', mode)}
+          max={levelMax}
+          hint={capHint(levelMax)}
         />
         <NumberField
           label="EXP"
           value={draft.exp}
           onChange={(exp) => setField({ exp }, 'exp')}
           error={errors.get('exp')}
-          hint={normalHint(appInfo, 'exp', mode)}
+          max={expMax}
+          hint={capHint(expMax)}
         />
       </div>
 
@@ -123,22 +130,29 @@ export function CharacterSection() {
             value={value}
             onChange={(next) => setField({ tech: setAt(draft.tech, index, next) }, `tech[${index}]`)}
             error={errors.get(`tech[${index}]`)}
+            max={techMax}
           />
         ))}
       </div>
 
       <h3>Power-ups</h3>
       <div className="grid">
-        {draft.upcnt.map((value, index) => (
-          <NumberField
-            key={index}
-            label={appInfo.ui.powerups[index]?.stat ?? `Power-up ${index + 1}`}
-            value={value}
-            onChange={(next) => setField({ upcnt: setUpcnt(draft.upcnt, index, next) }, `upcnt[${index}]`)}
-            error={errors.get(`upcnt[${index}]`)}
-            hint={mode === 'normal' ? `max ${formatNumber(powerupCap(appInfo.ui.powerups, index))}` : undefined}
-          />
-        ))}
+        {draft.upcnt.map((value, index) => {
+          const slotMax = normalPowerupMax(appInfo.ui.powerups, index, mode);
+          return (
+            <NumberField
+              key={index}
+              label={appInfo.ui.powerups[index]?.stat ?? `Power-up ${index + 1}`}
+              value={value}
+              onChange={(next) =>
+                setField({ upcnt: setUpcnt(draft.upcnt, index, next) }, `upcnt[${index}]`)
+              }
+              error={errors.get(`upcnt[${index}]`)}
+              max={slotMax}
+              hint={capHint(slotMax)}
+            />
+          );
+        })}
       </div>
     </SectionCard>
   );

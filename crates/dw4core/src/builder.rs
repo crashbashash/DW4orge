@@ -11,7 +11,7 @@
 
 use crate::codes::{MAX_LEVEL, level_threshold, upcnt_safe_cap};
 use crate::flags::{apply_story, preset_by_name};
-use crate::name::encode_player_name;
+use crate::name::{NAME_FIELD_LEN, encode_player_name};
 use crate::offsets;
 use crate::save::fix_checksums;
 use crate::species::Species;
@@ -200,7 +200,7 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
         &mut buf,
         offsets::PLAYER_NAME,
         &encode_player_name(&spec.player_name),
-        8,
+        NAME_FIELD_LEN,
     );
 
     for (offset, value) in [

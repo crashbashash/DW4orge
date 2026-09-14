@@ -16,6 +16,7 @@ export function NumberField({
   onChange,
   error,
   hint,
+  max,
   disabled,
 }: {
   label: string;
@@ -23,6 +24,8 @@ export function NumberField({
   onChange: (value: number) => void;
   error?: FieldError[];
   hint?: string;
+  /** Upper bound applied on commit. Normal-mode caps pass one; Advanced does not. */
+  max?: number;
   disabled?: boolean;
 }) {
   const id = useId();
@@ -32,8 +35,10 @@ export function NumberField({
   const commit = () => {
     setDraft(null);
     const parsed = parseIntLoose(text);
-    if (parsed === null || parsed === value) return;
-    onChange(parsed);
+    if (parsed === null) return;
+    const next = max === undefined ? parsed : Math.min(parsed, max);
+    if (next === value) return;
+    onChange(next);
   };
 
   return (

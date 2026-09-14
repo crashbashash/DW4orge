@@ -40,9 +40,6 @@ jobs:
       - name: Add the macOS universal targets
         if: matrix.os == 'macos-latest'
         run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
-        with:
-          workspaces: src-tauri -> target
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-22.04'
         run: |

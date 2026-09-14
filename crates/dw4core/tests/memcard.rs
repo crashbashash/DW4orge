@@ -287,3 +287,50 @@ fn a_chain_that_leaves_the_data_area_is_refused() {
         "{err:?}"
     );
 }
+
+use dw4core::memcard::{Ps2Memcard, SAVE_DIR, SAVE_FILE};
+
+#[test]
+fn reading_the_save_out_of_the_card_matches_the_known_good_fixture() {
+    // The strongest available check: the expected bytes were produced by the
+    // Python editor reading this same card.
+    let card = common::memcard_fixture();
+    let mut mem = Ps2Memcard::from_image(card).expect("opens");
+    let save = mem.read_save(SAVE_DIR, SAVE_FILE).expect("reads");
+    let expected = std::fs::read(common::fixture("mcd001/save.raw")).expect("fixture");
+    assert_eq!(save.len(), 81_920);
+    assert_eq!(save, expected, "the save read from the card");
+}
+
+#[test]
+fn the_located_file_reports_the_measured_cluster_and_length() {
+    let card = common::memcard_fixture();
+    let mem = Ps2Memcard::from_image(card).expect("opens");
+    let located = mem.locate(SAVE_DIR, SAVE_FILE).expect("found");
+    assert_eq!(located.first_cluster, 38);
+    assert_eq!(located.length, 81_920);
+    assert_eq!(located.chain.len(), 80);
+}
+
+#[test]
+fn a_missing_save_is_reported_not_panicked() {
+    let card = common::memcard_fixture();
+    let mut mem = Ps2Memcard::from_image(card).expect("opens");
+    let err = mem.read_save("NO-SUCH-DIR", SAVE_FILE).unwrap_err();
+    assert!(
+        matches!(err, dw4core::Error::SaveNotFound { .. }),
+        "{err:?}"
+    );
+}
+
+#[test]
+fn the_other_files_in_the_save_directory_are_readable() {
+    // icon.sys is 964 bytes and icon1.ico is 34156; both exercise a chain that
+    // does not fill its last cluster.
+    let card = common::memcard_fixture();
+    let mut mem = Ps2Memcard::from_image(card).expect("opens");
+    let icon = mem.read_save(SAVE_DIR, "icon1.ico").expect("reads");
+    assert_eq!(icon.len(), 34_156);
+    let sys = mem.read_save(SAVE_DIR, "icon.sys").expect("reads");
+    assert_eq!(sys.len(), 964);
+}

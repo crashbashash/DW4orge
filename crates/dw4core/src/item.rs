@@ -25,6 +25,7 @@ pub const CAT_MOD_EQUIPPED: u8 = 0x34;
 /// The item category encoded in a base id's second byte.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+#[serde(rename_all = "lowercase")]
 pub enum Category {
     /// Graded weapons.
     Weapon,

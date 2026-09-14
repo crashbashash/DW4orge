@@ -3,6 +3,7 @@
 //! There is no Tauri dependency here on purpose: this crate compiles and is
 //! tested without a webkit sysroot. The Tauri crate is a thin wrapper.
 
+pub mod bindings;
 pub mod catalogue_query;
 pub mod error;
 pub mod payload;

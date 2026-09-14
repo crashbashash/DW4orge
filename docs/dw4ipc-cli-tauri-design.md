@@ -137,10 +137,13 @@ pub struct PowerupLimit { pub slot: u8, pub stat: String, pub normal_max: i64 }
 `Serialize` + `Deserialize` unconditionally (`serde` is already a `dw4core`
 dependency; the derives are additive) and `TS` behind the `ts` feature.
 `FlagLabel` and `StoryPreset` hold `&'static str` / `&'static [u32]` and so can
-be `Serialize` + `TS` only, never `Deserialize`. If ts-rs 12 rejects borrowed
-fields, `dw4ipc` defines owned `FlagLabelView`/`StoryPresetView` with `From`
-impls and a test pinning them against the core consts; that is decided in task 1
-**after reading docs.rs**, not from memory.
+be `Serialize` + `TS` only, never `Deserialize`; that in turn makes `AppInfo`
+and `UiData` Serialize-only, since they carry those two types.
+
+**Verified against ts-rs 12.0.1 by probe, not assumed:** borrowed `'static`
+fields derive cleanly (`&'static str` → `string`, `&'static [u32]` →
+`Array<number>`), and `Category::Unknown(u8)` → `{ "unknown": number }`. No
+owned view types are needed.
 
 This is an agreed deviation from §3.3's literal wording ("`open_save` returns
 … the item catalogue, the caps/limits table"): those tables are static and ship
@@ -258,11 +261,15 @@ one-line delegations whose logic is tested through `dw4ipc`.
 - `dw4ipc/tests/bindings.rs` renders each payload and byte-compares it against
   the checked-in file, failing with the file name and the first differing line
   (the same spirit as `first_difference` in `tests/memcard.rs`).
-- The exact ts-rs 12 API (`TS::export`, `TS::export_to_string`, `Config`) is
-  read from docs.rs in the plan's first task, **before** any code uses it. It is
-  deliberately not asserted in this design from memory.
+- The ts-rs 12 API, confirmed from the crate source: `TS::export_to_string(&Config)`,
+  `TS::export(&Config)`, `Config::default().with_large_int("number")
+  .with_out_dir(dir)`. Generation and the drift check both call
+  `export_to_string`, so the two cannot render differently.
+- `large_int = "number"` is required: `Cap` holds `i64`, serde_json sends
+  numbers, and the default `bigint` would not match what arrives.
 - `src/bindings/` is checked in; `schema_version` in `AppInfo` lets the runtime
-  detect drift too.
+  detect drift too. The drift test was proven to fail on a one-line edit to a
+  checked-in file, naming the file and the first differing byte.
 
 ---
 
@@ -326,5 +333,5 @@ cargo test --workspace
 | Feature unification silently enables `ts` for all workspace builds | Acceptable: `ts-rs` is a derive-only dep; the default `dw4core` build is checked explicitly |
 | `src-tauri` breaks on the host because it is never compiled here | Keep it to one-line delegations; CI job with webkit is the compile gate; logic tested via `dw4ipc` |
 | `clap`/`tauri` derive macros trip new clippy lints | Gate runs `-D warnings`; fix inline as plans 1–4 did |
-| `Category::Unknown(u8)` or borrowed fields do not derive cleanly for ts-rs | Task 1 reads docs.rs first; `dw4ipc` owned view types are the documented fallback |
+| `Category::Unknown(u8)` or borrowed fields do not derive cleanly for ts-rs | Resolved by probe: both derive. Generation pins `large_int = "number"` because `Cap` holds `i64` |
 | Adding serde derives to `dw4core` types changes the public API beyond `ts` | Derives are additive, need no new dependency, and the default `dw4core` build and its 227 tests are re-run unchanged |

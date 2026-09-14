@@ -22,7 +22,7 @@ export function TopBar() {
 
   return (
     <header className="topbar">
-      <span className="brand">DW4orge</span>
+      <h1 className="brand">DW4orge</h1>
       <button type="button" onClick={requestOpen}>
         Open
       </button>

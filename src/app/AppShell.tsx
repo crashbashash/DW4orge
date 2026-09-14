@@ -35,7 +35,7 @@ export function AppShell() {
             </>
           ) : (
             <div className="empty">
-              <h1>DW4orge</h1>
+              <h2>DW4orge</h2>
               <p>Open a PS2 memory card or a raw save to begin.</p>
               <div className="empty-actions">
                 <button type="button" onClick={() => void open()}>

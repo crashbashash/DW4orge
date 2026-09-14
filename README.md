@@ -60,8 +60,8 @@ cargo run -p dw4ipc --example gen_bindings
 cargo run -p dw4ipc --example gen_ui_fixtures
 ```
 
-The app icons in `src-tauri/icons/` are generated from the committed source
-artwork (square, 1024×1024, RGBA):
+The app icons in `src-tauri/icons/` and the browser favicon in `public/` are
+generated from the committed source artwork (square, 1024×1024, RGBA):
 
 ```bash
 python3 -m venv /tmp/iconvenv

@@ -568,14 +568,33 @@ Entries without `EXISTS` are skipped, as are `.` and `..`.
 
 #### Cluster addressing
 
-Cluster numbers in directory entries and FAT values are **relative**; the
-absolute cluster is `relative + alloc_offset`:
+Two different conventions are in play. Mixing them up reads from the wrong
+place, and does so silently — the bytes still parse, they are just the wrong
+bytes.
+
+- **System structures — the FAT — use absolute cluster numbers.** `ifc_list`
+  names indirect-FAT clusters directly, and the cluster numbers stored inside
+  the indirect FAT name FAT clusters directly. Neither has `alloc_offset` added.
+- **The data area — directories and files — uses relative cluster numbers.** A
+  directory entry's `cluster` and a FAT chain value are both relative to the
+  start of the data area.
 
 ```text
-byte offset of cluster c = (alloc_offset + c) * cluster_size
+absolute cluster of a data-area cluster = relative + alloc_offset
+byte offset of absolute cluster c       = c * pages_per_cluster * raw_page_size
 ```
 
-The root directory, FAT and data are all addressed this way.
+The byte offset is **not** `(alloc_offset + c) * cluster_size`. A cluster's data
+is `pages_per_cluster` page-sized runs, and in a hardware dump consecutive pages
+are `raw_page_size` (528) bytes apart, not `page_size` (512). On `Mcd001.ps2`
+that puts cluster 0 at byte `41 * 2 * 528 = 43296`, not `41 * 1024 = 41984`.
+
+Within a cluster the same interleaving applies: entry *n* of a directory is not
+at `n * 512` bytes into the cluster, because the second page starts a full 528
+bytes after the first.
+
+Verified against the real card: reading the save through these rules reproduces
+the Python editor's extraction byte for byte.
 
 #### Allocation table
 

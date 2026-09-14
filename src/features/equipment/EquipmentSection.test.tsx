@@ -49,8 +49,9 @@ describe('EquipmentSection', () => {
     await setup();
     expect(screen.getByTestId('device-count').textContent).toBe('3');
 
-    await userEvent.click(screen.getByRole('button', { name: /weapon mod 1/i }));
-    await userEvent.type(await screen.findByRole('searchbox'), 'Wisdom Chip α');
+    const input = screen.getByRole('combobox', { name: 'Weapon mod 1' });
+    await userEvent.click(input);
+    await userEvent.type(input, 'Wisdom Chip α');
     await userEvent.click(await screen.findByRole('option', { name: 'Wisdom Chip α' }));
 
     expect(screen.getByTestId('device-count').textContent).toBe('4');

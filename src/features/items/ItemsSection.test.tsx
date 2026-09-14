@@ -44,14 +44,17 @@ describe('ItemsSection', () => {
   it('writes a picked item into the device folder', async () => {
     await setup();
     const row = screen.getByTestId('item-row-0');
-    expect(within(row).getAllByText(/Bash Katana/).length).toBeGreaterThan(0);
+    const input = within(row).getByRole('combobox', { name: /item/i }) as HTMLInputElement;
+    expect(input.value).toBe('Bash Katana');
 
-    await userEvent.click(within(row).getByRole('button', { name: /item/i }));
-    await userEvent.type(await screen.findByRole('searchbox'), 'Omega');
+    await userEvent.clear(input);
+    await userEvent.type(input, 'Omega');
     await userEvent.click(await screen.findByRole('option', { name: 'Omega Blade' }));
 
     expect(
-      within(screen.getByTestId('item-row-0')).getAllByText(/Omega Blade/).length,
-    ).toBeGreaterThan(0);
+      (within(screen.getByTestId('item-row-0')).getByRole('combobox', {
+        name: /item/i,
+      }) as HTMLInputElement).value,
+    ).toBe('Omega Blade');
   });
 });

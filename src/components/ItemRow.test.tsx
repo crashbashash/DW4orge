@@ -16,10 +16,12 @@ describe('ItemRow', () => {
     render(
       <ItemRow slot={0} value={EMPTY} catalogue={catalogue} mode="normal" onChange={() => {}} />,
     );
-    expect((screen.getByRole('button', { name: /item/i }) as HTMLButtonElement).disabled).toBe(true);
+    expect(
+      (screen.getByRole('combobox', { name: /item/i }) as HTMLInputElement).disabled,
+    ).toBe(true);
   });
 
-  it('picks a catalogue item and packs its base id', async () => {
+  it('filters as you type and packs the picked base id', async () => {
     const onChange = vi.fn();
     render(
       <ItemRow slot={0} value={EMPTY} catalogue={catalogue} mode="normal" onChange={onChange} />,
@@ -28,8 +30,9 @@ describe('ItemRow', () => {
     await userEvent.click(screen.getByRole('button', { name: /type 1/i }));
     await userEvent.click(await screen.findByRole('option', { name: 'Weapon' }));
 
-    await userEvent.click(screen.getByRole('button', { name: /item/i }));
-    await userEvent.type(await screen.findByRole('searchbox'), 'Omega');
+    const input = screen.getByRole('combobox', { name: /item/i });
+    await userEvent.click(input);
+    await userEvent.type(input, 'Omega');
     await userEvent.click(await screen.findByRole('option', { name: 'Omega Blade' }));
     expect(onChange).toHaveBeenCalledWith(1281);
   });
@@ -41,7 +44,7 @@ describe('ItemRow', () => {
     await userEvent.click(screen.getByRole('button', { name: /type 1/i }));
     await userEvent.click(await screen.findByRole('option', { name: 'Armor' }));
 
-    await userEvent.click(screen.getByRole('button', { name: /item/i }));
+    await userEvent.click(screen.getByRole('combobox', { name: /item/i }));
     expect(await screen.findByRole('option', { name: 'Brave Core' })).toBeTruthy();
     expect(screen.queryByRole('option', { name: 'Omega Blade' })).toBeNull();
   });

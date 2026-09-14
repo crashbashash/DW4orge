@@ -42,12 +42,13 @@ describe('BankSection', () => {
     await userEvent.click(within(row).getByRole('button', { name: /type 1/i }));
     await userEvent.click(await screen.findByRole('option', { name: 'Weapon' }));
 
-    await userEvent.click(within(row).getByRole('button', { name: /item/i }));
-    await userEvent.type(await screen.findByRole('searchbox'), 'Omega');
+    const input = within(row).getByRole('combobox', { name: /item/i });
+    await userEvent.click(input);
+    await userEvent.type(input, 'Omega');
     await userEvent.click(await screen.findByRole('option', { name: 'Omega Blade' }));
 
     expect(screen.getByTestId('bank0').textContent).toBe(String(1281));
-    expect(within(screen.getByTestId('item-row-0')).getAllByText(/Omega Blade/).length).toBeGreaterThan(0);
+    expect((input as HTMLInputElement).value).toBe('Omega Blade');
     expect(screen.getByTestId('bank0').textContent).not.toBe(String(EMPTY));
   });
 

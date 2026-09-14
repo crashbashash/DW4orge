@@ -80,6 +80,32 @@ describe('CharacterSection', () => {
     await waitFor(() => expect(bit.value).toBe('9999999'));
   });
 
+  it('stops Level at three digits and X-Data at four', async () => {
+    await setup();
+    const level = screen.getByLabelText('Level') as HTMLInputElement;
+    await userEvent.clear(level);
+    await userEvent.type(level, '1234{Enter}');
+    await waitFor(() => expect(level.value).toBe('123'));
+
+    const xdata = screen.getByLabelText('X-Data') as HTMLInputElement;
+    await userEvent.clear(xdata);
+    await userEvent.type(xdata, '99999{Enter}');
+    await waitFor(() => expect(xdata.value).toBe('9999'));
+  });
+
+  it('caps HP/MP max at five digits and other power-ups at four', async () => {
+    await setup();
+    const hp = screen.getByLabelText('HP max') as HTMLInputElement;
+    await userEvent.clear(hp);
+    await userEvent.type(hp, '999999{Enter}');
+    await waitFor(() => expect(hp.value).toBe('99999'));
+
+    const strength = screen.getByLabelText('Strength') as HTMLInputElement;
+    await userEvent.clear(strength);
+    await userEvent.type(strength, '99999{Enter}');
+    await waitFor(() => expect(strength.value).toBe('9999'));
+  });
+
   it('leaves the value box uncapped in Advanced mode', async () => {
     await setup();
     await userEvent.click(screen.getByRole('button', { name: 'advanced' }));

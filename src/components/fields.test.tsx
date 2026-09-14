@@ -27,11 +27,13 @@ describe('NumberField', () => {
 
   it('clamps a value above max on commit', async () => {
     const onChange = vi.fn();
-    render(<NumberField label="BIT" value={0} onChange={onChange} max={9_999} />);
-    const input = screen.getByLabelText('BIT');
+    // An all-nines bound (level's 999) is already enforced by the typed-length
+    // cap, so use a bound whose digits exceed it to exercise the clamp itself.
+    render(<NumberField label="EXP" value={0} onChange={onChange} max={150} />);
+    const input = screen.getByLabelText('EXP');
     await userEvent.clear(input);
-    await userEvent.type(input, '10000{Enter}');
-    expect(onChange).toHaveBeenCalledWith(9_999);
+    await userEvent.type(input, '999{Enter}');
+    expect(onChange).toHaveBeenCalledWith(150);
   });
 
   it('leaves a value above max alone when no max is given', async () => {
@@ -41,6 +43,15 @@ describe('NumberField', () => {
     await userEvent.clear(input);
     await userEvent.type(input, '10000{Enter}');
     expect(onChange).toHaveBeenCalledWith(10000);
+  });
+
+  it('caps the typed length at the digits of max', async () => {
+    const onChange = vi.fn();
+    render(<NumberField label="Level" value={0} onChange={onChange} max={999} />);
+    const input = screen.getByLabelText('Level') as HTMLInputElement;
+    await userEvent.clear(input);
+    await userEvent.type(input, '1234');
+    expect(input.value).toBe('123');
   });
 
   it('shows the first error', () => {

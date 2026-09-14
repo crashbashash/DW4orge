@@ -24,13 +24,18 @@ export function NumberField({
   onChange: (value: number) => void;
   error?: FieldError[];
   hint?: string;
-  /** Upper bound applied on commit. Normal-mode caps pass one; Advanced does not. */
+  /** Upper bound: caps the typed characters and clamps the committed value. */
   max?: number;
   disabled?: boolean;
 }) {
   const id = useId();
   const [draft, setDraft] = useState<string | null>(null);
   const text = draft ?? String(value);
+
+  // Cap the typed characters at the digits of `max`, so a box bounded to 999
+  // cannot even hold "1000". The commit clamp below is the backstop for a paste
+  // or for a bound that is not all nines (EXP's 1,133,652,152).
+  const maxLength = max === undefined ? undefined : String(Math.trunc(max)).length;
 
   const commit = () => {
     setDraft(null);
@@ -51,6 +56,7 @@ export function NumberField({
         type="text"
         inputMode="numeric"
         value={text}
+        maxLength={maxLength}
         disabled={disabled}
         aria-invalid={error && error.length > 0 ? true : undefined}
         onChange={(event) => setDraft(event.target.value)}

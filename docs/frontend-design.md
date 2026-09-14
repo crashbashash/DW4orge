@@ -178,7 +178,18 @@ them.
 - **`src/app/integration.test.tsx`** drives open → edit → save through the store
   against the mock and asserts the full `EditSet` key set against
   `src/bindings/EditSet.ts`, which is the shape contract between the two halves.
-- **Gate:** `npm run typecheck && npm run lint && npm test && npm run build`.
+- **`src/a11y.test.tsx`** walks all six sections and asserts every control has an
+  accessible name, that the page has one `h1` plus the `main` and `nav`
+  landmarks, and that the New Save dialog is named by its heading and takes
+  focus.
+- **`src/app/errorStates.test.tsx`** covers the failure banner and the
+  busy-disabled toolbar.
+- **`tools/check_contrast.mjs`** (`npm run check:contrast`) reads the real tokens
+  and asserts the WCAG ratios for both themes: 4.5:1 for text, 3:1 for non-text.
+  It is a plain Node script rather than a Vitest test because it reads a file and
+  renders nothing.
+- **Gate:** `npm run typecheck && npm run lint && npm test && npm run build &&
+  npm run check:contrast`.
 
 ## 8. Not verified
 
@@ -186,8 +197,18 @@ There is no browser and no `webkit2gtk` in the development container, so:
 
 - **No visual check.** Layout, colour and focus behaviour are unverified here;
   they are exercised by running `npm run dev` on a machine with a browser.
-- **The Tauri shell is not compiled here.** `src-tauri` is excluded from the
-  workspace (`docs/dw4ipc-cli-tauri-design.md` §5); its command signatures,
-  cap-ability file and dialog plugin are type-checked only by `cargo check` from
-  `src-tauri/` on a host with the Linux webkit dependencies.
+- **The Tauri shell is compiled, packaged and launched — on Linux only, and only
+  under a virtual display.** `src-tauri` is excluded from the root workspace and
+  has its own gate: `cargo check --all-targets`, `cargo clippy -D warnings` and
+  `cargo fmt --check` are clean there, and `ci.yml` repeats the check on every
+  push. `npx tauri build --bundles deb` produces `DW4orge_0.1.0_amd64.deb`, whose
+  control metadata, `.desktop` entry and 32/128/256 hicolor icons were inspected.
+  The app has also been driven end to end under Xvfb: it renders, opens a card
+  through the native file dialog, and saves an edit that `dw4cli verify` reports
+  as checksum-ok with no ECC mismatches. **Not covered:** Windows and macOS
+  bundles (never built), and any real desktop — so window-manager behaviour, the
+  taskbar/window icon and the native dialog on those platforms are unexercised.
+- **The workflows have never run.** They are actionlint-clean and every action
+  is pinned to a commit, but there is no GitHub access here, so `ci.yml` and
+  `release.yml` are unexercised and the first `v*` tag is cut by hand.
 - **Whether the game accepts an edited save** remains a manual PCSX2 check.

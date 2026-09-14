@@ -59,6 +59,7 @@ export type Action =
   | { type: 'busy'; busy: boolean }
   | { type: 'saved'; result: OpenResult; message: string }
   | { type: 'failed'; message: string }
+  | { type: 'clearError' }
   | { type: 'theme'; theme: Theme }
   | { type: 'section'; section: SectionId };
 
@@ -326,6 +327,9 @@ export function reducer(state: StoreState, action: Action): StoreState {
 
     case 'failed':
       return { ...state, status: state.session ? 'ready' : 'loading', error: action.message };
+
+    case 'clearError':
+      return { ...state, error: null };
 
     case 'theme':
       return { ...state, theme: action.theme };

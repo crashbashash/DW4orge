@@ -14,8 +14,14 @@ export function StatusBar() {
         {state.session ? ` (${describeSource(state.session.source)})` : ''}
       </span>
       <span className="status-write">{state.lastWrite?.message ?? ''}</span>
-      <span className={state.error ? 'status-errors danger' : 'status-errors'}>
-        {state.error ?? (errors > 0 ? `${errors} error(s)` : '')}
+      <span
+        className={state.error ? 'status-errors danger' : 'status-errors'}
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {state.error ??
+          (errors > 0 ? `${errors} error(s): ${state.validation.errors[0]?.message ?? ''}` : '')}
       </span>
     </footer>
   );

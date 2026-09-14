@@ -32,3 +32,18 @@ fn checked_in_ui_fixtures_match_rust() {
         problems.join("\n")
     );
 }
+
+/// A fixture must not embed a path that depends on where it was rendered, or
+/// the drift test passes on the machine that generated it and fails everywhere
+/// else (CI caught exactly that: the render differed by 15 bytes, the length of
+/// the runner's checkout path).
+#[test]
+fn ui_fixtures_do_not_embed_a_machine_specific_path() {
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    for (name, body) in dw4ipc::fixtures::ui_fixtures(&save_root()) {
+        assert!(
+            !body.contains(manifest_dir),
+            "{name} embeds the manifest directory {manifest_dir}"
+        );
+    }
+}

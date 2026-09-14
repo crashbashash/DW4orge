@@ -18,12 +18,20 @@ pub fn fixtures_dir() -> PathBuf {
 /// `save_root` is the `dw4core/tests/fixtures` directory. Panics only on a
 /// corrupt fixture; the committed fixtures are already validated by the
 /// `dw4core` suite.
+///
+/// The `path` in the `OpenResult` is replaced with a repo-relative one: the real
+/// value is absolute, so a fixture rendered on one machine would never match a
+/// fresh render on another and the drift test would fail by directory-name
+/// length. Nothing consumes the field — the mock overrides it with the path the
+/// caller asked for.
 #[must_use]
 pub fn ui_fixtures(save_root: &Path) -> Vec<(&'static str, String)> {
     let mut session = EditorSession::new_session();
-    let opened = session
+    let mut opened = session
         .open(&save_root.join("mcd001/save.raw"))
         .expect("the raw fixture opens");
+    opened.path = Some("crates/dw4core/tests/fixtures/mcd001/save.raw".to_string());
+
     vec![
         (
             "app_info.json",

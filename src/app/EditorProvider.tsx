@@ -34,6 +34,7 @@ export type EditorApi = {
   setDifficulty(difficulty: StoreState['difficulty']): void;
   setMode(mode: StoreState['mode']): void;
   setSection(section: SectionId): void;
+  clearError(): void;
   undo(): void;
   redo(): void;
   toggleTheme(): void;
@@ -190,6 +191,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       setDifficulty: (difficulty) => dispatch({ type: 'difficulty', difficulty }),
       setMode: (mode) => dispatch({ type: 'mode', mode }),
       setSection: (section) => dispatch({ type: 'section', section }),
+      clearError: () => dispatch({ type: 'clearError' }),
       undo: () => dispatch({ type: 'undo' }),
       redo: () => dispatch({ type: 'redo' }),
       toggleTheme,

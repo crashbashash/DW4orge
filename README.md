@@ -49,6 +49,7 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm run check:contrast   # palette WCAG ratios, reads src/styles/tokens.css
 ```
 
 The checked-in TypeScript bindings and mock fixtures are generated from Rust;
@@ -58,6 +59,45 @@ regenerate them with:
 cargo run -p dw4ipc --example gen_bindings
 cargo run -p dw4ipc --example gen_ui_fixtures
 ```
+
+The app icons in `src-tauri/icons/` and the browser favicon in `public/` are
+generated from the committed source artwork (square, 1024×1024, RGBA):
+
+```bash
+python3 -m venv /tmp/iconvenv
+/tmp/iconvenv/bin/pip install Pillow
+/tmp/iconvenv/bin/python tools/gen_icons.py
+```
+
+## Release
+
+`ci.yml` gates every push and pull request. `release.yml` builds the desktop
+bundles when a `v*` tag is pushed — `.deb` + `.AppImage`, `.msi` and a universal
+`.dmg`, attached to a draft GitHub release:
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+The bundles are **unsigned**, so macOS Gatekeeper and Windows SmartScreen will
+warn on first run.
+
+### Linux
+
+The release workflow produces a `.deb` (Debian/Ubuntu) and an `.AppImage` (any
+distro). Neither `.deb` nor `.rpm` installs on an Arch-based system (Arch,
+EndeavourOS, CachyOS) — use the AppImage there, or build one locally:
+
+```bash
+sudo pacman -S --needed webkit2gtk-4.1 gtk3 librsvg
+npm install
+npm run tauri -- build --bundles appimage
+```
+
+The build needs a system webkit2gtk-4.1 (`--bundles appimage` on its own; the
+default bundle set would also try `deb`/`rpm` and fail without `dpkg-deb` or
+`rpmbuild`). AppImages need FUSE to run; without it, use
+`./DW4orge_*.AppImage --appimage-extract-and-run`.
 
 ## Verifying a save in-game
 

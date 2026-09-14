@@ -1,13 +1,18 @@
 //! The IPC commands. Bodies delegate to `dw4ipc`.
 
-use dw4core::{EditSet, Mode, SaveView, Species, Warning};
-use dw4ipc::{AppInfo, EditorSession, IpcError, NewSaveRequest, OpenResult, SpeciesStats};
+use dw4ipc::{
+    AppInfo, EditSet, EditorSession, IpcError, Mode, NewSaveRequest, OpenResult, SaveView, Species,
+    SpeciesStats, Warning,
+};
 use tauri::State;
 
 use crate::state::AppState;
 
 /// Lock the shared session.
-fn session(state: &State<'_, AppState>) -> std::sync::MutexGuard<'_, EditorSession> {
+///
+/// Takes `&AppState` rather than `&State<'_, AppState>` so the guard has one
+/// unambiguous lifetime; `&State` coerces here through `Deref`.
+fn session(state: &AppState) -> std::sync::MutexGuard<'_, EditorSession> {
     state.session.lock().expect("session mutex poisoned")
 }
 

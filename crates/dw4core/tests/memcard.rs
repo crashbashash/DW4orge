@@ -467,3 +467,129 @@ fn the_written_pages_carry_valid_ecc() {
         }
     }
 }
+
+use dw4core::document::{Document, EditSet, Mode};
+
+#[test]
+fn a_document_loads_and_saves_through_a_card() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let path = dir.path().join("card.ps2");
+    std::fs::write(&path, common::memcard_fixture()).expect("write");
+
+    let mut doc = Document::load(&path).expect("loads through the card");
+    assert_eq!(doc.data().player_name(), "abc");
+    assert!(doc.loaded_checksums_ok());
+
+    let edits = EditSet {
+        bit: 7_777,
+        ..Default::default()
+    };
+    doc.apply(&edits, Mode::Normal).expect("apply");
+    doc.save(&path).expect("saves into the card");
+
+    // The save round-trips, and the file is still a card.
+    let reloaded = Document::load(&path).expect("reloads");
+    assert_eq!(reloaded.data().bit(), 7_777);
+    assert!(dw4core::memcard::is_memcard(
+        &std::fs::read(&path).expect("read")
+    ));
+    assert_eq!(
+        std::fs::read(&path).expect("read").len(),
+        8_650_752,
+        "saving into a card must not resize it"
+    );
+}
+
+#[test]
+fn saving_an_edited_card_leaves_the_other_entries_alone() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let path = dir.path().join("card.ps2");
+    let original = common::memcard_fixture();
+    std::fs::write(&path, &original).expect("write");
+
+    let mut before = Ps2Memcard::from_image(original.clone()).expect("opens");
+    let icons_before = before.read_save(SAVE_DIR, "icon1.ico").expect("icon");
+
+    let mut doc = Document::load(&path).expect("loads");
+    doc.apply(
+        &EditSet {
+            bit: 1,
+            ..Default::default()
+        },
+        Mode::Normal,
+    )
+    .expect("apply");
+    doc.save(&path).expect("saves");
+
+    let mut after = Ps2Memcard::from_image(std::fs::read(&path).expect("read")).expect("reopens");
+    let icons_after = after.read_save(SAVE_DIR, "icon1.ico").expect("icon");
+    assert_eq!(icons_before, icons_after, "icon1.ico must be untouched");
+
+    // And the card's system area is intact: it still parses as a card.
+    assert!(dw4core::memcard::is_memcard(
+        &std::fs::read(&path).expect("read")
+    ));
+}
+
+#[test]
+fn a_nonexistent_ps2_path_is_created_from_the_source_card() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let src = dir.path().join("source.ps2");
+    let dst = dir.path().join("new.ps2");
+    std::fs::write(&src, common::memcard_fixture()).expect("write");
+
+    let mut doc = Document::load(&src).expect("loads");
+    doc.apply(
+        &EditSet {
+            bit: 4_242,
+            ..Default::default()
+        },
+        Mode::Normal,
+    )
+    .expect("apply");
+    // No second argument: the document remembers the card it came from, which
+    // is the Python save_memcard() semantics.
+    doc.save(&dst)
+        .expect("creates the card by copying the source");
+
+    assert!(dw4core::memcard::is_memcard(
+        &std::fs::read(&dst).expect("read")
+    ));
+    let reloaded = Document::load(&dst).expect("reloads");
+    assert_eq!(reloaded.data().bit(), 4_242);
+}
+
+#[test]
+fn a_plain_raw_path_is_still_written_as_a_raw_file() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let good = dir.path().join("good.raw");
+    std::fs::copy(common::fixture("mcd001/save.raw"), &good).expect("copy");
+
+    let mut doc = Document::load(&good).expect("loads");
+    assert_eq!(doc.data().player_name(), "abc");
+    doc.apply(
+        &EditSet {
+            bit: 3,
+            ..Default::default()
+        },
+        Mode::Normal,
+    )
+    .expect("apply");
+    doc.save(&good).expect("saves");
+    assert_eq!(
+        std::fs::read(&good).expect("read").len(),
+        81_920,
+        "a raw path stays raw"
+    );
+    assert!(!dw4core::memcard::is_memcard(
+        &std::fs::read(&good).expect("read")
+    ));
+}
+
+#[test]
+fn loading_a_wrong_sized_file_through_load_is_an_error() {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let path = dir.path().join("short.raw");
+    std::fs::write(&path, vec![0u8; 100]).expect("write");
+    assert!(Document::load(&path).is_err());
+}

@@ -179,6 +179,12 @@ impl Ps2Memcard {
     /// # Errors
     /// Propagates [`Self::locate`] and image-bounds errors.
     pub fn read_save(&mut self, dir: &str, file: &str) -> Result<Vec<u8>, Error> {
+        self.read_save_at(dir, file)
+    }
+
+    /// The body of [`Self::read_save`], for unambiguous delegation from the
+    /// [`CardBackend`] impl.
+    fn read_save_at(&mut self, dir: &str, file: &str) -> Result<Vec<u8>, Error> {
         let located = self.locate(dir, file)?;
         let mut out = Vec::with_capacity(located.length as usize);
 
@@ -207,6 +213,11 @@ impl Ps2Memcard {
     /// # Errors
     /// [`Error::BadCard`] if the chain is too short for `data`.
     pub fn write_save(&mut self, dir: &str, file: &str, data: &[u8]) -> Result<(), Error> {
+        self.write_save_at(dir, file, data)
+    }
+
+    /// The body of [`Self::write_save`], for unambiguous delegation.
+    fn write_save_at(&mut self, dir: &str, file: &str, data: &[u8]) -> Result<(), Error> {
         let located = self.locate(dir, file)?;
 
         let needed = data.len().div_ceil(self.geometry.cluster_size).max(1);
@@ -274,5 +285,23 @@ impl Ps2Memcard {
         for b in &mut self.image[spare_at + spare.len()..raw_end] {
             *b = 0;
         }
+    }
+}
+
+impl crate::memcard::CardBackend for Ps2Memcard {
+    fn open(path: &std::path::Path) -> Result<Self, Error> {
+        let image = std::fs::read(path).map_err(|source| Error::File {
+            path: path.to_path_buf(),
+            source,
+        })?;
+        Self::from_image(image)
+    }
+
+    fn read_save(&mut self, dir: &str, file: &str) -> crate::Result<Vec<u8>> {
+        self.read_save_at(dir, file)
+    }
+
+    fn write_save(&mut self, dir: &str, file: &str, data: &[u8]) -> crate::Result<()> {
+        self.write_save_at(dir, file, data)
     }
 }

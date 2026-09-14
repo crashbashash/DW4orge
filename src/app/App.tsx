@@ -1,3 +1,10 @@
+import { EditorProvider } from './EditorProvider';
+import { AppShell } from './AppShell';
+
 export function App() {
-  return <h1>DW4orge</h1>;
+  return (
+    <EditorProvider>
+      <AppShell />
+    </EditorProvider>
+  );
 }

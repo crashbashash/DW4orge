@@ -1,3 +1,5 @@
+import { isTauri } from '@tauri-apps/api/core';
+
 export type Theme = 'light' | 'dark';
 
 const KEY = 'dw4orge.theme';
@@ -24,9 +26,28 @@ export function storeTheme(theme: Theme): void {
   }
 }
 
+/**
+ * Point the native window at the same theme.
+ *
+ * On Linux, Tauri/tao maps this to `gtk-application-prefer-dark-theme`, which is
+ * what tints the GTK client-side title bar it draws on Wayland. Without it a
+ * dark app keeps the light default GTK header bar — the "white title bar on
+ * KDE Wayland" report. It needs `core:window:allow-set-theme`.
+ *
+ * A no-op outside the Tauri shell, and best-effort: a title-bar colour is
+ * cosmetic, so a refused or absent IPC must never break the editor.
+ */
+function applyNativeTheme(theme: Theme): void {
+  if (!isTauri()) return;
+  void import('@tauri-apps/api/window')
+    .then(({ getCurrentWindow }) => getCurrentWindow().setTheme(theme))
+    .catch(() => undefined);
+}
+
 export function applyTheme(theme: Theme, root: HTMLElement): void {
   root.dataset.theme = theme;
   root.style.colorScheme = theme;
+  applyNativeTheme(theme);
 }
 
 /**

@@ -208,6 +208,11 @@ There is no browser and no `webkit2gtk` in the development container, so:
   as checksum-ok with no ECC mismatches. **Not covered:** Windows and macOS
   bundles (never built), and any real desktop — so window-manager behaviour, the
   taskbar/window icon and the native dialog on those platforms are unexercised.
+- **The native title bar following the app theme** (`theme.ts` calling Tauri's
+  `set_theme`, which tao maps to `gtk-application-prefer-dark-theme`) is a
+  real-Wayland path. jsdom and Xvfb cannot show the GTK client-side header bar,
+  so this is only observable on a compositor that draws it (KDE Plasma on
+  Wayland).
 - **The workflows have never run.** They are actionlint-clean and every action
   is pinned to a commit, but there is no GitHub access here, so `ci.yml` and
   `release.yml` are unexercised and the first `v*` tag is cut by hand.

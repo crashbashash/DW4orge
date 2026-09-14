@@ -8,7 +8,6 @@ import {
   colorForSeed,
   describeItemId,
   splitItemId,
-  type Rarity,
 } from '../lib/items';
 import { ITEM_BUCKETS, bucketForId, type BucketId } from '../lib/itemBuckets';
 import { FieldMessage } from './FieldMessage';
@@ -95,21 +94,14 @@ export function ItemRow({
         placeholder={activeBucket === null ? '(choose a type first)' : '(empty)'}
         onChange={(picked) => onChange(buildItemId(picked, 0, 0))}
       />
-      <select
-        aria-label={`Rarity ${slot + 1}`}
+      <SelectField
+        className="rarity-select"
+        label={`Rarity ${slot + 1}`}
         value={rarity}
         disabled={isEmpty}
-        onChange={(event) => {
-          const colour = event.target.value as Rarity;
-          onChange(buildItemId(baseId, clampBonusToRarity(seed, colour), mods));
-        }}
-      >
-        {RARITIES.map((colour) => (
-          <option key={colour} value={colour}>
-            {colour}
-          </option>
-        ))}
-      </select>
+        options={RARITIES.map((colour) => ({ value: colour, label: colour }))}
+        onChange={(colour) => onChange(buildItemId(baseId, clampBonusToRarity(seed, colour), mods))}
+      />
       <NumberField
         label={`+N ${slot + 1}`}
         value={seed}

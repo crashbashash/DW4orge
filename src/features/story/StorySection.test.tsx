@@ -40,7 +40,8 @@ describe('StorySection', () => {
     // The real save has flag 1 (the tutorial marker) set.
     expect(tutorial.checked).toBe(true);
 
-    await userEvent.selectOptions(screen.getByLabelText('Preset'), 'After World 1');
+    await userEvent.click(screen.getByRole('button', { name: /preset/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'After World 1' }));
 
     expect((screen.getByLabelText(/tutorial \(fresh start\)/i) as HTMLInputElement).checked).toBe(
       false,
@@ -51,7 +52,8 @@ describe('StorySection', () => {
   it('overrides the detected difficulty', async () => {
     await setup();
     expect(screen.getByTestId('difficulty').textContent).toBe('Normal');
-    await userEvent.selectOptions(screen.getByLabelText(/difficulty/i), 'Hard');
+    await userEvent.click(screen.getByRole('button', { name: /difficulty/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Hard' }));
     expect(screen.getByTestId('difficulty').textContent).toBe('Hard');
   });
 

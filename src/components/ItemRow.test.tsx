@@ -60,7 +60,8 @@ describe('ItemRow', () => {
         onChange={onChange}
       />,
     );
-    await userEvent.selectOptions(screen.getByLabelText('Rarity 1'), 'blue');
+    await userEvent.click(screen.getByRole('button', { name: /rarity 1/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'blue' }));
     expect(onChange).toHaveBeenCalledWith(buildItemId(1281, 0x00f, 0));
   });
 

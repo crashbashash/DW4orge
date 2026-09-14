@@ -53,44 +53,33 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
         />
         <TextField label="Player name" value={name} maxLength={3} onChange={setName} />
 
-        <div className="field">
-          <label className="label" htmlFor="new-story">
-            Story preset
-          </label>
-          <select
-            id="new-story"
-            value={story ?? ''}
-            onChange={(event) => setStory(event.target.value || null)}
-          >
-            <option value="">None (new game)</option>
-            {state.appInfo.ui.story_presets.map((preset) => (
-              <option key={preset.name} value={preset.name}>
-                {preset.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          label="Story preset"
+          value={story ?? ''}
+          options={[
+            { value: '', label: 'None (new game)' },
+            ...state.appInfo.ui.story_presets.map((preset) => ({
+              value: preset.name,
+              label: preset.name,
+            })),
+          ]}
+          onChange={(value) => setStory(value || null)}
+        />
 
-        <div className="field">
-          <label className="label" htmlFor="new-difficulty">
-            Difficulty
-          </label>
-          <select
-            id="new-difficulty"
-            value={difficulty === 'auto' ? 'auto' : difficulty.fixed}
-            onChange={(event) => {
-              const value = event.target.value;
-              setDifficulty(value === 'auto' ? 'auto' : { fixed: value as Difficulty });
-            }}
-          >
-            <option value="auto">Auto (Normal)</option>
-            {DIFFICULTIES.map((entry) => (
-              <option key={entry} value={entry}>
-                {DIFFICULTY_LABELS[entry]}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          label="Difficulty"
+          value={difficulty === 'auto' ? 'auto' : difficulty.fixed}
+          options={[
+            { value: 'auto', label: 'Auto (Normal)' },
+            ...DIFFICULTIES.map((entry) => ({
+              value: entry as string,
+              label: DIFFICULTY_LABELS[entry],
+            })),
+          ]}
+          onChange={(value) => {
+            setDifficulty(value === 'auto' ? 'auto' : { fixed: value as Difficulty });
+          }}
+        />
       </div>
     </Modal>
   );

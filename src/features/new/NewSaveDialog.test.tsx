@@ -31,8 +31,10 @@ describe('NewSaveDialog', () => {
     await userEvent.clear(name);
     await userEvent.type(name, 'abc');
 
-    await userEvent.selectOptions(screen.getByLabelText('Story preset'), 'Fresh (tutorial)');
-    await userEvent.selectOptions(screen.getByLabelText('Difficulty'), 'Hard');
+    await userEvent.click(screen.getByRole('button', { name: /story preset/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Fresh (tutorial)' }));
+    await userEvent.click(screen.getByRole('button', { name: /difficulty/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Hard' }));
     await userEvent.click(screen.getByRole('button', { name: 'Create' }));
 
     await waitFor(() =>

@@ -300,6 +300,11 @@ h3 {
   min-width: 112px;
 }
 
+.item-row .rarity-select {
+  flex: 0 0 104px;
+  min-width: 92px;
+}
+
 .select-popover {
   display: flex;
   flex-direction: column;

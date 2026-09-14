@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import { SectionCard } from '../../components/SectionCard';
+import { SelectField } from '../../components/SelectField';
 import { useEditor } from '../../app/EditorProvider';
 import { diffStory } from '../../app/store';
 import { applyPresetToStory, mirrorPreview, storyGroups } from '../../lib/story';
@@ -11,8 +13,18 @@ const DIFFICULTY_LABELS = {
   VeryHard: 'Very Hard',
 } as const;
 
+const DIFFICULTY_OPTIONS = [
+  { value: 'auto', label: 'Auto (detected)' },
+  ...DIFFICULTIES.map((difficulty) => ({
+    value: difficulty as string,
+    label: DIFFICULTY_LABELS[difficulty],
+  })),
+];
+
 export function StorySection() {
   const { state, setStory, setStoryDraft, setDifficulty } = useEditor();
+  // The preset control is an action, not a stored value, so it resets itself.
+  const [preset, setPreset] = useState('');
   const { draft, story, appInfo, session } = state;
   if (!draft || !story || !appInfo || !session) return null;
 
@@ -29,50 +41,30 @@ export function StorySection() {
   return (
     <SectionCard title="Story">
       <div className="grid">
-        <div className="field">
-          <label className="label" htmlFor="story-difficulty">
-            Difficulty (detected: {DIFFICULTY_LABELS[session.view.difficulty]})
-          </label>
-          <select
-            id="story-difficulty"
-            value={difficultyValue}
-            onChange={(event) => {
-              const value = event.target.value;
-              setDifficulty(value === 'auto' ? 'auto' : { fixed: value as (typeof DIFFICULTIES)[number] });
-            }}
-          >
-            <option value="auto">Auto (detected)</option>
-            {DIFFICULTIES.map((difficulty) => (
-              <option key={difficulty} value={difficulty}>
-                {DIFFICULTY_LABELS[difficulty]}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="field">
-          <label className="label" htmlFor="story-preset">
-            Preset
-          </label>
-          <select
-            id="story-preset"
-            defaultValue=""
-            onChange={(event) => {
-              const name = event.target.value;
-              if (!name) return;
-              const preset = appInfo.ui.story_presets.find((entry) => entry.name === name);
-              if (preset) setStoryDraft(applyPresetToStory(preset, story, governed));
-              event.target.value = '';
-            }}
-          >
-            <option value="">Apply preset…</option>
-            {appInfo.ui.story_presets.map((preset) => (
-              <option key={preset.name} value={preset.name}>
-                {preset.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        <SelectField
+          label={`Difficulty (detected: ${DIFFICULTY_LABELS[session.view.difficulty]})`}
+          value={difficultyValue}
+          options={DIFFICULTY_OPTIONS}
+          onChange={(value) => {
+            setDifficulty(
+              value === 'auto' ? 'auto' : { fixed: value as (typeof DIFFICULTIES)[number] },
+            );
+          }}
+        />
+        <SelectField
+          label="Preset"
+          value={preset}
+          placeholder="Apply preset…"
+          options={appInfo.ui.story_presets.map((entry) => ({
+            value: entry.name,
+            label: entry.name,
+          }))}
+          onChange={(name) => {
+            const found = appInfo.ui.story_presets.find((entry) => entry.name === name);
+            if (found) setStoryDraft(applyPresetToStory(found, story, governed));
+            setPreset('');
+          }}
+        />
       </div>
 
       {groups.map((group) => (

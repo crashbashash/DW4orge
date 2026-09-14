@@ -10,6 +10,7 @@ export function SelectField<T extends string | number>({
   onChange,
   disabled,
   className,
+  placeholder,
 }: {
   label: string;
   value: T;
@@ -17,12 +18,14 @@ export function SelectField<T extends string | number>({
   onChange: (value: T) => void;
   disabled?: boolean;
   className?: string;
+  placeholder?: string;
 }) {
   return (
     <Select
       className={className ? `field ${className}` : 'field'}
       selectedKey={value}
       isDisabled={disabled}
+      placeholder={placeholder}
       onSelectionChange={(key) => {
         if (key !== null) onChange(key as T);
       }}

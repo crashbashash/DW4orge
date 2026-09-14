@@ -291,42 +291,21 @@ h3 {
 }
 
 .item-picker {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.select-popover {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1 1 240px;
-  min-width: 0;
 }
 
-/* The input and its toggle must stay on one row; as bare flex siblings they
-   wrap as soon as the cell is narrow. */
-.combo-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding-right: 2px;
+.search-field {
+  margin: 4px;
 }
 
-.combo-group:focus-within {
-  border-color: var(--accent);
-}
-
-.combo-group input {
-  flex: 1 1 auto;
-  min-width: 0;
-  border: none;
-  background: transparent;
-}
-
-.combo-group button {
-  flex: 0 0 auto;
-  border: none;
-  background: transparent;
-  padding: 4px 6px;
+.caret {
+  color: var(--text-muted);
 }
 
 .item-row .field {

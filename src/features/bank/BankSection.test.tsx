@@ -39,13 +39,12 @@ describe('BankSection', () => {
     expect(screen.getByTestId('item-row-0')).toBeTruthy();
 
     const row = screen.getByTestId('item-row-0');
-    const input = within(row).getByRole('combobox', { name: /item/i });
-    await userEvent.click(input);
-    await userEvent.type(input, 'Omega');
+    await userEvent.click(within(row).getByRole('button', { name: /item/i }));
+    await userEvent.type(await screen.findByRole('searchbox'), 'Omega');
     await userEvent.click(await screen.findByRole('option', { name: 'Omega Blade' }));
 
     expect(screen.getByTestId('bank0').textContent).toBe(String(1281));
-    expect(within(screen.getByTestId('item-row-0')).getByText(/Omega Blade/)).toBeTruthy();
+    expect(within(screen.getByTestId('item-row-0')).getAllByText(/Omega Blade/).length).toBeGreaterThan(0);
     expect(screen.getByTestId('bank0').textContent).not.toBe(String(EMPTY));
   });
 

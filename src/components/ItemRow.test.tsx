@@ -16,9 +16,8 @@ describe('ItemRow', () => {
     render(
       <ItemRow slot={0} value={EMPTY} catalogue={catalogue} mode="normal" onChange={onChange} />,
     );
-    const input = screen.getByRole('combobox', { name: /item/i });
-    await userEvent.click(input);
-    await userEvent.type(input, 'Omega');
+    await userEvent.click(screen.getByRole('button', { name: /item/i }));
+    await userEvent.type(await screen.findByRole('searchbox'), 'Omega');
     await userEvent.click(await screen.findByRole('option', { name: 'Omega Blade' }));
     expect(onChange).toHaveBeenCalledWith(1281);
   });

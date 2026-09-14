@@ -40,15 +40,20 @@ export function ItemRow({
   const { baseId, seed, mods } = splitItemId(value);
   const isEmpty = value === EMPTY;
   const rarity = colorForSeed(seed);
+  // The picker shows a known item's name, so its own span is only needed for an
+  // id that is not in the catalogue and would otherwise read as "(empty)".
+  const unknown = !isEmpty && !catalogue.some((item) => item.base_id === baseId);
 
   return (
     <div className="item-row" data-testid={`item-row-${slot}`}>
       <span className="slot" aria-hidden="true">
         {slot + 1}
       </span>
-      <span className="item-name" title={describeItemId(value, catalogue)}>
-        {describeItemId(value, catalogue)}
-      </span>
+      {unknown ? (
+        <span className="item-name" title={describeItemId(value, catalogue)}>
+          {describeItemId(value, catalogue)}
+        </span>
+      ) : null}
       <ItemPicker
         value={value}
         catalogue={catalogue}

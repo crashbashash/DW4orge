@@ -49,6 +49,7 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm run check:contrast   # palette WCAG ratios, reads src/styles/tokens.css
 ```
 
 The checked-in TypeScript bindings and mock fixtures are generated from Rust;
@@ -58,6 +59,28 @@ regenerate them with:
 cargo run -p dw4ipc --example gen_bindings
 cargo run -p dw4ipc --example gen_ui_fixtures
 ```
+
+The app icons in `src-tauri/icons/` are generated from the committed source
+artwork (square, 1024×1024, RGBA):
+
+```bash
+python3 -m venv /tmp/iconvenv
+/tmp/iconvenv/bin/pip install Pillow
+/tmp/iconvenv/bin/python tools/gen_icons.py
+```
+
+## Release
+
+`ci.yml` gates every push and pull request. `release.yml` builds the desktop
+bundles when a `v*` tag is pushed — `.deb` + `.AppImage`, `.msi` and a universal
+`.dmg`, attached to a draft GitHub release:
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+The bundles are **unsigned**, so macOS Gatekeeper and Windows SmartScreen will
+warn on first run.
 
 ## Verifying a save in-game
 

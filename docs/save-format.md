@@ -828,16 +828,22 @@ regenerate fixtures on demand.
 
 ## 9. Continuous integration and release
 
-- **`ci.yml`** (push and PR, ubuntu): `cargo fmt --check`,
-  `cargo clippy --workspace -- -D warnings`, `cargo test --workspace`,
-  `tsc --noEmit`, ESLint, `vitest run`, `vite build`.
+- **`ci.yml`** (push and PR): a Rust job (`cargo fmt --check`,
+  `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`), a frontend job (`tsc --noEmit`, ESLint,
+  `vitest run`, `vite build`, the palette contrast check), and a job that runs
+  `cargo check` on the excluded `src-tauri` crate on ubuntu-22.04 with the
+  webkit dependencies installed.
 - **`release.yml`** (tag `v*`): `tauri-apps/tauri-action` matrix over
   `ubuntu-22.04`, `windows-latest`, `macos-latest`, producing
   `.deb` + `.AppImage`, `.msi`, and a universal `.dmg`, attached to a draft
-  GitHub release.
+  GitHub release. The bundles are **unsigned**, so Gatekeeper and SmartScreen
+  will warn on first run.
 
 Bundle identity: product name `DW4orge`, identifier
-`io.github.crashbashash.dw4orge`, version `0.1.0`.
+`io.github.crashbashash.dw4orge`, version `0.1.0`. The icon set lives in
+`src-tauri/icons/` and is generated from `src-tauri/icons/source.png` by
+`tools/gen_icons.py`.
 
 ---
 

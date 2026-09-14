@@ -28,3 +28,16 @@ export function applyTheme(theme: Theme, root: HTMLElement): void {
   root.dataset.theme = theme;
   root.style.colorScheme = theme;
 }
+
+/**
+ * The theme to use now: a stored choice, otherwise the OS preference.
+ *
+ * `matchMedia` is absent in jsdom, so this is safe to call in tests.
+ */
+export function detectTheme(): Theme {
+  const prefersDark =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return resolveTheme(readStoredTheme(), prefersDark);
+}

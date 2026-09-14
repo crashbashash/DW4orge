@@ -55,6 +55,11 @@ export function createMockBackend(options: MockOptions = {}): Backend {
       return structuredClone(current);
     },
 
+    openSample: async () => {
+      current = { ...fixture(), path: '/mock/Mcd001.ps2' };
+      return structuredClone(current);
+    },
+
     newSave: async (request: NewSaveRequest) => {
       const base = fixture();
       current = {

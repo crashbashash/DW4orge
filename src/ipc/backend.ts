@@ -31,6 +31,12 @@ export interface Backend {
   speciesStats(species: Species, mode: Mode): Promise<SpeciesStats>;
   pickOpenPath(): Promise<string | null>;
   pickSavePath(defaultName: string): Promise<string | null>;
+  /**
+   * Present only on the browser mock. The shell offers a one-click sample load
+   * when it is defined, so `npm run dev` has something to show without a file
+   * dialog (and without a webkit build).
+   */
+  openSample?: () => Promise<OpenResult>;
 }
 
 export const SAVE_FILTERS = [

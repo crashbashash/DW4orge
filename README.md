@@ -94,9 +94,18 @@ npm install
 npm run build:appimage
 ```
 
-`build:appimage` is `tauri build --bundles appimage` followed by
+`build:appimage` is `NO_STRIP=true tauri build --bundles appimage` followed by
 `src-tauri/scripts/patch-appimage.sh`. Specify the bundle: the default set also
 tries `deb` and `rpm`, which need `dpkg-deb`/`rpmbuild` and fail on Arch.
+
+`NO_STRIP=true` is not optional on a rolling-release distro. linuxdeploy bundles
+the build host's libraries and strips them with its own 2024-era `strip`, which
+cannot read the `.relr.dyn` section in Arch's newer libraries, so it aborts with
+`Strip call failed ... unknown type [0x13] section '.relr.dyn'`
+([tauri#13113](https://github.com/tauri-apps/tauri/issues/13113)). Skipping the
+strip costs a few MB in the local build; release builds still strip, because the
+workflow pins `ubuntu-22.04`, whose libraries predate the problem.
+
 AppImages need FUSE to run; without it, append `--appimage-extract-and-run`.
 
 #### Wayland

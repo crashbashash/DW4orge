@@ -3841,7 +3841,7 @@
       {
         "field": "disks",
         "cap": {
-          "normal_max": 65535,
+          "normal_max": 9,
           "dtype_min": 0,
           "dtype_max": 65535
         }

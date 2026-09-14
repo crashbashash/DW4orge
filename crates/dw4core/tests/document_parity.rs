@@ -63,7 +63,10 @@ fn applying_the_scripted_edits_is_byte_identical_to_python() {
     let expected = std::fs::read(common::fixture("document/applied.raw")).expect("oracle");
 
     let mut doc = Document::from_bytes(&original).expect("parses");
-    doc.apply(&scripted_edits(), Mode::Normal)
+    // Advanced mode: the scripted disk counts run 0..33, beyond the in-game
+    // Normal cap of 9. This test is about apply's bytes matching Python, not
+    // about the cap, so it uses the range that can hold the whole script.
+    doc.apply(&scripted_edits(), Mode::Advanced)
         .expect("the scripted edits are valid");
 
     let got = doc.data().to_bytes();

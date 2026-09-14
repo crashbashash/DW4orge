@@ -180,7 +180,7 @@ pub enum DifficultyChoice {
 pub struct EditSet {
     /// Species to switch to. Rewrites `DIGIMONNAME` when it changes.
     pub species: Species,
-    /// Player name, at most 3 fullwidth characters.
+    /// Player name, at most 8 fullwidth characters.
     pub name: String,
     /// Currency.
     pub bit: u32,
@@ -1220,6 +1220,25 @@ mod tests {
             ..Default::default()
         };
         assert!(doc.validate(&edits, Mode::Advanced).is_ok());
+    }
+
+    #[test]
+    fn a_disk_count_uses_the_in_game_nine_cap_in_normal_mode() {
+        let doc = fresh_document();
+        let at_cap = EditSet {
+            disks: [9; 12],
+            ..Default::default()
+        };
+        assert!(doc.validate(&at_cap, Mode::Normal).is_ok());
+
+        let over = EditSet {
+            disks: [10; 12],
+            ..Default::default()
+        };
+        let errs = doc.validate(&over, Mode::Normal).unwrap_err();
+        assert_eq!(errs[0].path, "disks[0]");
+        // Advanced still accepts what the u16 can hold.
+        assert!(doc.validate(&over, Mode::Advanced).is_ok());
     }
 
     #[test]

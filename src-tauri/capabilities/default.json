@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "File dialogs only; the save logic never touches the network.",
+  "description": "File dialogs and the native window theme; the save logic never touches the network.",
   "windows": ["main"],
-  "permissions": ["core:default", "dialog:default"]
+  "permissions": ["core:default", "dialog:default", "core:window:allow-set-theme"]
 }

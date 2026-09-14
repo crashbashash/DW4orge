@@ -4,9 +4,8 @@ import { NumberField } from '../../components/NumberField';
 import { SectionCard } from '../../components/SectionCard';
 import { useEditor } from '../../app/EditorProvider';
 import { errorsByPath } from '../../app/selectors';
-import { capFor } from '../../lib/caps';
+import { capHint, normalMax } from '../../lib/caps';
 import { EMPTY } from '../../lib/items';
-import { formatNumber } from '../../lib/num';
 
 // The in-game bank shows 12 slots per page, so 8 pages of 12.
 const PER_PAGE = 12;
@@ -20,7 +19,7 @@ export function BankSection() {
 
   const errors = errorsByPath(state);
   const start = page * PER_PAGE;
-  const balanceCap = capFor(appInfo.ui.caps, 'bank_bit')?.cap.normal_max;
+  const balanceMax = normalMax(appInfo.ui.caps, 'bank_bit', mode);
 
   return (
     <SectionCard title="Bank">
@@ -30,7 +29,8 @@ export function BankSection() {
           value={draft.bank_bit}
           onChange={(bank_bit) => setField({ bank_bit }, 'bank_bit')}
           error={errors.get('bank_bit')}
-          hint={mode === 'normal' && balanceCap ? `max ${formatNumber(balanceCap)}` : undefined}
+          max={balanceMax}
+          hint={capHint(balanceMax)}
         />
       </div>
 

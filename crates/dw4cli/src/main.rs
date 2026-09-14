@@ -31,7 +31,7 @@ enum Command {
         /// Species display or model name.
         #[arg(long, value_parser = parse_species)]
         species: Option<Species>,
-        /// Player name, at most 3 characters.
+        /// Player name, at most 8 characters.
         #[arg(long)]
         name: Option<String>,
         /// A story preset name; omit for a storyless save.

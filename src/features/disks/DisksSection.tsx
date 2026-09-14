@@ -28,15 +28,24 @@ function setDisk(disks: EditSet['disks'], index: number, value: number): EditSet
 
 export function DisksSection() {
   const { state, setField } = useEditor();
-  const { draft, appInfo } = state;
+  const { draft, appInfo, mode } = state;
   if (!draft || !appInfo) return null;
 
   const errors = errorsByPath(state);
-  const max = capFor(appInfo.ui.caps, 'disks')?.cap.normal_max;
+  // Normal mode matches the game and caps a count at 9. Advanced keeps the
+  // field's full u16; the box still stops at that, so serde never sees a value
+  // the type cannot hold.
+  const diskCap = capFor(appInfo.ui.caps, 'disks')?.cap;
+  const diskMax =
+    diskCap === undefined
+      ? undefined
+      : mode === 'normal'
+        ? diskCap.normal_max
+        : diskCap.dtype_max;
 
   return (
     <SectionCard title="Disks">
-      <p className="muted">Owned disk counts, 0–{formatNumber(max ?? 65_535)}.</p>
+      <p className="muted">Owned disk counts, 0–{formatNumber(diskMax ?? 65_535)}.</p>
       <div className="grid preserve-case">
         {draft.disks.map((count, index) => (
           <NumberField
@@ -45,6 +54,7 @@ export function DisksSection() {
             value={count}
             onChange={(value) => setField({ disks: setDisk(draft.disks, index, value) }, `disks[${index}]`)}
             error={errors.get(`disks[${index}]`)}
+            max={diskMax}
           />
         ))}
       </div>

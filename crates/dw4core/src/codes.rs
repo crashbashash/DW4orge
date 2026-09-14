@@ -282,8 +282,11 @@ pub const CAP_ITEM_MODS: Cap = Cap {
     dtype_max: 15,
 };
 /// A disk count, stored in the high 16 bits of its u32.
+///
+/// The game tops a disk's owned count out at 9; Advanced keeps the full `u16`
+/// the field can hold.
 pub const CAP_DISK_COUNT: Cap = Cap {
-    normal_max: 0xFFFF,
+    normal_max: 9,
     dtype_min: 0,
     dtype_max: 0xFFFF,
 };

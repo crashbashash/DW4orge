@@ -26,10 +26,10 @@ pub const UNIQUE: usize = 0x000C;
 pub const DIGIMON_NAME: usize = 0x0010;
 /// 16 bytes of name padding.
 pub const DIGIMON_NAME_PAD: usize = 0x0020;
-/// 8 bytes: u16 `0xFFFF` marker, then up to 3 fullwidth chars, NUL-padded.
+/// 18 bytes: u16 `0xFFFF` marker, then up to 8 fullwidth chars, NUL-padded.
 pub const PLAYER_NAME: usize = 0x0030;
-/// 24 bytes of name padding.
-pub const PLAYER_NAME_PAD: usize = 0x0038;
+/// 14 bytes of name padding.
+pub const PLAYER_NAME_PAD: usize = 0x0042;
 
 // ---- menu snapshot + currency -------------------------------------------
 /// `LEVEL`, a menu snapshot the game recomputes.
@@ -149,8 +149,8 @@ pub const FIELDS: &[Field] = &[
     Field { name: "UNIQUE", offset: UNIQUE, len: 4 },
     Field { name: "DIGIMON_NAME", offset: DIGIMON_NAME, len: 16 },
     Field { name: "DIGIMON_NAME_PAD", offset: DIGIMON_NAME_PAD, len: 16 },
-    Field { name: "PLAYER_NAME", offset: PLAYER_NAME, len: 8 },
-    Field { name: "PLAYER_NAME_PAD", offset: PLAYER_NAME_PAD, len: 24 },
+    Field { name: "PLAYER_NAME", offset: PLAYER_NAME, len: 18 },
+    Field { name: "PLAYER_NAME_PAD", offset: PLAYER_NAME_PAD, len: 14 },
     Field { name: "MENU_LEVEL", offset: MENU_LEVEL, len: 4 },
     Field { name: "HP", offset: HP, len: 4 },
     Field { name: "MHP", offset: MHP, len: 4 },

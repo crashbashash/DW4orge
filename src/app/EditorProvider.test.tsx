@@ -15,6 +15,10 @@ function Probe() {
       <span data-testid="errors">{api.state.validation.errors.length}</span>
       <span data-testid="error">{api.state.error ?? ''}</span>
       <button onClick={() => void api.openSample()}>sample</button>
+      <button onClick={() => void api.newSave({ species: 'Dorumon', name: 'TST', story: null, difficulty: 'auto' })}>
+        new
+      </button>
+      <button onClick={() => void api.saveAs()}>save as</button>
       <button onClick={() => api.setField({ bit: 7 }, 'bit')}>edit</button>
     </div>
   );
@@ -70,5 +74,24 @@ describe('EditorProvider', () => {
     });
     await userEvent.click(screen.getByRole('button', { name: 'sample' }));
     await waitFor(() => expect(screen.getByTestId('errors').textContent).toBe('1'));
+  });
+
+  it('offers a .ps2 name for a new save', async () => {
+    const backend = renderProbe();
+    const pick = vi.spyOn(backend, 'pickSavePath').mockResolvedValue(null);
+    await waitFor(() => expect(screen.getByTestId('info').textContent).toBe('loaded'));
+    await userEvent.click(screen.getByRole('button', { name: 'new' }));
+    await waitFor(() => expect(screen.getByTestId('species').textContent).toBe('Dorumon'));
+    await userEvent.click(screen.getByRole('button', { name: 'save as' }));
+    expect(pick).toHaveBeenCalledWith('save.ps2');
+  });
+
+  it('keeps the open file name on Save As', async () => {
+    const backend = renderProbe();
+    const pick = vi.spyOn(backend, 'pickSavePath').mockResolvedValue(null);
+    await userEvent.click(screen.getByRole('button', { name: 'sample' }));
+    await waitFor(() => expect(screen.getByTestId('species').textContent).toBe('Dorumon'));
+    await userEvent.click(screen.getByRole('button', { name: 'save as' }));
+    expect(pick).toHaveBeenCalledWith('Mcd001.ps2');
   });
 });

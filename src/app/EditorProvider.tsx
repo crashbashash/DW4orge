@@ -14,6 +14,7 @@ import { describeIpcError, fieldErrors } from '../ipc/errors';
 import type { StoryDraft } from '../lib/story';
 import {
   buildEditSet,
+  defaultSaveName,
   initialState,
   reducer,
   type SectionId,
@@ -154,10 +155,10 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const saveAs = useCallback(async () => {
     if (!edits) return;
-    const path = await backend.pickSavePath('save.raw');
+    const path = await backend.pickSavePath(defaultSaveName(state.session?.path ?? null));
     if (!path) return;
     await write(() => backend.saveAs(path, edits, state.mode));
-  }, [backend, edits, state.mode, write]);
+  }, [backend, edits, state.mode, state.session, write]);
 
   const save = useCallback(async () => {
     if (!edits || !state.session) return;

@@ -1,7 +1,7 @@
 {
   "name": "dw4ipc",
-  "version": "0.1.1",
-  "core_version": "0.1.1",
+  "version": "0.1.2",
+  "core_version": "0.1.2",
   "save_size": 81920,
   "block_size": 40960,
   "schema_version": 2,

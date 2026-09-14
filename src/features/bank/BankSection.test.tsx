@@ -35,7 +35,7 @@ async function setup() {
 describe('BankSection', () => {
   it('pages through 96 slots and writes a picked item', async () => {
     await setup();
-    expect(screen.getAllByTestId(/^item-row-/)).toHaveLength(24);
+    expect(screen.getAllByTestId(/^item-row-/)).toHaveLength(12);
     expect(screen.getByTestId('item-row-0')).toBeTruthy();
 
     const row = screen.getByTestId('item-row-0');
@@ -52,10 +52,10 @@ describe('BankSection', () => {
     expect(screen.getByTestId('bank0').textContent).not.toBe(String(EMPTY));
   });
 
-  it('moves to the fourth page', async () => {
+  it('moves to the last page', async () => {
     await setup();
-    await userEvent.click(screen.getByRole('tab', { name: 'Page 4' }));
-    expect(screen.getByTestId('item-row-72')).toBeTruthy();
+    await userEvent.click(screen.getByRole('tab', { name: 'Page 8' }));
+    expect(screen.getByTestId('item-row-84')).toBeTruthy();
     expect(screen.queryByTestId('item-row-0')).toBeNull();
   });
 });

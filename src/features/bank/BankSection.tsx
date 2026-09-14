@@ -8,8 +8,9 @@ import { capFor } from '../../lib/caps';
 import { EMPTY } from '../../lib/items';
 import { formatNumber } from '../../lib/num';
 
-const PER_PAGE = 24;
-const PAGES = 4;
+// The in-game bank shows 12 slots per page, so 8 pages of 12.
+const PER_PAGE = 12;
+const PAGES = 8;
 
 export function BankSection() {
   const { state, setBankItem, setField } = useEditor();

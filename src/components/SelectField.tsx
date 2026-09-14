@@ -28,6 +28,9 @@ export function SelectField<T extends string | number>({
       <Label className="label">{label}</Label>
       <Button className="select-button">
         <SelectValue />
+        <span aria-hidden="true" className="caret">
+          ▾
+        </span>
       </Button>
       <Popover className="popover">
         <ListBox className="listbox">

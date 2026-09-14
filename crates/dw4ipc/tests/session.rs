@@ -165,10 +165,10 @@ fn save_without_a_path_asks_for_save_as() {
 }
 
 #[test]
-fn save_as_creates_a_new_ps2_only_from_a_source_card() {
+fn save_as_creates_a_ps2_with_or_without_a_source_card() {
     let dir = tempfile::tempdir().unwrap();
 
-    // No source card: creating a new .ps2 must be refused.
+    // No source card: a standard card is synthesised.
     let mut session = EditorSession::new_session();
     let opened = session
         .new_save(&NewSaveRequest {
@@ -179,15 +179,14 @@ fn save_as_creates_a_new_ps2_only_from_a_source_card() {
         })
         .unwrap();
     let edits = opened.view.to_edit_set();
-    let err = session
-        .save_as(&dir.path().join("fresh.ps2"), &edits, Mode::Normal)
-        .expect_err("must fail");
-    match err {
-        dw4ipc::IpcError::Core { variant, .. } => assert_eq!(variant, "NoSave"),
-        other => panic!("expected Core NoSave, got {other:?}"),
-    }
+    let fresh = dir.path().join("fresh.ps2");
+    let saved = session
+        .save_as(&fresh, &edits, Mode::Normal)
+        .expect("formats a card");
+    assert_eq!(saved.source, dw4ipc::SourceKind::Memcard);
+    assert_eq!(std::fs::read(&fresh).unwrap().len(), 8_650_752);
 
-    // With a source card, the same write succeeds and stays a card.
+    // With a source card, the donor is copied instead.
     let card = common::card_file(dir.path());
     let mut session = EditorSession::new_session();
     let opened = session

@@ -29,6 +29,7 @@ FLAG_OUT = REPO / "crates/dw4core/tests/fixtures/flags"
 BUILDER_OUT = REPO / "crates/dw4core/tests/fixtures/builder"
 DOC_OUT = REPO / "crates/dw4core/tests/fixtures/document"
 CARD_OUT = REPO / "crates/dw4core/tests/fixtures/mcd001/card"
+CARD_DATA_OUT = REPO / "crates/dw4core/data/card"
 
 # The real card, and the save inside it, as expected.json's provenance records.
 CARD = "memcards/Mcd001.ps2"
@@ -506,6 +507,70 @@ def dump_memcard(decomp: Path, out: Path) -> None:
     )
 
 
+def _save_dir_entry(mc):
+    """The `BASLUS-20836savedata` directory entry, or exit."""
+    for entry in mc.entries_in_root:
+        if entry.is_dir() and entry.name == "BASLUS-20836savedata":
+            return entry
+    sys.exit("the reference card has no BASLUS-20836savedata directory")
+
+
+def dump_card_assets(decomp: Path) -> None:
+    """The standard page 0 and the game's icon, for synthesising a card.
+
+    Refuses to write unless page 0 and both icons are byte-identical across
+    every `.ps2` under `--decomp`. A per-card value here would bake one card's
+    identity into every card we create.
+    """
+    # Resolved at runtime from the site-packages `import_reference` pushed, so
+    # static tools cannot see it; the same reasoning as the `dw4save` import.
+    from ps2mc.ps2mc import Ps2mc  # type: ignore[import-not-found]
+
+    cards = sorted(decomp.rglob("*.ps2"))
+    if not cards:
+        sys.exit(f"no .ps2 files under {decomp}")
+
+    pages: dict[bytes, list[str]] = {}
+    descriptors: dict[bytes, list[str]] = {}
+    icons: dict[bytes, list[str]] = {}
+    for path in cards:
+        with path.open("rb") as fh:
+            mc = Ps2mc(fh)
+            fh.seek(0)
+            page0 = fh.read(512)
+            for entry in mc.find_sub_entries(_save_dir_entry(mc)):
+                if entry.name not in ("icon.sys", "icon1.ico"):
+                    continue
+                data = mc.read_data_cluster(entry)
+                if entry.name == "icon.sys":
+                    descriptors.setdefault(data, []).append(path.name)
+                else:
+                    icons.setdefault(data, []).append(path.name)
+        pages.setdefault(page0, []).append(path.name)
+
+    for label, variants in (
+        ("page 0", pages),
+        ("icon.sys", descriptors),
+        ("icon1.ico", icons),
+    ):
+        if len(variants) != 1:
+            sys.exit(
+                f"{label} has {len(variants)} variants across {len(cards)} cards; "
+                "refusing to pick one"
+            )
+
+    CARD_DATA_OUT.mkdir(parents=True, exist_ok=True)
+    (CARD_DATA_OUT / "superblock.bin").write_bytes(next(iter(pages)))
+    (CARD_DATA_OUT / "icon.sys").write_bytes(next(iter(descriptors)))
+    (CARD_DATA_OUT / "icon1.ico").write_bytes(next(iter(icons)))
+    print(
+        "wrote data/card/superblock.bin (512 bytes), "
+        f"icon.sys ({len(next(iter(descriptors)))} bytes), "
+        f"icon1.ico ({len(next(iter(icons)))} bytes); "
+        f"verified uniform across {len(cards)} cards"
+    )
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--decomp", default="/workspace/Decomp/DW4")
@@ -570,6 +635,7 @@ def main() -> None:
     dump_builder(BUILDER_OUT)
     dump_document(decomp, DOC_OUT, bytes(save.raw))
     dump_memcard(decomp, CARD_OUT)
+    dump_card_assets(decomp)
 
 
 if __name__ == "__main__":

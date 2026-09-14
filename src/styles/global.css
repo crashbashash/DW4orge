@@ -252,6 +252,11 @@ h3 {
   margin-bottom: 10px;
 }
 
+/* A grid of fields can precede the tabs (Bank); keep the hint text off them. */
+.grid + .tabs {
+  margin-top: 14px;
+}
+
 .tabs button.active {
   background: var(--accent);
   color: var(--accent-contrast);

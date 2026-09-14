@@ -256,12 +256,14 @@ missing icon.
 ## 6. `ts-rs` bindings and the drift test
 
 - `dw4core/Cargo.toml`:
+
   ```toml
   [features]
   ts = ["dep:ts-rs"]
   [dependencies]
   ts-rs = { version = "12", optional = true }
   ```
+
 - Every payload type carries
   `#[cfg_attr(feature = "ts", derive(ts_rs::TS))]`. No `#[ts(export)]`: that
   generates tests that write into the source tree. Generation is explicit.

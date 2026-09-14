@@ -243,21 +243,29 @@ delegating straight to `dw4ipc`; `src/state.rs` owns the mutex; `src/error.rs`
 is unnecessary because `IpcError` is already `Serialize`. Capabilities grant
 only the file-dialog plugin.
 
-Verification reality, recorded rather than papered over: this crate **cannot be
-compiled in the design container**, and it is excluded from the root workspace
-so it cannot break the workspace gate. It is proven by `cargo check` run from
-`src-tauri/` (its own workspace; `cargo check -p dw4orge` does not resolve from
-the root) on a machine with the Linux build dependencies:
+Verification reality, recorded rather than papered over: this crate is excluded
+from the root workspace so a missing webkit sysroot cannot break the workspace
+gate. It is proven by `cargo check` run from `src-tauri/` (its own workspace;
+`cargo check -p dw4orge` does not resolve from the root) on a machine with the
+Linux build dependencies:
 
 ```text
 libwebkit2gtk-4.1-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev librsvg2-dev
 ```
 
-plus `tauri-cli`. That check is the only place the Tauri command signatures are
-type-checked; the command bodies are one-line delegations whose logic is tested
-through `dw4ipc`. `bundle.active` is `false` and no icon paths are set until
-plan 7 supplies them, because `generate_context!` would otherwise fail on a
-missing icon.
+The command bodies are one-line delegations whose logic is tested through
+`dw4ipc`. `bundle.active` was `false` with no icon paths until plan 7 supplied
+them, because `generate_context!` otherwise fails on a missing icon.
+
+**Update (plan 7).** This section originally said the crate *cannot* be compiled
+in the working container. That turned out to be an `apt-get update` away from
+false: refreshed sources do offer `libwebkit2gtk-4.1-dev` (2.52.6 on Ubuntu
+24.04), the container now has it, and `cargo check --all-targets`, `cargo clippy
+-D warnings` and `cargo fmt --check` all run clean in `src-tauri/`. The first
+ever compile found two defects this caveat had been hiding — `commands.rs`
+imported `dw4core` while `Cargo.toml` declared only `dw4ipc`, and the `session()`
+helper elided two lifetimes into one `MutexGuard`. `ci.yml` now runs that check
+on every push, so it cannot go unbuilt again.
 
 ---
 

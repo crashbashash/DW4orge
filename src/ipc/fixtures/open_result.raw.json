@@ -1,5 +1,5 @@
 {
-  "path": "/workspace/DW4orge/crates/dw4ipc/../dw4core/tests/fixtures/mcd001/save.raw",
+  "path": "crates/dw4core/tests/fixtures/mcd001/save.raw",
   "source": "raw",
   "view": {
     "species": "Dorumon",

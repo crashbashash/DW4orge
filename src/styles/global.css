@@ -1,5 +1,4 @@
 :root {
-  color-scheme: light dark;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
@@ -9,4 +8,10 @@
 
 body {
   margin: 0;
+  background: var(--surface);
+  color: var(--text);
+}
+
+button {
+  font: inherit;
 }

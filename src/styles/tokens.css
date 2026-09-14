@@ -1,0 +1,45 @@
+/* DW4-inspired palette: deep navy/charcoal surfaces, a gold accent and a blue
+   secondary. Driven by `data-theme` on <html>; see src/app/theme.ts. */
+
+:root {
+  --radius: 6px;
+  --gap: 8px;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Rarity colours are shared by the item grid and the picker. They are the
+     same in both themes so a colour never means two different things. */
+  --rarity-white: #c9d1d9;
+  --rarity-blue: #4c8dff;
+  --rarity-green: #3fb950;
+  --rarity-yellow: #d6b400;
+  --rarity-orange: #f0883e;
+  --rarity-pink: #db61a2;
+}
+
+:root[data-theme='light'] {
+  --surface: #eef1f6;
+  --surface-raised: #ffffff;
+  --surface-sunken: #e2e7ef;
+  --border: #c3cbd8;
+  --text: #17202e;
+  --text-muted: #5b6779;
+  --accent: #9a6b00;
+  --accent-contrast: #ffffff;
+  --danger: #b3261e;
+  --warning: #8a6100;
+  --ok: #1a7f37;
+}
+
+:root[data-theme='dark'] {
+  --surface: #0d1420;
+  --surface-raised: #16202f;
+  --surface-sunken: #0a0f18;
+  --border: #2b3a50;
+  --text: #e6ecf5;
+  --text-muted: #93a2b8;
+  --accent: #e8b64c;
+  --accent-contrast: #10151d;
+  --danger: #ff6b61;
+  --warning: #e3b341;
+  --ok: #56d364;
+}

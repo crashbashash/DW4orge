@@ -19,6 +19,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+dw4core = { path = "../crates/dw4core" }
 dw4ipc = { path = "../crates/dw4ipc" }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"

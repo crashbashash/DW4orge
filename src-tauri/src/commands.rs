@@ -7,7 +7,10 @@ use tauri::State;
 use crate::state::AppState;
 
 /// Lock the shared session.
-fn session(state: &State<'_, AppState>) -> std::sync::MutexGuard<'_, EditorSession> {
+///
+/// Takes `&AppState` rather than `&State<'_, AppState>` so the guard has one
+/// unambiguous lifetime; `&State` coerces here through `Deref`.
+fn session(state: &AppState) -> std::sync::MutexGuard<'_, EditorSession> {
     state.session.lock().expect("session mutex poisoned")
 }
 

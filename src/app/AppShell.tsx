@@ -1,6 +1,7 @@
 import { StatusBar } from '../components/StatusBar';
 import { Sidebar } from '../components/Sidebar';
 import { SummaryCard } from '../components/SummaryCard';
+import { CharacterSection } from '../features/character/CharacterSection';
 import { useEditor } from './EditorProvider';
 import { TopBar } from './TopBar';
 import { useShortcuts } from './useShortcuts';
@@ -45,9 +46,10 @@ export function AppShell() {
   );
 }
 
-/** The active section. Filled in by the section tasks; a placeholder until then. */
+/** The active section. The remaining sections land in their own tasks. */
 function SectionView() {
   const { state } = useEditor();
+  if (state.section === 'character') return <CharacterSection />;
   return (
     <section className="card">
       <h2>{state.section}</h2>

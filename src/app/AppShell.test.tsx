@@ -18,13 +18,13 @@ describe('AppShell', () => {
     renderApp();
     expect(screen.getByText(/open a ps2 memory card/i)).toBeTruthy();
     await userEvent.click(await screen.findByRole('button', { name: /load sample save/i }));
-    expect(await screen.findByText('Dorumon')).toBeTruthy();
+    expect((await screen.findAllByText('Dorumon')).length).toBeGreaterThan(0);
   });
 
   it('lists the six sections once a save is open', async () => {
     renderApp();
     await userEvent.click(await screen.findByRole('button', { name: /load sample save/i }));
-    await screen.findByText('Dorumon');
+    await screen.findAllByText('Dorumon');
     for (const name of ['Character', 'Items', 'Equipment', 'Disks', 'Story', 'Bank']) {
       expect(screen.getByRole('button', { name })).toBeTruthy();
     }
@@ -33,7 +33,7 @@ describe('AppShell', () => {
   it('undoes an edit with Ctrl+Z', async () => {
     renderApp();
     await userEvent.click(await screen.findByRole('button', { name: /load sample save/i }));
-    await screen.findByText('Dorumon');
+    await screen.findAllByText('Dorumon');
 
     // The shell only has placeholders until the section tasks land, so drive
     // the store through the mode toggle, which is a plain reducer action.

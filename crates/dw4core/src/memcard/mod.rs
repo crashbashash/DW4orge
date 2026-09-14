@@ -88,6 +88,21 @@ pub fn load_save(path: &Path) -> crate::Result<Vec<u8>> {
     }
 }
 
+/// Read a save out of an in-memory container, deciding by content.
+///
+/// The path-based [`load_save`] reads the file for you; this is the same
+/// dispatch for bytes already in memory.
+///
+/// # Errors
+/// Whatever the detected container reports.
+pub fn load_save_from_bytes(bytes: &[u8]) -> crate::Result<Vec<u8>> {
+    if is_memcard(bytes) {
+        Ps2Memcard::from_image(bytes.to_vec())?.read_save(SAVE_DIR, SAVE_FILE)
+    } else {
+        Ok(RawFile::from_bytes(bytes.to_vec(), Path::new(""))?.into_bytes())
+    }
+}
+
 /// Produce the complete bytes to write for `path`, without writing them.
 ///
 /// Reproduces the Python `save_any` semantics (spec 6.1):

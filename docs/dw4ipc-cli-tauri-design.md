@@ -178,8 +178,8 @@ The seven operations, as methods:
 | `new(req: NewSaveRequest) -> Result<OpenResult, IpcError>` | `builder`; `path` is `None`, `source` is `Raw` |
 | `view(mode) -> Result<SaveView, IpcError>` | re-project; used after a mode switch |
 | `validate(edits, mode) -> Result<Vec<Warning>, IpcError>` | authoritative; writes nothing |
-| `save() -> Result<OpenResult, IpcError>` | requires a prior `open` that had a path; a pathless (`new`) session returns `Unsupported { "no path; use save_as" }` |
-| `save_as(path) -> Result<OpenResult, IpcError>` | `Document::save` to a new path; card-from-raw needs the source card |
+| `save(edits: EditSet, mode: Mode) -> Result<OpenResult, IpcError>` | re-validates and applies the draft, then writes over the loaded path; writes nothing on rejection (spec §3.3). A pathless (`new`) session returns `Unsupported { "no path; use save_as" }` |
+| `save_as(path, edits: EditSet, mode: Mode) -> Result<OpenResult, IpcError>` | the same draft/validate/apply/write to a new path; card-from-raw needs the source card |
 | `app_info() -> AppInfo` | static; carries `ui: UiData`; never fails |
 
 Non-IPC service calls, used only by the CLI: `verify(path) -> VerifyReport`

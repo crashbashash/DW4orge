@@ -123,9 +123,10 @@ impl EditorSession {
     /// Save over the path the session was opened from.
     ///
     /// # Errors
-    /// [`IpcError::Unsupported`] for a pathless (`new_save`) session;
-    /// otherwise whatever `Document::save` reports.
-    pub fn save(&mut self) -> Result<OpenResult, IpcError> {
+    /// [`IpcError::Validation`] if any field is rejected (nothing is written),
+    /// [`IpcError::Unsupported`] for a pathless (`new_save`) session, or
+    /// whatever `Document::save` reports.
+    pub fn save(&mut self, edits: &EditSet, mode: Mode) -> Result<OpenResult, IpcError> {
         let doc = self.doc.as_mut().ok_or(IpcError::NoOpenDocument)?;
         let path = doc
             .path()
@@ -133,16 +134,27 @@ impl EditorSession {
             .ok_or_else(|| IpcError::Unsupported {
                 message: "this save has no path yet; use save_as".to_string(),
             })?;
+        // `apply` validates first and writes nothing on rejection, so a save
+        // can never persist state the validator did not accept.
+        doc.apply(edits, mode)
+            .map_err(|fields| IpcError::Validation { fields })?;
         doc.save(&path)?;
         finish(doc, &path)
     }
 
-    /// Save to `path`, creating it if needed.
+    /// Save the draft to `path`, creating it if needed.
     ///
     /// # Errors
-    /// Whatever `Document::save` reports.
-    pub fn save_as(&mut self, path: &Path) -> Result<OpenResult, IpcError> {
+    /// As [`Self::save`], plus whatever `Document::save` reports.
+    pub fn save_as(
+        &mut self,
+        path: &Path,
+        edits: &EditSet,
+        mode: Mode,
+    ) -> Result<OpenResult, IpcError> {
         let doc = self.doc.as_mut().ok_or(IpcError::NoOpenDocument)?;
+        doc.apply(edits, mode)
+            .map_err(|fields| IpcError::Validation { fields })?;
         doc.save(path)?;
         finish(doc, path)
     }

@@ -1,7 +1,9 @@
 //! Session lifecycle over the committed fixtures.
 
+mod common;
+
 use dw4core::document::DifficultyChoice;
-use dw4core::{Difficulty, Mode, Species};
+use dw4core::{Difficulty, EMPTY, Mode, Species};
 use dw4ipc::{EditorSession, NewSaveRequest, SourceKind};
 
 fn raw_fixture() -> std::path::PathBuf {
@@ -80,4 +82,130 @@ fn new_save_rejects_an_unknown_story() {
         matches!(err, dw4ipc::IpcError::Unsupported { .. }),
         "{err:?}"
     );
+}
+
+#[test]
+fn the_reconstructed_card_reads_back_as_the_raw_fixture() {
+    // Independent oracle: the duplicate fixture loader is correct only if the
+    // card's save equals save.raw.
+    let card = common::memcard_fixture();
+    let save = dw4core::memcard::load_save_from_bytes(&card).expect("reads");
+    let raw = std::fs::read(common::fixture("mcd001/save.raw")).expect("raw");
+    assert_eq!(save, raw);
+}
+
+#[test]
+fn validate_reports_field_errors() {
+    let mut session = EditorSession::new_session();
+    let opened = session.open(&raw_fixture()).expect("opens");
+    let mut edits = opened.view.to_edit_set();
+    edits.bit = 10_000_000; // above CAP_BIT.normal_max
+    let err = session
+        .validate(&edits, Mode::Normal)
+        .expect_err("rejected");
+    match err {
+        dw4ipc::IpcError::Validation { fields } => {
+            assert_eq!(fields[0].path, "bit");
+        }
+        other => panic!("expected Validation, got {other:?}"),
+    }
+}
+
+#[test]
+fn a_rejected_edit_writes_nothing() {
+    let dir = tempfile::tempdir().unwrap();
+    let target = dir.path().join("save.raw");
+    std::fs::copy(raw_fixture(), &target).unwrap();
+    let before = std::fs::read(&target).unwrap();
+
+    let mut session = EditorSession::new_session();
+    let opened = session.open(&target).unwrap();
+    let mut edits = opened.view.to_edit_set();
+    edits.bit = 10_000_000;
+    assert!(session.validate(&edits, Mode::Normal).is_err());
+    // validate is the gate; no save call happens on rejection.
+    assert_eq!(std::fs::read(&target).unwrap(), before);
+}
+
+#[test]
+fn save_round_trips_through_a_temp_file() {
+    let dir = tempfile::tempdir().unwrap();
+    let target = dir.path().join("save.raw");
+    std::fs::copy(raw_fixture(), &target).unwrap();
+
+    let mut session = EditorSession::new_session();
+    let opened = session.open(&target).unwrap();
+    let mut edits = opened.view.to_edit_set();
+    edits.bit = 1234;
+    edits.device[0] = EMPTY;
+    session.validate(&edits, Mode::Normal).expect("valid");
+    let saved = session.save(&edits, Mode::Normal).expect("saves");
+    assert_eq!(saved.view.bit, 1234);
+    assert!(saved.view.checksum_ok);
+    assert!(target.with_extension("raw.bak").exists());
+}
+
+#[test]
+fn save_without_a_path_asks_for_save_as() {
+    let mut session = EditorSession::new_session();
+    let opened = session
+        .new_save(&NewSaveRequest {
+            species: Species::Dorumon,
+            name: "TST".to_string(),
+            story: None,
+            difficulty: DifficultyChoice::Auto,
+        })
+        .unwrap();
+    let edits = opened.view.to_edit_set();
+    let err = session.save(&edits, Mode::Normal).expect_err("must fail");
+    assert!(
+        matches!(err, dw4ipc::IpcError::Unsupported { .. }),
+        "{err:?}"
+    );
+}
+
+#[test]
+fn save_as_creates_a_new_ps2_only_from_a_source_card() {
+    let dir = tempfile::tempdir().unwrap();
+
+    // No source card: creating a new .ps2 must be refused.
+    let mut session = EditorSession::new_session();
+    let opened = session
+        .new_save(&NewSaveRequest {
+            species: Species::Dorumon,
+            name: "TST".to_string(),
+            story: None,
+            difficulty: DifficultyChoice::Auto,
+        })
+        .unwrap();
+    let edits = opened.view.to_edit_set();
+    let err = session
+        .save_as(&dir.path().join("fresh.ps2"), &edits, Mode::Normal)
+        .expect_err("must fail");
+    match err {
+        dw4ipc::IpcError::Core { variant, .. } => assert_eq!(variant, "NoSave"),
+        other => panic!("expected Core NoSave, got {other:?}"),
+    }
+
+    // With a source card, the same write succeeds and stays a card.
+    let card = common::card_file(dir.path());
+    let mut session = EditorSession::new_session();
+    let opened = session
+        .new_save_on_card(
+            &NewSaveRequest {
+                species: Species::Agumon,
+                name: "abc".to_string(),
+                story: None,
+                difficulty: DifficultyChoice::Auto,
+            },
+            &card,
+        )
+        .unwrap();
+    let edits = opened.view.to_edit_set();
+    let out = dir.path().join("copy.ps2");
+    let saved = session
+        .save_as(&out, &edits, Mode::Normal)
+        .expect("writes a card");
+    assert_eq!(saved.source, dw4ipc::SourceKind::Memcard);
+    assert_eq!(std::fs::read(&out).unwrap().len(), 8_650_752);
 }

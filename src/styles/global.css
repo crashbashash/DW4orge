@@ -243,3 +243,71 @@ h3 {
   letter-spacing: 0.04em;
   color: var(--text-muted);
 }
+
+/* Items ---------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tabs button.active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+}
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-sunken);
+}
+
+.item-row .slot {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 22px;
+}
+
+.item-row .item-name {
+  flex: 1 1 150px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 4px;
+  flex: 1 1 220px;
+  min-width: 200px;
+}
+
+.item-picker .label {
+  flex-basis: 100%;
+}
+
+.item-picker input {
+  flex: 1 1 auto;
+  min-width: 120px;
+}
+
+.item-row .field {
+  min-width: 74px;
+}

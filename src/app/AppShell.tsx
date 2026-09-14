@@ -2,6 +2,7 @@ import { StatusBar } from '../components/StatusBar';
 import { Sidebar } from '../components/Sidebar';
 import { SummaryCard } from '../components/SummaryCard';
 import { CharacterSection } from '../features/character/CharacterSection';
+import { ItemsSection } from '../features/items/ItemsSection';
 import { useEditor } from './EditorProvider';
 import { TopBar } from './TopBar';
 import { useShortcuts } from './useShortcuts';
@@ -50,6 +51,7 @@ export function AppShell() {
 function SectionView() {
   const { state } = useEditor();
   if (state.section === 'character') return <CharacterSection />;
+  if (state.section === 'items') return <ItemsSection />;
   return (
     <section className="card">
       <h2>{state.section}</h2>

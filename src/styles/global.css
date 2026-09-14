@@ -395,7 +395,7 @@ legend {
 
 .mirror-preview {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 8px 16px;
   margin: 0;
   padding: 0;
@@ -403,6 +403,11 @@ legend {
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.4;
+}
+
+/* 'flag 707 = cleared' must stay on one line. */
+.mirror-preview li {
+  white-space: nowrap;
 }
 
 /* Dev-facing readout of the flag bytes the mirror system also writes. */

@@ -150,6 +150,8 @@ Known gaps, roughly in priority order:
 - [ ] **Native Wayland without the compatibility hook**, on a real compositor.
 - [ ] **Packaging for Arch and Flatpak.** The `.deb` and `.rpm` do not install on
   Arch-based distros, so those users are limited to the AppImage.
+- [ ] **Story changes not fully tested** Still need to test story changes
+  so don't expect the presets to be working properly.
 
 ## Documentation
 

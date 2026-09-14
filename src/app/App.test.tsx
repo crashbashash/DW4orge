@@ -5,6 +5,6 @@ import { App } from './App';
 describe('App', () => {
   it('renders the product name', () => {
     render(<App />);
-    expect(screen.getByText('DW4orge')).toBeInTheDocument();
+    expect(screen.getByText('DW4orge')).toBeTruthy();
   });
 });

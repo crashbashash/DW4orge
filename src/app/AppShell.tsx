@@ -2,6 +2,7 @@ import { StatusBar } from '../components/StatusBar';
 import { Sidebar } from '../components/Sidebar';
 import { SummaryCard } from '../components/SummaryCard';
 import { CharacterSection } from '../features/character/CharacterSection';
+import { BankSection } from '../features/bank/BankSection';
 import { DisksSection } from '../features/disks/DisksSection';
 import { EquipmentSection } from '../features/equipment/EquipmentSection';
 import { ItemsSection } from '../features/items/ItemsSection';
@@ -58,6 +59,7 @@ function SectionView() {
   if (state.section === 'equipment') return <EquipmentSection />;
   if (state.section === 'disks') return <DisksSection />;
   if (state.section === 'story') return <StorySection />;
+  if (state.section === 'bank') return <BankSection />;
   return (
     <section className="card">
       <h2>{state.section}</h2>

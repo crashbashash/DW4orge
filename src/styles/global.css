@@ -394,15 +394,15 @@ legend {
 }
 
 .mirror-preview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+  gap: 8px 16px;
   margin: 0;
   padding: 0;
   list-style: none;
   font-family: var(--font-mono);
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 /* Dev-facing readout of the flag bytes the mirror system also writes. */

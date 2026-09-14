@@ -146,6 +146,9 @@ All payload types derive `serde::Serialize`/`Deserialize` and `ts_rs::TS`. A
 Rust test regenerates the `.ts` bindings and fails if the checked-in output
 differs, so the two sides cannot drift.
 
+The concrete payload types, error model, session semantics and binding strategy
+are specified in [`docs/dw4ipc-cli-tauri-design.md`](dw4ipc-cli-tauri-design.md).
+
 ### 3.5 Write safety
 
 - Temp file in the destination directory, then atomic rename.

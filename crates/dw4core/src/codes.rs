@@ -3,6 +3,8 @@
 //!
 //! Nothing here touches bytes. Everything is exhaustively testable.
 
+use serde::{Deserialize, Serialize};
+
 /// The nine technique slots, in `BASE_SKILL` order.
 pub const TECHNIQUES: [&str; 9] = [
     "blunt", "slash", "stab", "bash", "shot", "crush", "blast", "heal", "force",
@@ -200,7 +202,8 @@ pub fn rarity_name(seed: u16) -> String {
 // ---------------------------------------------------------------------------
 
 /// A field's limits: what the game tolerates, and what the type can hold.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct Cap {
     /// Maximum accepted in Normal mode. Values are never negative there.
     pub normal_max: i64,

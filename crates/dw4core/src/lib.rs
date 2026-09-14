@@ -55,6 +55,9 @@ pub use name::{NAME_CHARS, decode_player_name, encode_player_name};
 pub use save::{SaveData, block_checksum, fix_checksums};
 pub use species::Species;
 
+/// The crate version, surfaced through the IPC `AppInfo` payload.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
 /// Size of one mirrored save block.
 pub const BLOCK: usize = offsets::BLOCK;
 

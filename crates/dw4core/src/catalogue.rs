@@ -21,6 +21,7 @@ pub const ARMOR_JSON: &str = include_str!("../data/armor.json");
 /// Mod chips: families, grades and stat-variant offsets.
 pub const MODS_JSON: &str = include_str!("../data/mods.json");
 
+use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::sync::OnceLock;
 
@@ -42,7 +43,8 @@ fn grade_index(name: &str) -> Option<u8> {
 }
 
 /// One catalogue entry, keyed by its base id (the low 16 bits of a stored id).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct Item {
     /// The base id: `category << 8 | index`.
     pub base_id: u32,

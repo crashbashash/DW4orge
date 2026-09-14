@@ -20,6 +20,7 @@ use serde::{Deserialize, Serialize};
 
 /// The save's difficulty. Normal is `SYSgetDifficulty() == -1`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub enum Difficulty {
     Normal,
     Hard,
@@ -55,7 +56,8 @@ impl Difficulty {
 }
 
 /// One active story flag and the mirror it is restored from, per difficulty.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct Mirror {
     /// The flag the game reads during play.
     pub active: u32,
@@ -203,7 +205,8 @@ pub fn detect_difficulty(flags: &[u8]) -> Difficulty {
 }
 
 /// A flag and the label the UI shows for it.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct FlagLabel {
     /// The flag index.
     pub flag: u32,
@@ -380,7 +383,8 @@ pub const FOLDER_LABELS: [&str; 12] = [
 ];
 
 /// A complete story state: which flags and folders to set.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct StoryPreset {
     /// Label shown in the preset dropdown.
     pub name: &'static str,

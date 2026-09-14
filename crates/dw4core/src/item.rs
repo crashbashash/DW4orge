@@ -5,6 +5,8 @@
 //! additive stat bonus** in its low 11 bits (bit 11 is masked off), and also
 //! determines the rarity colour.
 
+use serde::{Deserialize, Serialize};
+
 use crate::EMPTY;
 
 /// Graded weapons: 50 models × 5 grades + 6 unique.
@@ -21,7 +23,8 @@ pub const CAT_MOD: u8 = 0x30;
 pub const CAT_MOD_EQUIPPED: u8 = 0x34;
 
 /// The item category encoded in a base id's second byte.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub enum Category {
     /// Graded weapons.
     Weapon,

@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 
 /// One of the 16 species. The discriminant **is** the species index.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 #[repr(u8)]
 pub enum Species {
     Agumon = 0,

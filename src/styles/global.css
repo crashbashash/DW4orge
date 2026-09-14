@@ -295,6 +295,11 @@ h3 {
   min-width: 0;
 }
 
+.item-row .type-select {
+  flex: 0 0 130px;
+  min-width: 112px;
+}
+
 .select-popover {
   display: flex;
   flex-direction: column;

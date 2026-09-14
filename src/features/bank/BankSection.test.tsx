@@ -39,6 +39,9 @@ describe('BankSection', () => {
     expect(screen.getByTestId('item-row-0')).toBeTruthy();
 
     const row = screen.getByTestId('item-row-0');
+    await userEvent.click(within(row).getByRole('button', { name: /type 1/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Weapon' }));
+
     await userEvent.click(within(row).getByRole('button', { name: /item/i }));
     await userEvent.type(await screen.findByRole('searchbox'), 'Omega');
     await userEvent.click(await screen.findByRole('option', { name: 'Omega Blade' }));

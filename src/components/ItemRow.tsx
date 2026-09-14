@@ -1,4 +1,5 @@
-import type { Category, FieldError, Item, Mode } from '../bindings';
+import { useState } from 'react';
+import type { FieldError, Item, Mode } from '../bindings';
 import {
   EMPTY,
   RARITIES,
@@ -9,22 +10,29 @@ import {
   splitItemId,
   type Rarity,
 } from '../lib/items';
+import { ITEM_BUCKETS, bucketForId, type BucketId } from '../lib/itemBuckets';
 import { FieldMessage } from './FieldMessage';
 import { ItemPicker } from './ItemPicker';
 import { NumberField } from './NumberField';
+import { SelectField } from './SelectField';
+
+const TYPE_OPTIONS = [
+  { value: '', label: '(empty)' },
+  ...ITEM_BUCKETS.map((bucket) => ({ value: bucket.id, label: bucket.label })),
+];
 
 /**
  * One device-folder or bank slot.
  *
- * The stored id is `base_id | seed<<4|mods << 16`; the picker sets the base id,
- * the rarity control sets the seed (clamped into the colour's band) and the
- * mods field sets the mod count.
+ * The stored id is `base_id | seed<<4|mods << 16`. A Type control on the left
+ * (the Python editor's per-slot bucket) narrows the picker to one kind of item,
+ * so opening it never lists the whole catalogue; the rarity control sets the
+ * seed (clamped into the colour's band) and the mods field sets the mod count.
  */
 export function ItemRow({
   slot,
   value,
   catalogue,
-  categories,
   mode,
   onChange,
   error,
@@ -32,7 +40,6 @@ export function ItemRow({
   slot: number;
   value: number;
   catalogue: readonly Item[];
-  categories?: readonly Category[];
   mode: Mode;
   onChange: (id: number) => void;
   error?: FieldError[];
@@ -44,6 +51,25 @@ export function ItemRow({
   // id that is not in the catalogue and would otherwise read as "(empty)".
   const unknown = !isEmpty && !catalogue.some((item) => item.base_id === baseId);
 
+  // `browse` is only consulted while the slot is empty: once it holds an item,
+  // the Type follows that item's bucket.
+  const [browse, setBrowse] = useState<BucketId | null>(null);
+  const derived = bucketForId(value, catalogue);
+  const activeId = derived?.id ?? browse;
+  const activeBucket = ITEM_BUCKETS.find((bucket) => bucket.id === activeId) ?? null;
+
+  const onType = (next: string) => {
+    if (!next) {
+      setBrowse(null);
+      if (!isEmpty) onChange(EMPTY);
+      return;
+    }
+    const id = next as BucketId;
+    setBrowse(id);
+    // Clear so the picker's value is always inside the list it is showing.
+    if (derived?.id !== id && !isEmpty) onChange(EMPTY);
+  };
+
   return (
     <div className="item-row" data-testid={`item-row-${slot}`}>
       <span className="slot" aria-hidden="true">
@@ -54,10 +80,19 @@ export function ItemRow({
           {describeItemId(value, catalogue)}
         </span>
       ) : null}
+      <SelectField
+        className="type-select"
+        label={`Type ${slot + 1}`}
+        value={activeId ?? ''}
+        options={TYPE_OPTIONS}
+        onChange={onType}
+      />
       <ItemPicker
         value={value}
         catalogue={catalogue}
-        categories={categories}
+        categories={activeBucket?.categories}
+        disabled={activeBucket === null}
+        placeholder={activeBucket === null ? '(choose a type first)' : '(empty)'}
         onChange={(picked) => onChange(buildItemId(picked, 0, 0))}
       />
       <select

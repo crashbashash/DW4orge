@@ -27,12 +27,16 @@ export function ItemPicker({
   catalogue,
   categories,
   label = 'Item',
+  placeholder = '(empty)',
+  disabled,
   onChange,
 }: {
   value: number;
   catalogue: readonly Item[];
   categories?: readonly Category[];
   label?: string;
+  placeholder?: string;
+  disabled?: boolean;
   onChange: (baseId: number) => void;
 }) {
   const { baseId } = splitItemId(value);
@@ -46,7 +50,8 @@ export function ItemPicker({
     <Select
       className="field item-picker"
       selectedKey={selected ? selected.base_id : null}
-      placeholder="(empty)"
+      placeholder={placeholder}
+      isDisabled={disabled}
       onSelectionChange={(key) => {
         if (key !== null) onChange(buildItemId(Number(key), 0, 0));
       }}

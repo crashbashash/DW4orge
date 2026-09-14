@@ -9,16 +9,18 @@ export function SelectField<T extends string | number>({
   options,
   onChange,
   disabled,
+  className,
 }: {
   label: string;
   value: T;
   options: readonly SelectOption<T>[];
   onChange: (value: T) => void;
   disabled?: boolean;
+  className?: string;
 }) {
   return (
     <Select
-      className="field"
+      className={className ? `field ${className}` : 'field'}
       selectedKey={value}
       isDisabled={disabled}
       onSelectionChange={(key) => {

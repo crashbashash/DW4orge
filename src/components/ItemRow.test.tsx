@@ -8,18 +8,42 @@ import { ItemRow } from './ItemRow';
 const catalogue: Item[] = [
   { base_id: 0, name: 'Battle Hawk', category: 'weapon', grade: 0, note: null },
   { base_id: 1281, name: 'Omega Blade', category: 'styled', grade: null, note: null },
+  { base_id: 4096, name: 'Brave Core', category: 'core', grade: null, note: null },
 ];
 
 describe('ItemRow', () => {
+  it('disables the picker until a type is chosen', () => {
+    render(
+      <ItemRow slot={0} value={EMPTY} catalogue={catalogue} mode="normal" onChange={() => {}} />,
+    );
+    expect((screen.getByRole('button', { name: /item/i }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it('picks a catalogue item and packs its base id', async () => {
     const onChange = vi.fn();
     render(
       <ItemRow slot={0} value={EMPTY} catalogue={catalogue} mode="normal" onChange={onChange} />,
     );
+
+    await userEvent.click(screen.getByRole('button', { name: /type 1/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Weapon' }));
+
     await userEvent.click(screen.getByRole('button', { name: /item/i }));
     await userEvent.type(await screen.findByRole('searchbox'), 'Omega');
     await userEvent.click(await screen.findByRole('option', { name: 'Omega Blade' }));
     expect(onChange).toHaveBeenCalledWith(1281);
+  });
+
+  it('lists only the chosen type', async () => {
+    render(
+      <ItemRow slot={0} value={EMPTY} catalogue={catalogue} mode="normal" onChange={() => {}} />,
+    );
+    await userEvent.click(screen.getByRole('button', { name: /type 1/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Armor' }));
+
+    await userEvent.click(screen.getByRole('button', { name: /item/i }));
+    expect(await screen.findByRole('option', { name: 'Brave Core' })).toBeTruthy();
+    expect(screen.queryByRole('option', { name: 'Omega Blade' })).toBeNull();
   });
 
   it('clamps the +N bonus into the chosen rarity band', async () => {

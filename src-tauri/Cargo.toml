@@ -19,7 +19,8 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-dw4core = { path = "../crates/dw4core" }
+# One interface crate: `dw4ipc` re-exports the core types the command signatures
+# use, so the shell does not depend on `dw4core` directly.
 dw4ipc = { path = "../crates/dw4ipc" }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"

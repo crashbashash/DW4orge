@@ -1,7 +1,9 @@
 //! The IPC commands. Bodies delegate to `dw4ipc`.
 
-use dw4core::{EditSet, Mode, SaveView, Species, Warning};
-use dw4ipc::{AppInfo, EditorSession, IpcError, NewSaveRequest, OpenResult, SpeciesStats};
+use dw4ipc::{
+    AppInfo, EditSet, EditorSession, IpcError, Mode, NewSaveRequest, OpenResult, SaveView, Species,
+    SpeciesStats, Warning,
+};
 use tauri::State;
 
 use crate::state::AppState;

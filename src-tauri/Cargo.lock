@@ -736,7 +736,6 @@ dependencies = [
 name = "dw4orge"
 version = "0.1.0"
 dependencies = [
- "dw4core",
  "dw4ipc",
  "serde",
  "serde_json",

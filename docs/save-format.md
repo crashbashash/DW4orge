@@ -110,7 +110,7 @@ DW4orge/
 | `Document` | project a `SaveData` into a `SaveView`; validate and apply an `EditSet` | all of the above |
 | `CardBackend` | read/write the save file inside a card image or a raw file | nothing (native) |
 | `dw4cli` | headless entry point | `dw4core` |
-| `src-tauri` | IPC commands, window/app lifecycle, file dialogs | `dw4core`, Tauri |
+| `src-tauri` | IPC commands, window/app lifecycle, file dialogs | `dw4ipc`, Tauri |
 | React app | draft state, validation display, all presentation | Tauri IPC only |
 
 Each unit is independently testable. `dw4core` takes no third-party **format or

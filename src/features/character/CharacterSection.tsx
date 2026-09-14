@@ -9,25 +9,7 @@ import { capFor, powerupCap } from '../../lib/caps';
 import { JUNK_TIERS, junkThreshold, junkTierFromCounter } from '../../lib/junk';
 import { levelThreshold } from '../../lib/level';
 import { formatNumber } from '../../lib/num';
-
-const SPECIES: readonly Species[] = [
-  'Agumon',
-  'Veemon',
-  'Girumon',
-  'Dorumon',
-  'WereGarurumon',
-  'HerculesKabuterimon',
-  'WarGreymon',
-  'AngelRimon',
-  'Beelzemon',
-  'Alphamon',
-  'BlackWarGreymon',
-  'ImperialdramonFm',
-  'ImperialdramonPm',
-  'MetalGarurumon',
-  'DukeCrimson',
-  'Susanoomon',
-];
+import { SPECIES } from '../../lib/species';
 
 function setAt(tech: readonly number[], index: number, value: number): EditSet['tech'] {
   const next = [...tech];

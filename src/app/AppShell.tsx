@@ -2,6 +2,7 @@ import { StatusBar } from '../components/StatusBar';
 import { Sidebar } from '../components/Sidebar';
 import { SummaryCard } from '../components/SummaryCard';
 import { CharacterSection } from '../features/character/CharacterSection';
+import { EquipmentSection } from '../features/equipment/EquipmentSection';
 import { ItemsSection } from '../features/items/ItemsSection';
 import { useEditor } from './EditorProvider';
 import { TopBar } from './TopBar';
@@ -52,6 +53,7 @@ function SectionView() {
   const { state } = useEditor();
   if (state.section === 'character') return <CharacterSection />;
   if (state.section === 'items') return <ItemsSection />;
+  if (state.section === 'equipment') return <EquipmentSection />;
   return (
     <section className="card">
       <h2>{state.section}</h2>

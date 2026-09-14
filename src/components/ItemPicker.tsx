@@ -12,11 +12,13 @@ export function ItemPicker({
   value,
   catalogue,
   categories,
+  label = 'Item',
   onChange,
 }: {
   value: number;
   catalogue: readonly Item[];
   categories?: readonly Category[];
+  label?: string;
   onChange: (baseId: number) => void;
 }) {
   const { baseId } = splitItemId(value);
@@ -37,7 +39,7 @@ export function ItemPicker({
         onChange(buildItemId(Number(key), 0, 0));
       }}
     >
-      <Label className="label">Item</Label>
+      <Label className="label">{label}</Label>
       <Input placeholder="Search the catalogue" />
       <Button aria-label="Show items">▾</Button>
       <Popover>

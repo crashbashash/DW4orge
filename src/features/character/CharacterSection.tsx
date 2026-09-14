@@ -10,6 +10,7 @@ import { JUNK_TIERS, junkThreshold, junkTierFromCounter } from '../../lib/junk';
 import { levelThreshold } from '../../lib/level';
 import { formatNumber } from '../../lib/num';
 import { SPECIES } from '../../lib/species';
+import { TECHNIQUES } from '../../lib/techniques';
 
 function setAt(tech: readonly number[], index: number, value: number): EditSet['tech'] {
   const next = [...tech];
@@ -118,7 +119,7 @@ export function CharacterSection() {
         {draft.tech.map((value, index) => (
           <NumberField
             key={index}
-            label={`Technique ${index + 1}`}
+            label={TECHNIQUES[index] ?? `Technique ${index + 1}`}
             value={value}
             onChange={(next) => setField({ tech: setAt(draft.tech, index, next) }, `tech[${index}]`)}
             error={errors.get(`tech[${index}]`)}

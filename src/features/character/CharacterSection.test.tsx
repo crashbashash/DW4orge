@@ -68,4 +68,11 @@ describe('CharacterSection', () => {
     await userEvent.type(name, 'abcdef');
     expect((name as HTMLInputElement).value).toBe('abc');
   });
+
+  it('labels the nine techniques with the codes::TECHNIQUES names', async () => {
+    await setup();
+    for (const name of ['blunt', 'slash', 'stab', 'bash', 'shot', 'crush', 'blast', 'heal', 'force']) {
+      expect(screen.getByLabelText(name)).toBeTruthy();
+    }
+  });
 });

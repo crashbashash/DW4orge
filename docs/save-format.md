@@ -347,7 +347,7 @@ result is shown as a badge and can be overridden in the UI.
 ## 5. Deliberate divergences from the Python implementation
 
 The Python editor is the only known-good implementation. DW4orge deviates from
-it in three deliberate ways — two behavioural, one a feature it drops — and
+it in the deliberate ways below — behavioural, plus one feature it drops — and
 records each here.
 
 1. **Mirror table.** The Python editor carries two different *partial* mirror
@@ -373,6 +373,23 @@ records each here.
    block. It existed as a development aid while the block layout was still
    being mapped and is not carried over (see §1). Advanced **mode** remains: it
    still unlocks glitch/crash item IDs and values above the in-game caps.
+
+4. **No silent clamping in the frontend.** The Python `collect()` clamps BIT to
+   the Normal cap (`_clamp_bit`) and rewrites the widget. DW4orge shows the
+   typed value and an inline error instead, so a save never persists a number
+   the user did not enter. The authoritative caps are unchanged; only the
+   silent rewrite is dropped.
+
+5. **A mode change does not reload species stats.** The Python editor re-reads
+   the stored EXP when Advanced is toggled (via `_load_species_stats`), which
+   shows a lower value than Normal's lifted one. DW4orge keeps the draft across
+   a toggle — mode affects validation and the cap hints only — because
+   re-projecting would discard unsaved edits. Switching *species* still reloads
+   that species' stored block, through `species_stats`.
+
+6. **Techniques are labelled with the `codes::TECHNIQUES` names** (`blunt`,
+   `slash`, …), as the Python editor labels them. The names are not in any IPC
+   payload, so the frontend mirrors the nine strings.
 
 ### Story presets
 
@@ -765,6 +782,12 @@ and story-preset composition.
 New Save is a dialog (species, name, story preset, difficulty). Destructive and
 unsaved-changes actions use confirm dialogs; validation failures surface both
 inline on the offending control and in the status bar.
+
+**Implemented** (plan 6). The app runs in a plain browser against a fixture-
+backed mock, and in the Tauri shell against the real commands. The concrete
+architecture — the backend seam, store, validation flow and the game knowledge
+mirrored in `src/lib/` — is recorded in
+[`docs/frontend-design.md`](frontend-design.md).
 
 ---
 

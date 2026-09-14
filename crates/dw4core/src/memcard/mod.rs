@@ -115,7 +115,8 @@ pub fn load_save_from_bytes(bytes: &[u8]) -> crate::Result<Vec<u8>> {
 /// - an existing memory card is rewritten **in place**, returning the whole
 ///   image with only the save's clusters changed;
 /// - a `.ps2` that does not exist is created by copying `source` and swapping in
-///   the save data;
+///   the save data, or, when there is no source, by synthesising a standard
+///   card ([`format_card`]);
 /// - anything else is a bare 81,920-byte save.
 ///
 /// Returning bytes rather than writing them keeps the atomic-write, `.bak` and
@@ -123,7 +124,8 @@ pub fn load_save_from_bytes(bytes: &[u8]) -> crate::Result<Vec<u8>> {
 /// every container type.
 ///
 /// # Errors
-/// [`crate::Error::NoSave`] if a new `.ps2` is requested with no usable source.
+/// [`crate::Error::NoSave`] if a `.ps2` donor is named but is not a card, or
+/// whatever [`format_card`] reports.
 pub fn render_container(path: &Path, source: Option<&Path>, data: &[u8]) -> crate::Result<Vec<u8>> {
     if path.exists() {
         let bytes = std::fs::read(path).map_err(|source_err| crate::Error::File {
@@ -139,12 +141,11 @@ pub fn render_container(path: &Path, source: Option<&Path>, data: &[u8]) -> crat
         .extension()
         .is_some_and(|e| e.eq_ignore_ascii_case("ps2"))
     {
-        let source = source.ok_or_else(|| {
-            crate::Error::NoSave(
-                "cannot create a new .ps2 without a source card image; open an existing .ps2 first"
-                    .to_string(),
-            )
-        })?;
+        // No donor card: synthesise a standard one. A donor, when given, is
+        // still copied so its icons and any other files survive.
+        let Some(source) = source else {
+            return format_card(data);
+        };
         let bytes = std::fs::read(source).map_err(|source_err| crate::Error::File {
             path: source.to_path_buf(),
             source: source_err,

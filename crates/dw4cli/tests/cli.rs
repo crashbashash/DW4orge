@@ -136,16 +136,37 @@ fn new_writes_a_raw_save_that_reopens() {
 }
 
 #[test]
-fn new_to_ps2_without_a_card_exits_one() {
+fn new_to_ps2_without_a_card_creates_one() {
     let dir = tempfile::tempdir().unwrap();
     let out_path = dir.path().join("fresh.ps2");
     let out = bin()
-        .args(["new", "--out", out_path.to_str().unwrap()])
+        .args([
+            "new",
+            "--species",
+            "Agumon",
+            "--name",
+            "abc",
+            "--out",
+            out_path.to_str().unwrap(),
+        ])
         .output()
         .expect("runs");
-    assert_eq!(out.status.code(), Some(1));
-    let stderr = String::from_utf8_lossy(&out.stderr);
-    assert!(stderr.contains("source card"), "{stderr}");
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(std::fs::read(&out_path).unwrap().len(), 8_650_752);
+
+    // It re-opens as a card and carries the requested character.
+    let check = bin()
+        .args(["info", "--json", out_path.to_str().unwrap()])
+        .output()
+        .unwrap();
+    let value: serde_json::Value = serde_json::from_slice(&check.stdout).unwrap();
+    assert_eq!(value["source"], "memcard");
+    assert_eq!(value["view"]["species"], "Agumon");
+    assert_eq!(value["view"]["name"], "abc");
 }
 
 #[test]

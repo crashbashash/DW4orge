@@ -22,3 +22,18 @@ cargo test -p dw4core --test catalogue
 That test compares every id, name, category and grade against a dump produced by
 the Python editor, plus a description for each id and a validity verdict for
 every id in the affected ranges.
+
+## Card assets
+
+Extracted by `tools/gen_fixtures.py` (`dump_card_assets`) from the PS2 card
+images under `Decomp/DW4/` and embedded with `include_bytes!`.
+
+| File | Contents | Source |
+| --- | --- | --- |
+| `card/superblock.bin` | page 0 of a standard 8 MB card: the 340-byte superblock plus its 172-byte tail | byte-identical across all 10 cards in the tree |
+| `card/icon.sys` | the save's icon descriptor | `BASLUS-20836savedata/icon.sys` |
+| `card/icon1.ico` | the animated save icon | `BASLUS-20836savedata/icon1.ico` |
+
+The generator refuses to write them unless every card agrees, so no one card's
+identity is baked in. `docs/card-creation-design.md` explains how they are used;
+`crates/dw4core/tests/format.rs` pins the bytes they produce.

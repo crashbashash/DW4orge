@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Item } from '../bindings';
 import { EMPTY } from './items';
-import { ITEM_BUCKETS, bucketForCategory, bucketForId } from './itemBuckets';
+import { ITEM_BUCKETS, bucketForCategory, bucketForId, itemsForBucket, itemsForCategories } from './itemBuckets';
 
 const catalogue: Item[] = [
   { base_id: 0, name: 'Battle Hawk', category: 'weapon', grade: 0, note: null },
@@ -35,5 +35,23 @@ describe('buckets', () => {
     expect(bucketForId(4096, catalogue)?.id).toBe('armor');
     expect(bucketForId(EMPTY, catalogue)).toBeNull();
     expect(bucketForId(0x7777, catalogue)).toBeNull();
+  });
+});
+
+describe('bucket item lists', () => {
+  it('returns nothing for a null bucket', () => {
+    // A disabled picker must not be handed the whole catalogue.
+    expect(itemsForBucket(null, catalogue)).toEqual([]);
+  });
+
+  it('filters to the bucket and reuses one list per catalogue', () => {
+    const weapon = itemsForBucket(ITEM_BUCKETS[0], catalogue);
+    expect(weapon.map((item) => item.name)).toEqual(['Battle Hawk', 'Omega Blade']);
+    // Identity, not just equality: every row shares the same array.
+    expect(itemsForBucket(ITEM_BUCKETS[0], catalogue)).toBe(weapon);
+  });
+
+  it('returns nothing for an empty category list', () => {
+    expect(itemsForCategories([], catalogue)).toEqual([]);
   });
 });

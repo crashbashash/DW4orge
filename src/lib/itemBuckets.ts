@@ -30,3 +30,45 @@ export function bucketForId(value: number, catalogue: readonly Item[]): ItemBuck
   const item = catalogue.find((entry) => entry.base_id === baseId);
   return item ? bucketForCategory(item.category) : null;
 }
+
+const EMPTY_ITEMS: readonly Item[] = [];
+
+// Filtering the 539-entry catalogue is cheap once but not per row: every row of
+// the Items and Bank pages asks for the same bucket, and a RAC collection is
+// built from whatever array it is handed. Cache by catalogue identity.
+const cache = new WeakMap<readonly Item[], Map<string, readonly Item[]>>();
+
+/** The catalogue entries in any of `categories`, shared per catalogue. */
+export function itemsForCategories(
+  categories: readonly Category[],
+  catalogue: readonly Item[],
+): readonly Item[] {
+  if (categories.length === 0) return EMPTY_ITEMS;
+  const key = categories.map(String).join(',');
+  let byKey = cache.get(catalogue);
+  if (!byKey) {
+    byKey = new Map();
+    cache.set(catalogue, byKey);
+  }
+  const hit = byKey.get(key);
+  if (hit) return hit;
+  const filtered = catalogue.filter((item) =>
+    categories.some((category) => category === item.category),
+  );
+  byKey.set(key, filtered);
+  return filtered;
+}
+
+/**
+ * The entries in a bucket, or none at all.
+ *
+ * A null bucket deliberately yields an empty list: the picker is disabled then,
+ * and handing it the whole catalogue made each empty row build hundreds of
+ * collection nodes for nothing.
+ */
+export function itemsForBucket(
+  bucket: ItemBucket | null,
+  catalogue: readonly Item[],
+): readonly Item[] {
+  return bucket ? itemsForCategories(bucket.categories, catalogue) : EMPTY_ITEMS;
+}

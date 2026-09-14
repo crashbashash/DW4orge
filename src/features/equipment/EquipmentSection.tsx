@@ -6,6 +6,7 @@ import { SelectField } from '../../components/SelectField';
 import { useEditor } from '../../app/EditorProvider';
 import { errorsByPath } from '../../app/selectors';
 import { EMPTY } from '../../lib/items';
+import { itemsForCategories } from '../../lib/itemBuckets';
 import { resolveMods } from '../../lib/mods';
 import { deviceOptions } from './equipmentOptions';
 
@@ -96,7 +97,7 @@ export function EquipmentSection() {
             label={`Weapon mod ${slot + 1}`}
             value={baseId ?? EMPTY}
             catalogue={catalogue}
-            categories={MOD}
+            items={itemsForCategories(MOD, catalogue)}
             onChange={(picked) => setSocket('wmods', slot, picked)}
           />
         ))}
@@ -110,7 +111,7 @@ export function EquipmentSection() {
             label={`Armor mod ${slot + 1}`}
             value={baseId ?? EMPTY}
             catalogue={catalogue}
-            categories={MOD}
+            items={itemsForCategories(MOD, catalogue)}
             onChange={(picked) => setSocket('amods', slot, picked)}
           />
         ))}

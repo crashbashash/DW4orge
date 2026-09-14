@@ -9,7 +9,7 @@ import {
   describeItemId,
   splitItemId,
 } from '../lib/items';
-import { ITEM_BUCKETS, bucketForId, type BucketId } from '../lib/itemBuckets';
+import { ITEM_BUCKETS, bucketForId, itemsForBucket, type BucketId } from '../lib/itemBuckets';
 import { FieldMessage } from './FieldMessage';
 import { ItemPicker } from './ItemPicker';
 import { NumberField } from './NumberField';
@@ -89,9 +89,9 @@ export function ItemRow({
       <ItemPicker
         value={value}
         catalogue={catalogue}
-        categories={activeBucket?.categories}
+        items={itemsForBucket(activeBucket, catalogue)}
         disabled={activeBucket === null}
-        placeholder={activeBucket === null ? '(choose a type first)' : '(empty)'}
+        placeholder={activeBucket === null ? '(choose a type first)' : 'Search or pick'}
         onChange={(picked) => onChange(buildItemId(picked, 0, 0))}
       />
       <SelectField

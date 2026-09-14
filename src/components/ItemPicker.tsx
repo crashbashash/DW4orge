@@ -8,7 +8,7 @@ import {
   ListBoxItem,
   Popover,
 } from 'react-aria-components';
-import type { Category, Item } from '../bindings';
+import type { Item } from '../bindings';
 import { buildItemId, itemLabel, splitItemId } from '../lib/items';
 
 /**
@@ -16,13 +16,15 @@ import { buildItemId, itemLabel, splitItemId } from '../lib/items';
  *
  * A combo box: the field itself is editable and the list filters as you type
  * (like Vuetify's autocomplete), with the caret of the other dropdowns on the
- * right. Picking an item resets the seed and mod count; the row's rarity
+ * right. `items` is the already-filtered list to offer — callers pass a bucket
+ * or category slice, so this never builds a collection for the whole
+ * catalogue. Picking an item resets the seed and mod count; the row's rarity
  * control sets the seed afterwards.
  */
 export function ItemPicker({
   value,
   catalogue,
-  categories,
+  items,
   label = 'Item',
   placeholder = 'Search or pick',
   disabled,
@@ -30,16 +32,13 @@ export function ItemPicker({
 }: {
   value: number;
   catalogue: readonly Item[];
-  categories?: readonly Category[];
+  items: readonly Item[];
   label?: string;
   placeholder?: string;
   disabled?: boolean;
   onChange: (baseId: number) => void;
 }) {
   const { baseId } = splitItemId(value);
-  const items = categories
-    ? catalogue.filter((item) => matchesCategory(item.category, categories))
-    : catalogue;
   const selected = catalogue.find((item) => item.base_id === baseId);
 
   return (
@@ -77,11 +76,5 @@ export function ItemPicker({
         </ListBox>
       </Popover>
     </ComboBox>
-  );
-}
-
-function matchesCategory(category: Category, wanted: readonly Category[]): boolean {
-  return wanted.some((entry) =>
-    typeof entry === 'string' ? entry === category : category === entry,
   );
 }

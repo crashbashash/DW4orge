@@ -11,7 +11,7 @@ use ts_rs::{Config, ExportError, TS};
 
 use crate::error::IpcError;
 use crate::payload::{
-    AppInfo, NamedCap, NewSaveRequest, OpenResult, PowerupLimit, SourceKind, UiData,
+    AppInfo, NamedCap, NewSaveRequest, OpenResult, PowerupLimit, SourceKind, SpeciesStats, UiData,
 };
 
 /// Every payload rendered to TypeScript, keyed by file stem.
@@ -40,6 +40,7 @@ pub fn exported_types(cfg: &Config) -> Result<Vec<(&'static str, String)>, Expor
         ("Severity", Severity::export_to_string(cfg)?),
         ("SourceKind", SourceKind::export_to_string(cfg)?),
         ("Species", Species::export_to_string(cfg)?),
+        ("SpeciesStats", SpeciesStats::export_to_string(cfg)?),
         ("StoryEdit", StoryEdit::export_to_string(cfg)?),
         ("StoryKind", StoryKind::export_to_string(cfg)?),
         ("StoryPreset", StoryPreset::export_to_string(cfg)?),

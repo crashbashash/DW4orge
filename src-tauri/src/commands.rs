@@ -1,7 +1,9 @@
-//! The seven IPC commands. Bodies delegate to `dw4ipc`.
+//! The IPC commands. Bodies delegate to `dw4ipc`.
 
-use dw4core::{EditSet, Mode, SaveView, Warning};
-use dw4ipc::{AppInfo, EditorSession, IpcError, NewSaveRequest, OpenResult};
+use dw4core::{EditSet, Mode, SaveView, Species, Warning};
+use dw4ipc::{
+    AppInfo, EditorSession, IpcError, NewSaveRequest, OpenResult, SpeciesStats,
+};
 use tauri::State;
 
 use crate::state::AppState;
@@ -68,4 +70,14 @@ pub fn save_as(
 #[must_use]
 pub fn app_info() -> AppInfo {
     dw4ipc::app_info()
+}
+
+/// The stored progression for one species, for the Character selector.
+#[tauri::command]
+pub fn species_stats(
+    state: State<'_, AppState>,
+    species: Species,
+    mode: Mode,
+) -> Result<SpeciesStats, IpcError> {
+    session(&state).species_stats(species, mode)
 }

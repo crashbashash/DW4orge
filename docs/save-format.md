@@ -142,7 +142,13 @@ Rust owns the file; TypeScript owns the draft.
 ### 3.4 IPC surface
 
 `open_save`, `new_save`, `get_view`, `validate_edits`, `save`, `save_as`,
-`app_info`.
+`app_info`, `species_stats`.
+
+`species_stats(species, mode) -> SpeciesStats` reads one species' stored block
+from the open document, applying the same Normal-mode EXP lift as `get_view`.
+It exists so the Character section can show another species' level, EXP,
+techniques and power-ups when the selector changes (`_load_species_stats` parity),
+which no other command can express.
 
 Payloads are defined in `crates/dw4ipc` and derive
 `serde::Serialize`/`Deserialize` plus `ts_rs::TS`; `dw4core`'s data types gain

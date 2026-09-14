@@ -14,7 +14,7 @@ pub mod verify;
 pub use catalogue_query::catalogue_search;
 pub use error::IpcError;
 pub use payload::{
-    AppInfo, NamedCap, NewSaveRequest, OpenResult, PowerupLimit, SourceKind, UiData,
+    AppInfo, NamedCap, NewSaveRequest, OpenResult, PowerupLimit, SourceKind, SpeciesStats, UiData,
 };
 pub use session::EditorSession;
 pub use ui::{app_info, ui_data};

@@ -82,6 +82,23 @@ git tag v0.1.0 && git push origin v0.1.0
 The bundles are **unsigned**, so macOS Gatekeeper and Windows SmartScreen will
 warn on first run.
 
+### Linux
+
+The release workflow produces a `.deb` (Debian/Ubuntu) and an `.AppImage` (any
+distro). Neither `.deb` nor `.rpm` installs on an Arch-based system (Arch,
+EndeavourOS, CachyOS) — use the AppImage there, or build one locally:
+
+```bash
+sudo pacman -S --needed webkit2gtk-4.1 gtk3 librsvg
+npm install
+npm run tauri -- build --bundles appimage
+```
+
+The build needs a system webkit2gtk-4.1 (`--bundles appimage` on its own; the
+default bundle set would also try `deb`/`rpm` and fail without `dpkg-deb` or
+`rpmbuild`). AppImages need FUSE to run; without it, use
+`./DW4orge_*.AppImage --appimage-extract-and-run`.
+
 ## Verifying a save in-game
 
 Whether the game accepts an edited save can only be checked in an emulator or on

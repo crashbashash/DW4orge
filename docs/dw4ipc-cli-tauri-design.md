@@ -236,11 +236,20 @@ is unnecessary because `IpcError` is already `Serialize`. Capabilities grant
 only the file-dialog plugin.
 
 Verification reality, recorded rather than papered over: this crate **cannot be
-compiled in the design container**. It is proven by `cargo check -p dw4orge`
-(plus `cargo clippy`) on a machine with `libwebkit2gtk-4.1-dev` and
-`libsoup-3.0-dev`, and in a CI job that installs them. That job is the only
-place the Tauri command signatures are type-checked; the command bodies are
-one-line delegations whose logic is tested through `dw4ipc`.
+compiled in the design container**, and it is excluded from the root workspace
+so it cannot break the workspace gate. It is proven by `cargo check` run from
+`src-tauri/` (its own workspace; `cargo check -p dw4orge` does not resolve from
+the root) on a machine with the Linux build dependencies:
+
+```text
+libwebkit2gtk-4.1-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev librsvg2-dev
+```
+
+plus `tauri-cli`. That check is the only place the Tauri command signatures are
+type-checked; the command bodies are one-line delegations whose logic is tested
+through `dw4ipc`. `bundle.active` is `false` and no icon paths are set until
+plan 7 supplies them, because `generate_context!` would otherwise fail on a
+missing icon.
 
 ---
 

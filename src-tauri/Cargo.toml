@@ -1,0 +1,26 @@
+[package]
+name = "dw4orge"
+description = "Digimon World 4 save editor"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/crashbashash/DW4orge"
+
+# Its own workspace: this crate needs webkit2gtk-4.1, which the root workspace
+# deliberately does not require.
+[workspace]
+
+[lib]
+name = "dw4orge_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+dw4ipc = { path = "../crates/dw4ipc" }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

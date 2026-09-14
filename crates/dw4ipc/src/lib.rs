@@ -1,0 +1,21 @@
+//! The service layer shared by `dw4cli` and the Tauri shell.
+//!
+//! There is no Tauri dependency here on purpose: this crate compiles and is
+//! tested without a webkit sysroot. The Tauri crate is a thin wrapper.
+
+pub mod bindings;
+pub mod catalogue_query;
+pub mod error;
+pub mod payload;
+pub mod session;
+pub mod ui;
+pub mod verify;
+
+pub use catalogue_query::catalogue_search;
+pub use error::IpcError;
+pub use payload::{
+    AppInfo, NamedCap, NewSaveRequest, OpenResult, PowerupLimit, SourceKind, UiData,
+};
+pub use session::EditorSession;
+pub use ui::{app_info, ui_data};
+pub use verify::{CardReport, VerifyProblem, VerifyReport, verify_path};

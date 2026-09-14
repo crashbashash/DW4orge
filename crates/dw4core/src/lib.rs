@@ -42,7 +42,7 @@ pub use codes::{
     level_from_exp, level_threshold, upcnt_safe_cap,
 };
 pub use document::{
-    DifficultyChoice, EditSet, FieldError, Mode, Severity, StoryEdit, StoryKind, Warning,
+    DifficultyChoice, EditSet, FieldError, Mode, SaveView, Severity, StoryEdit, StoryKind, Warning,
 };
 pub use error::{Error, Result};
 pub use flags::{
@@ -54,6 +54,9 @@ pub use item::{Category, build_item_id, category_of, is_empty, split_item_id};
 pub use name::{NAME_CHARS, decode_player_name, encode_player_name};
 pub use save::{SaveData, block_checksum, fix_checksums};
 pub use species::Species;
+
+/// The crate version, surfaced through the IPC `AppInfo` payload.
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 /// Size of one mirrored save block.
 pub const BLOCK: usize = offsets::BLOCK;

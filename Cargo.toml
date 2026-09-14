@@ -1,6 +1,10 @@
 [workspace]
 resolver = "3"
-members = ["crates/dw4core"]
+members = ["crates/dw4core", "crates/dw4ipc", "crates/dw4cli"]
+# webkit2gtk-4.1 is not available in every build environment, and a member that
+# cannot compile would break the whole workspace gate. CI (or a developer host)
+# builds this crate in a job that installs the system dependencies.
+exclude = ["src-tauri"]
 
 [workspace.package]
 version = "0.1.0"

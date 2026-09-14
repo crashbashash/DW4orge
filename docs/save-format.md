@@ -123,12 +123,14 @@ crates are `serde`/`serde_json` (item catalogue, IPC payloads) and `thiserror`.
 Rust owns the file; TypeScript owns the draft.
 
 1. **Open** — `open_save(path)` reads the card or raw file via `CardBackend`,
-   parses `SaveData`, and returns a `SaveView`: file identity, checksum status,
-   every editable field, the item catalogue, the caps/limits table, story
-   flag+mirror state, and the detected difficulty.
+   parses `SaveData`, and returns an `OpenResult`: the file identity, the
+   container kind, and a `SaveView` (checksum status, every editable field,
+   story flag/folder state, the detected difficulty). The item catalogue, the
+   caps/limits table, the mirror table and the presets are **static** and
+   arrive once from `app_info()` as `UiData`, not on every open.
 2. **Edit** — the UI copies editable fields into a draft in a reducer with
-   undo/redo stacks. Inline validation uses `limits` and `catalogue` from the
-   view, so no round-trip per keystroke.
+   undo/redo stacks. Inline validation uses the `caps` and `catalogue` from the
+   startup `UiData`, so no round-trip per keystroke.
 3. **Save** — `save(path)` / `save_as(path)` sends the draft. The Rust side
    re-validates authoritatively, applies to a fresh copy of the originally
    loaded save, fixes both checksums, writes atomically, re-reads and verifies,
@@ -142,9 +144,20 @@ Rust owns the file; TypeScript owns the draft.
 `open_save`, `new_save`, `get_view`, `validate_edits`, `save`, `save_as`,
 `app_info`.
 
-All payload types derive `serde::Serialize`/`Deserialize` and `ts_rs::TS`. A
-Rust test regenerates the `.ts` bindings and fails if the checked-in output
-differs, so the two sides cannot drift.
+Payloads are defined in `crates/dw4ipc` and derive
+`serde::Serialize`/`Deserialize` plus `ts_rs::TS`; `dw4core`'s data types gain
+the derives they need behind an optional `ts` feature. `IpcError` is the only
+error shape crossing IPC: internally tagged, so the frontend branches on
+`kind` (`validation` carries `FieldError[]`, then `core`, `no_open_document`,
+`unsupported`).
+
+The generated bindings live in `src/bindings/*.ts` and are checked in.
+`cargo run -p dw4ipc --example gen_bindings` regenerates them; a test renders
+each type and byte-compares it against the checked-in file, so the two sides
+cannot drift.
+
+The concrete payload types, error model, session semantics and binding strategy
+are specified in [`docs/dw4ipc-cli-tauri-design.md`](dw4ipc-cli-tauri-design.md).
 
 ### 3.5 Write safety
 
@@ -824,3 +837,8 @@ software on its own.
     accessibility pass.
 12. **Release** — icons, README, NOTICE, `release.yml`, first tagged build for
     Windows, macOS and Linux.
+
+A `.ps2` cannot be created from nothing: `render_container` copies an existing
+card and overwrites the save's existing cluster chain, so `dw4cli new -o x.ps2`
+requires `--card <template.ps2>`, and `save_as` to a new `.ps2` requires a
+session opened from a card. A card image with no prior save is out of scope.

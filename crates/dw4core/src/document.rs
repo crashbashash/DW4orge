@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 
 /// How strictly edits are checked.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
     /// In-game limits enforced; crash-causing item ids rejected.
@@ -32,6 +33,7 @@ impl Mode {
 
 /// How serious a reported problem is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 #[serde(rename_all = "lowercase")]
 pub enum Severity {
     /// The edit was rejected and nothing was written.
@@ -46,6 +48,7 @@ pub enum Severity {
 /// `"bit"`, `"device[3].mods"`, `"equip.armor"`, `"story.flag[66]"`,
 /// `"bank_items[7]"`.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct FieldError {
     /// Where the problem is.
     pub path: String,
@@ -97,6 +100,7 @@ use std::path::{Path, PathBuf};
 
 /// Which of the two story fields an edit targets.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 #[serde(rename_all = "lowercase")]
 pub enum StoryKind {
     /// A `BASE_FLAG` byte.
@@ -110,6 +114,7 @@ pub enum StoryKind {
 /// Mirrors one entry of the Python `collect()` story dict, which is keyed by
 /// `(kind, index)` and valued `0`/`1`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct StoryEdit {
     /// Which field this targets.
     pub kind: StoryKind,
@@ -147,6 +152,7 @@ impl StoryEdit {
 /// it (spec 4.5). This is the `difficulty_var` of the Python GUI, whose default
 /// there is `"auto"`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 #[serde(rename_all = "lowercase")]
 pub enum DifficultyChoice {
     /// Infer from which mirror set is live.
@@ -170,6 +176,7 @@ pub enum DifficultyChoice {
 ///   adding the chip to the device folder if absent; doing that at apply time
 ///   instead means a socket cannot carry a stale index.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct EditSet {
     /// Species to switch to. Rewrites `DIGIMONNAME` when it changes.
     pub species: Species,
@@ -252,6 +259,7 @@ impl Default for EditSet {
 /// This is a *projection*, not a second source of truth: it is rebuilt from the
 /// bytes on every open and every save, and never written back wholesale.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct SaveView {
     /// Species derived from `DIGIMONNAME`.
     pub species: Species,

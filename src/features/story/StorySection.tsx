@@ -101,8 +101,8 @@ export function StorySection() {
         </div>
       </fieldset>
 
-      <div className="card">
-        <h3>Mirror preview ({DIFFICULTY_LABELS[activeDifficulty]})</h3>
+      <details className="card mirror-writes">
+        <summary>Mirror writes ({DIFFICULTY_LABELS[activeDifficulty]})</summary>
         {preview.length === 0 ? (
           <p className="muted">No story changes yet.</p>
         ) : (
@@ -114,7 +114,7 @@ export function StorySection() {
             ))}
           </ul>
         )}
-      </div>
+      </details>
     </SectionCard>
   );
 }

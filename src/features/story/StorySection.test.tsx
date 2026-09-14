@@ -57,9 +57,16 @@ describe('StorySection', () => {
     expect(screen.getByTestId('difficulty').textContent).toBe('Hard');
   });
 
-  it('previews the mirror a pending flag edit writes', async () => {
+  it('keeps the mirror writes behind a collapsed toggle', async () => {
     await setup();
+    const summary = screen.getByText(/mirror writes/i);
+    const details = summary.closest('details') as HTMLDetailsElement;
+    expect(details.open).toBe(false);
+
     await userEvent.click(screen.getByLabelText(/apocalymon/i));
+    await userEvent.click(summary);
+
+    expect(details.open).toBe(true);
     // Active flag 66 mirrors to 707 on Normal.
     expect(screen.getByText('flag 707 ← 1')).toBeTruthy();
   });

@@ -12,6 +12,22 @@ pub const MODE_DIR: u16 = 0x0020;
 /// Entry is a file.
 pub const MODE_FILE: u16 = 0x0010;
 
+/// Directory entry mode, as the reference card stores it.
+///
+/// `EXISTS | 0x0400 | DIR | 0x0007`: the middle bits are the permission set the
+/// reference uses, which this crate does not interpret.
+pub const MODE_DIR_ENTRY: u16 = 0x8427;
+
+/// File entry mode, as the reference card stores it:
+/// `EXISTS | 0x0400 | 0x0080 | FILE | 0x0007`.
+pub const MODE_FILE_ENTRY: u16 = 0x8497;
+
+/// The root directory's `..`, which the reference marks hidden.
+pub const MODE_ROOT_DOTDOT: u16 = 0xa426;
+
+/// The save directory's `..`, which the reference does not mark hidden.
+pub const MODE_SAVE_DIR_DOTDOT: u16 = 0x8427;
+
 /// Offsets within an entry, all little-endian.
 mod field {
     /// `mode`, u16.
@@ -36,6 +52,23 @@ pub struct Entry {
 }
 
 impl Entry {
+    /// Build an entry from the fields this crate understands.
+    ///
+    /// Every other byte is zero. The reference carries timestamps and
+    /// attributes we do not interpret; writing zeros there is deliberate, and
+    /// the fields we *do* set are pinned against the reference by tests.
+    #[must_use]
+    pub fn new(mode: u16, length: u32, cluster: u32, name: &str) -> Self {
+        let mut slot = [0u8; ENTRY_SIZE];
+        slot[field::MODE..field::MODE + 2].copy_from_slice(&mode.to_le_bytes());
+        slot[field::LENGTH..field::LENGTH + 4].copy_from_slice(&length.to_le_bytes());
+        slot[field::CLUSTER..field::CLUSTER + 4].copy_from_slice(&cluster.to_le_bytes());
+        let bytes = name.as_bytes();
+        let take = bytes.len().min(field::NAME_LEN);
+        slot[field::NAME..field::NAME + take].copy_from_slice(&bytes[..take]);
+        Self { slot }
+    }
+
     /// Decode the entry in `bytes`, which must be at least [`ENTRY_SIZE`] long.
     #[must_use]
     pub fn parse(bytes: &[u8]) -> Option<Self> {
@@ -122,5 +155,41 @@ impl Entry {
     #[must_use]
     pub fn is_dot(&self) -> bool {
         self.name().starts_with('.')
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_builds_the_fields_a_reference_entry_carries() {
+        let entry = Entry::new(MODE_DIR_ENTRY, 3, 0, ".");
+        assert_eq!(entry.mode(), MODE_DIR_ENTRY);
+        assert_eq!(entry.length(), 3);
+        assert_eq!(entry.cluster(), 0);
+        assert_eq!(entry.name(), ".");
+        assert!(entry.exists() && entry.is_dir() && !entry.is_file());
+    }
+
+    #[test]
+    fn a_file_entry_is_a_file() {
+        let entry = Entry::new(MODE_FILE_ENTRY, 81_920, 39, "BASLUS-20836savedata");
+        assert!(entry.is_file() && !entry.is_dir());
+        assert_eq!(entry.length(), 81_920);
+        assert_eq!(entry.cluster(), 39);
+    }
+
+    #[test]
+    fn a_long_name_is_truncated_to_the_field() {
+        let entry = Entry::new(MODE_FILE_ENTRY, 1, 1, &"x".repeat(64));
+        assert_eq!(entry.name().len(), 32);
+    }
+
+    #[test]
+    fn round_trips_through_parse() {
+        let built = Entry::new(MODE_FILE_ENTRY, 964, 119, "icon.sys");
+        let parsed = Entry::parse(&built.encode()).expect("parses");
+        assert_eq!(parsed, built);
     }
 }

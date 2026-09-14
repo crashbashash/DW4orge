@@ -19,7 +19,10 @@ mod raw;
 use std::path::Path;
 
 pub use ecc::{ECC_CHUNK, ECC_CHUNK_BYTES, ecc_chunk, page_spare};
-pub use entry::{ENTRY_SIZE, Entry, MODE_DIR, MODE_EXISTS, MODE_FILE, MODE_HIDDEN};
+pub use entry::{
+    ENTRY_SIZE, Entry, MODE_DIR, MODE_DIR_ENTRY, MODE_EXISTS, MODE_FILE, MODE_FILE_ENTRY,
+    MODE_HIDDEN, MODE_ROOT_DOTDOT, MODE_SAVE_DIR_DOTDOT,
+};
 pub use fat::{ALLOCATED_BIT, CHAIN_END, FatTable, UNALLOCATED};
 pub use geometry::{CardKind, Geometry, SB_MAGIC, SB_SIZE, Superblock};
 pub use ps2::{LocatedFile, Ps2Memcard};

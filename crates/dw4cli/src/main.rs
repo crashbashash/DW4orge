@@ -6,8 +6,9 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
-use dw4core::{Category, Difficulty, Species};
-use dw4ipc::{EditorSession, IpcError};
+use dw4core::document::DifficultyChoice;
+use dw4core::{Category, Difficulty, Mode, Species};
+use dw4ipc::{EditorSession, IpcError, NewSaveRequest};
 
 #[derive(Parser)]
 #[command(name = "dw4cli", version, about = "Edit Digimon World 4 save files")]
@@ -105,10 +106,57 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
                 output::items(&items);
             }
         }
-        Command::New { .. } | Command::Verify { .. } => {
-            return Err(IpcError::Unsupported {
-                message: "this verb lands in the next task".to_string(),
-            });
+        Command::New {
+            species,
+            name,
+            story,
+            difficulty,
+            card,
+            out,
+        } => {
+            if card.is_some()
+                && out
+                    .extension()
+                    .is_none_or(|e| !e.eq_ignore_ascii_case("ps2"))
+            {
+                return Err(IpcError::Unsupported {
+                    message: "--card only makes sense with a .ps2 output".to_string(),
+                });
+            }
+            let req = NewSaveRequest {
+                species: species.unwrap_or(Species::DEFAULT),
+                name: name.clone().unwrap_or_else(|| "TST".to_string()),
+                story: story.clone(),
+                difficulty: match difficulty {
+                    Some(d) => DifficultyChoice::Fixed(*d),
+                    None => DifficultyChoice::Auto,
+                },
+            };
+            let mut session = EditorSession::new_session();
+            let opened = match card {
+                Some(template) => session.new_save_on_card(&req, template)?,
+                None => session.new_save(&req)?,
+            };
+            let edits = opened.view.to_edit_set();
+            let result = session.save_as(out, &edits, Mode::Normal)?;
+            if cli.json {
+                output::json(&result);
+            } else {
+                println!("wrote {}", result.path.as_deref().unwrap_or("(unknown)"));
+            }
+        }
+        Command::Verify { path } => {
+            let report = dw4ipc::verify_path(path)?;
+            if cli.json {
+                output::json(&report);
+            } else {
+                output::verify(&report);
+            }
+            if !report.problems.is_empty() {
+                return Err(IpcError::Unsupported {
+                    message: format!("{} problem(s) found", report.problems.len()),
+                });
+            }
         }
     }
     Ok(())

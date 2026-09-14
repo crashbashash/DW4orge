@@ -2,7 +2,7 @@
 
 use dw4core::catalogue::category_label;
 use dw4core::{EMPTY, Item, SaveView};
-use dw4ipc::OpenResult;
+use dw4ipc::{OpenResult, VerifyReport};
 
 /// Pretty JSON for `--json`.
 pub fn json<T: serde::Serialize>(value: &T) {
@@ -58,5 +58,38 @@ pub fn items(items: &[Item]) {
             item.name,
             category_label(item.category.byte())
         );
+    }
+}
+
+/// Verification summary.
+pub fn verify(report: &VerifyReport) {
+    println!("path:       {}", report.path);
+    println!(
+        "container:  {}",
+        match report.source {
+            dw4ipc::SourceKind::Raw => "raw save",
+            dw4ipc::SourceKind::Memcard => "memory card",
+        }
+    );
+    println!(
+        "checksum:   {}",
+        if report.checksum_ok { "ok" } else { "MISMATCH" }
+    );
+    if let Some(card) = &report.card {
+        println!(
+            "card:       version {} · {} bytes/page · {} pages/cluster · {} clusters",
+            card.version, card.page_size, card.pages_per_cluster, card.clusters
+        );
+        println!(
+            "ecc:        {} pages checked · mismatch {:?}",
+            card.ecc_checked, card.ecc_mismatched
+        );
+    }
+    if report.problems.is_empty() {
+        println!("problems:   none");
+    } else {
+        for problem in &report.problems {
+            println!("{:?}: {}", problem.severity, problem.message);
+        }
     }
 }

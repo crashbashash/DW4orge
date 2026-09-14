@@ -102,3 +102,78 @@ fn dump_json_matches_the_view_shape() {
     assert!(value["device"].is_array(), "{value}");
     assert_eq!(value["species"], "Dorumon");
 }
+
+#[test]
+fn new_writes_a_raw_save_that_reopens() {
+    let dir = tempfile::tempdir().unwrap();
+    let out_path = dir.path().join("fresh.raw");
+    let out = bin()
+        .args([
+            "new",
+            "--species",
+            "Agumon",
+            "--name",
+            "abc",
+            "--out",
+            out_path.to_str().unwrap(),
+        ])
+        .output()
+        .expect("runs");
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(std::fs::read(&out_path).unwrap().len(), 81_920);
+
+    let check = bin()
+        .args(["info", "--json", out_path.to_str().unwrap()])
+        .output()
+        .unwrap();
+    let value: serde_json::Value = serde_json::from_slice(&check.stdout).unwrap();
+    assert_eq!(value["view"]["species"], "Agumon");
+    assert_eq!(value["view"]["name"], "abc");
+}
+
+#[test]
+fn new_to_ps2_without_a_card_exits_one() {
+    let dir = tempfile::tempdir().unwrap();
+    let out_path = dir.path().join("fresh.ps2");
+    let out = bin()
+        .args(["new", "--out", out_path.to_str().unwrap()])
+        .output()
+        .expect("runs");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("source card"), "{stderr}");
+}
+
+#[test]
+fn verify_reports_a_good_raw_save() {
+    let out = bin()
+        .args(["verify", "--json", &fixture("mcd001/save.raw")])
+        .output()
+        .expect("runs");
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).expect("json");
+    assert_eq!(value["checksum_ok"], true);
+    assert_eq!(value["problems"].as_array().unwrap().len(), 0);
+}
+
+#[test]
+fn verify_of_a_corrupt_save_exits_one() {
+    let dir = tempfile::tempdir().unwrap();
+    let mut bytes = std::fs::read(fixture("mcd001/save.raw")).unwrap();
+    bytes[0x10] ^= 0xFF;
+    let target = dir.path().join("corrupt.raw");
+    std::fs::write(&target, &bytes).unwrap();
+    let out = bin()
+        .args(["verify", target.to_str().unwrap()])
+        .output()
+        .expect("runs");
+    assert_eq!(out.status.code(), Some(1));
+}

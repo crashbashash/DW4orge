@@ -1,4 +1,13 @@
-import { Button, ComboBox, Input, Label, ListBox, ListBoxItem, Popover } from 'react-aria-components';
+import {
+  Button,
+  ComboBox,
+  Group,
+  Input,
+  Label,
+  ListBox,
+  ListBoxItem,
+  Popover,
+} from 'react-aria-components';
 import type { Category, Item } from '../bindings';
 import { buildItemId, itemLabel, splitItemId } from '../lib/items';
 
@@ -40,8 +49,10 @@ export function ItemPicker({
       }}
     >
       <Label className="label">{label}</Label>
-      <Input placeholder="Search the catalogue" />
-      <Button aria-label="Show items">▾</Button>
+      <Group className="combo-group">
+        <Input placeholder="Search the catalogue" />
+        <Button aria-label="Show items">▾</Button>
+      </Group>
       <Popover className="popover">
         <ListBox
           className="listbox"

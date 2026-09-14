@@ -211,8 +211,8 @@ h2 {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 12px;
 }
 
 .hint {
@@ -292,20 +292,41 @@ h3 {
 
 .item-picker {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+/* The input and its toggle must stay on one row; as bare flex siblings they
+   wrap as soon as the cell is narrow. */
+.combo-group {
+  display: flex;
+  align-items: center;
   gap: 4px;
-  flex: 1 1 220px;
-  min-width: 200px;
+  min-width: 0;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding-right: 2px;
 }
 
-.item-picker .label {
-  flex-basis: 100%;
+.combo-group:focus-within {
+  border-color: var(--accent);
 }
 
-.item-picker input {
+.combo-group input {
   flex: 1 1 auto;
-  min-width: 120px;
+  min-width: 0;
+  border: none;
+  background: transparent;
+}
+
+.combo-group button {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  padding: 4px 6px;
 }
 
 .item-row .field {

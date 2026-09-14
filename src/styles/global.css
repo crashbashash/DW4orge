@@ -355,6 +355,7 @@ legend {
 .modal-overlay {
   position: fixed;
   inset: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -379,4 +380,43 @@ legend {
   display: flex;
   justify-content: flex-end;
   gap: var(--gap);
+}
+
+/* Select and search popovers ------------------------------------------- */
+
+/* react-aria-components renders these unstyled and into a portal, so without
+   a surface of their own the options draw straight over the page text. */
+.popover {
+  z-index: 1000;
+  min-width: var(--trigger-width, 180px);
+  max-width: min(420px, 90vw);
+  padding: 4px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 45%);
+}
+
+.listbox {
+  max-height: 300px;
+  overflow: auto;
+  outline: none;
+}
+
+.listbox-item {
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listbox-item[data-focused] {
+  background: var(--surface-sunken);
+}
+
+.listbox-item[data-selected] {
+  background: var(--accent);
+  color: var(--accent-contrast);
 }

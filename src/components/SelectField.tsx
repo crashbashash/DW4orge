@@ -29,10 +29,15 @@ export function SelectField<T extends string | number>({
       <Button className="select-button">
         <SelectValue />
       </Button>
-      <Popover>
-        <ListBox>
+      <Popover className="popover">
+        <ListBox className="listbox">
           {options.map((option) => (
-            <ListBoxItem key={String(option.value)} id={option.value} textValue={option.label}>
+            <ListBoxItem
+              key={String(option.value)}
+              id={option.value}
+              textValue={option.label}
+              className="listbox-item"
+            >
               {option.label}
             </ListBoxItem>
           ))}

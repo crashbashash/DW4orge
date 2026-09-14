@@ -42,13 +42,14 @@ export function ItemPicker({
       <Label className="label">{label}</Label>
       <Input placeholder="Search the catalogue" />
       <Button aria-label="Show items">▾</Button>
-      <Popover>
+      <Popover className="popover">
         <ListBox
+          className="listbox"
           items={items}
           renderEmptyState={() => <span className="muted">No matching item</span>}
         >
           {(item) => (
-            <ListBoxItem id={item.base_id} textValue={itemLabel(item)}>
+            <ListBoxItem id={item.base_id} textValue={itemLabel(item)} className="listbox-item">
               {itemLabel(item)}
             </ListBoxItem>
           )}

@@ -775,7 +775,7 @@ and story-preset composition.
 | Character | species, player name, BIT, X-Data, junk tier, level, EXP, 9 techniques, 11 power-ups with per-slot safe caps |
 | Items | device folder, 30 slots in 3 pages × 10 rows: bucket, searchable item picker, rarity colour and seed-derived `+N`, mod count; Advanced allows raw hex IDs |
 | Equipment | 3 weapons, armor, board, 5 weapon mods, 5 armor mods; pickers filtered to the correct category, live mismatch warnings, mod chips auto-added to inventory |
-| Disks | the 12 named `DISKFOLDER` counts (HP/MP Disk α–γ, Cure, Raise, Gate, Recovery, Battery Pack, Key Chain), 0–65535 |
+| Disks | the 12 named `DISKFOLDER` counts (HP/MP Disk α–γ, Cure, Raise, Gate, Recovery, B. Pack, Key Chain), 0–65535 |
 | Story | difficulty selector with detected badge, preset dropdown, grouped flag/folder checkboxes (intro, chapters, bosses, quests, lobby, folders) and a live mirror preview |
 | Bank | balance plus 96 slots in 8 pages of 12, matching the in-game bank, reusing the Items row widget |
 

@@ -4,6 +4,9 @@
  * Mirrors `save_editor_gui.DISK_LABELS` and `FLAG_MAP.md` §11. The names are
  * not in any IPC payload — the Rust validator only labels them `Disk {i}` — so
  * they are mirrored here and pinned by the Disks section's test.
+ *
+ * Slot 11 is `B. Pack` as the game displays it; the Python editor expands it to
+ * `Battery Pack`. The game's text wins so the two screens agree.
  */
 export const DISK_LABELS: readonly string[] = [
   'HP Disk α',
@@ -16,6 +19,6 @@ export const DISK_LABELS: readonly string[] = [
   'Raise Disk',
   'Gate Disk',
   'Recovery',
-  'Battery Pack',
+  'B. Pack',
   'Key Chain',
 ];

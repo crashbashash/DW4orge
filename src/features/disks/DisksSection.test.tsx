@@ -36,6 +36,7 @@ describe('DisksSection', () => {
     await setup();
     expect(screen.getByLabelText('Key Chain')).toBeTruthy();
     expect(screen.getByLabelText('HP Disk α')).toBeTruthy();
+    expect(screen.getByLabelText('B. Pack')).toBeTruthy();
     expect(screen.getByTestId('disk0').textContent).toBe('0');
 
     const disk = screen.getByLabelText('HP Disk α');

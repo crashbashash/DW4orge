@@ -37,7 +37,7 @@ export function DisksSection() {
   return (
     <SectionCard title="Disks">
       <p className="muted">Owned disk counts, 0–{formatNumber(max ?? 65_535)}.</p>
-      <div className="grid">
+      <div className="grid preserve-case">
         {draft.disks.map((count, index) => (
           <NumberField
             key={index}

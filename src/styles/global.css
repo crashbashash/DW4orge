@@ -177,6 +177,13 @@ h2 {
   color: var(--text-muted);
 }
 
+/* Labels that are proper nouns from the game (the disks) keep their case, so
+   the Greek α/β/γ are not upper-cased into Α/Β/Γ. */
+.preserve-case .label {
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 .field .value {
   font-variant-numeric: tabular-nums;
 }

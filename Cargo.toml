@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/dw4core", "crates/dw4ipc"]
+members = ["crates/dw4core", "crates/dw4ipc", "crates/dw4cli"]
 
 [workspace.package]
 version = "0.1.0"

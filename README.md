@@ -76,8 +76,15 @@ bundles when a `v*` tag is pushed — `.deb` + `.AppImage`, `.msi` and a univers
 `.dmg`, attached to a draft GitHub release:
 
 ```bash
-git tag v0.1.0 && git push origin v0.1.0
+git tag v0.1.1 && git push origin v0.1.1
 ```
+
+The tag must match `version` in `src-tauri/tauri.conf.json`, which is what names
+the release and its bundle filenames — not the tag you push. So a release is:
+bump that version (and the workspace `Cargo.toml`, `src-tauri/Cargo.toml` and
+`package.json`), regenerate the frontend fixtures with
+`cargo run -p dw4ipc --example gen_ui_fixtures` (they embed the version), refresh
+both lockfiles, then tag the matching `v<version>`.
 
 The bundles are **unsigned**, so macOS Gatekeeper and Windows SmartScreen will
 warn on first run.
@@ -127,7 +134,7 @@ paths and does nothing if none is found.
 To force XWayland anyway (or to test whether a Wayland problem is ours):
 
 ```bash
-DW4ORGE_GDK_BACKEND=x11 ./DW4orge_0.1.0_amd64.AppImage
+DW4ORGE_GDK_BACKEND=x11 ./DW4orge_*.AppImage
 ```
 
 The `.deb` and the raw binary need none of this — they use the system's own

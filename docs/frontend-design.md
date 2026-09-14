@@ -201,7 +201,7 @@ There is no browser and no `webkit2gtk` in the development container, so:
   under a virtual display.** `src-tauri` is excluded from the root workspace and
   has its own gate: `cargo check --all-targets`, `cargo clippy -D warnings` and
   `cargo fmt --check` are clean there, and `ci.yml` repeats the check on every
-  push. `npx tauri build --bundles deb` produces `DW4orge_0.1.0_amd64.deb`, whose
+  push. `npx tauri build --bundles deb` produces `DW4orge_<version>_amd64.deb`, whose
   control metadata, `.desktop` entry and 32/128/256 hicolor icons were inspected.
   The app has also been driven end to end under Xvfb: it renders, opens a card
   through the native file dialog, and saves an edit that `dw4cli verify` reports

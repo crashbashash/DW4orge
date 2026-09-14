@@ -843,7 +843,7 @@ regenerate fixtures on demand.
   hosts (see the README's Linux section).
 
 Bundle identity: product name `DW4orge`, identifier
-`io.github.crashbashash.dw4orge`, version `0.1.0`. The icon set lives in
+`io.github.crashbashash.dw4orge`, version `0.1.1`. The icon set lives in
 `src-tauri/icons/` and is generated from `src-tauri/icons/source.png` by
 `tools/gen_icons.py`.
 

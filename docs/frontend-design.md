@@ -197,14 +197,16 @@ There is no browser and no `webkit2gtk` in the development container, so:
 
 - **No visual check.** Layout, colour and focus behaviour are unverified here;
   they are exercised by running `npm run dev` on a machine with a browser.
-- **The Tauri shell is compiled but not launched.** `src-tauri` is excluded from
-  the root workspace, so it has its own gate. The container now has
-  `libwebkit2gtk-4.1-dev` and friends installed, and `cargo check
-  --all-targets`, `cargo clippy -D warnings` and `cargo fmt --check` are clean in
-  `src-tauri/`; the `tauri` job in `ci.yml` runs the same check on every push.
-  The app itself is never started here (there is no display), so the window, the
-  dialog plugin and the capability file are still unexercised, and no bundle has
-  been produced.
+- **The Tauri shell is compiled and packaged, but not launched.** `src-tauri` is
+  excluded from the root workspace, so it has its own gate: `cargo check
+  --all-targets`, `cargo clippy -D warnings` and `cargo fmt --check` are clean
+  there, and the `tauri` job in `ci.yml` repeats the check on every push. A Linux
+  `.deb` has also been built locally (`npx tauri build --bundles deb`) and
+  inspected: the control metadata, the `usr/share/applications` entry and the
+  32/128/256 hicolor icons are all correct, so the bundle config and icon wiring
+  are proven for Linux. Windows and macOS bundles have **not** been built, and the
+  app is never started here (there is no display), so the window, the dialog
+  plugin and the capability file remain unexercised.
 - **The workflows have never run.** They are actionlint-clean and every action
   is pinned to a commit, but there is no GitHub access here, so `ci.yml` and
   `release.yml` are unexercised and the first `v*` tag is cut by hand.

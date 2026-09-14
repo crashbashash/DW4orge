@@ -838,10 +838,12 @@ regenerate fixtures on demand.
   `ubuntu-22.04`, `windows-latest`, `macos-latest`, producing
   `.deb` + `.AppImage`, `.msi`, and a universal `.dmg`, attached to a draft
   GitHub release. The bundles are **unsigned**, so Gatekeeper and SmartScreen
-  will warn on first run.
+  will warn on first run. It runs the build through
+  `src-tauri/scripts/tauri-build.sh`, which patches the AppImage for Wayland
+  hosts (see the README's Linux section).
 
 Bundle identity: product name `DW4orge`, identifier
-`io.github.crashbashash.dw4orge`, version `0.1.0`. The icon set lives in
+`io.github.crashbashash.dw4orge`, version `0.1.1`. The icon set lives in
 `src-tauri/icons/` and is generated from `src-tauri/icons/source.png` by
 `tools/gen_icons.py`.
 

@@ -76,8 +76,15 @@ bundles when a `v*` tag is pushed — `.deb` + `.AppImage`, `.msi` and a univers
 `.dmg`, attached to a draft GitHub release:
 
 ```bash
-git tag v0.1.0 && git push origin v0.1.0
+git tag v0.1.1 && git push origin v0.1.1
 ```
+
+The tag must match `version` in `src-tauri/tauri.conf.json`, which is what names
+the release and its bundle filenames — not the tag you push. So a release is:
+bump that version (and the workspace `Cargo.toml`, `src-tauri/Cargo.toml` and
+`package.json`), regenerate the frontend fixtures with
+`cargo run -p dw4ipc --example gen_ui_fixtures` (they embed the version), refresh
+both lockfiles, then tag the matching `v<version>`.
 
 The bundles are **unsigned**, so macOS Gatekeeper and Windows SmartScreen will
 warn on first run.
@@ -91,13 +98,47 @@ EndeavourOS, CachyOS) — use the AppImage there, or build one locally:
 ```bash
 sudo pacman -S --needed webkit2gtk-4.1 gtk3 librsvg
 npm install
-npm run tauri -- build --bundles appimage
+npm run build:appimage
 ```
 
-The build needs a system webkit2gtk-4.1 (`--bundles appimage` on its own; the
-default bundle set would also try `deb`/`rpm` and fail without `dpkg-deb` or
-`rpmbuild`). AppImages need FUSE to run; without it, use
-`./DW4orge_*.AppImage --appimage-extract-and-run`.
+`build:appimage` is `NO_STRIP=true tauri build --bundles appimage` followed by
+`src-tauri/scripts/patch-appimage.sh`. Specify the bundle: the default set also
+tries `deb` and `rpm`, which need `dpkg-deb`/`rpmbuild` and fail on Arch.
+
+`NO_STRIP=true` is not optional on a rolling-release distro. linuxdeploy bundles
+the build host's libraries and strips them with its own 2024-era `strip`, which
+cannot read the `.relr.dyn` section in Arch's newer libraries, so it aborts with
+`Strip call failed ... unknown type [0x13] section '.relr.dyn'`
+([tauri#13113](https://github.com/tauri-apps/tauri/issues/13113)). Skipping the
+strip costs a few MB in the local build; release builds still strip, because the
+workflow pins `ubuntu-22.04`, whose libraries predate the problem.
+
+AppImages need FUSE to run; without it, append `--appimage-extract-and-run`.
+
+#### Wayland
+
+AppImages built by linuxdeploy bundle the *build machine's* Wayland client
+libraries. On a host with a newer Wayland — Arch, for instance — the bundled
+`libwayland-client` cannot talk to the compositor and WebKitGTK aborts at
+startup with:
+
+```text
+Could not create default EGL display: EGL_BAD_PARAMETER. Aborting...
+```
+
+The patch step appends a hook to the AppImage that preloads the host's own
+`libwayland-client`, and drops linuxdeploy's `GDK_BACKEND=x11` pin so GTK can use
+Wayland directly instead of going through XWayland. It searches the usual distro
+paths and does nothing if none is found.
+
+To force XWayland anyway (or to test whether a Wayland problem is ours):
+
+```bash
+DW4ORGE_GDK_BACKEND=x11 ./DW4orge_*.AppImage
+```
+
+The `.deb` and the raw binary need none of this — they use the system's own
+libraries.
 
 ## Verifying a save in-game
 

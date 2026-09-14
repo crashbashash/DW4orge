@@ -61,6 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          tauriScript: bash src-tauri/scripts/tauri-build.sh
           tagName: v__VERSION__
           releaseName: DW4orge v__VERSION__
           releaseBody: |

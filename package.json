@@ -1,7 +1,7 @@
 {
   "name": "dw4orge",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check:contrast": "node tools/check_contrast.mjs",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:appimage": "NO_STRIP=true tauri build --bundles appimage && bash src-tauri/scripts/patch-appimage.sh"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

@@ -1,0 +1,20 @@
+[package]
+name = "dw4ipc"
+description = "IPC payloads and the shared service layer for DW4orge"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+dw4core = { path = "../dw4core", features = ["ts"] }
+serde = { version = "1", features = ["derive"] }
+ts-rs = "12"
+
+[dev-dependencies]
+serde_json = "1"
+tempfile = "3"

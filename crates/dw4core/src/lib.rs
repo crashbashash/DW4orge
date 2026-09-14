@@ -42,7 +42,7 @@ pub use codes::{
     level_from_exp, level_threshold, upcnt_safe_cap,
 };
 pub use document::{
-    DifficultyChoice, EditSet, FieldError, Mode, Severity, StoryEdit, StoryKind, Warning,
+    DifficultyChoice, EditSet, FieldError, Mode, SaveView, Severity, StoryEdit, StoryKind, Warning,
 };
 pub use error::{Error, Result};
 pub use flags::{

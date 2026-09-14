@@ -39,12 +39,12 @@ native window title bar.
 
 | Section | What it edits |
 | --- | --- |
-| **Character** | Species (16), player name (up to 8 characters, the in-game limit), BIT, X-Data, junk-shop tier, level, EXP, the 9 technique levels and the 11 X-Data power-ups |
+| **Character** | Species (16), player name, BIT, X-Data, junk-shop tier, level, EXP, the 9 technique levels and the 11 X-Data power-ups |
 | **Items** | The 30-slot device folder: searchable picker over the 539-item catalogue, rarity colour, `+N` bonus and mod count; Advanced also edits raw ids |
 | **Equipment** | 3 weapons, armor, board, and the 5 weapon / 5 armor mod sockets. A mod chip that is not in the inventory is added for you |
 | **Disks** | The 12 disk counts — HP/MP α–γ, Cure, Raise, Gate, Recovery, B. Pack, Key Chain |
 | **Story** | Difficulty, six one-click story presets, and the 1024 story flags and folders grouped by intro, chapters, bosses, quests, lobby and folders, with a live preview of the difficulty's mirrors |
-| **Bank** | Balance and the 96 item slots, in the game's 8 pages of 12 |
+| **Bank** | Balance and the item slots |
 
 The item catalogue and every game constant are vendored from the disassembly,
 so the editor's labels, rarity colours and caps match the game rather than being
@@ -76,10 +76,6 @@ Download the bundle for your OS from the Releases page:
 | Linux | `.deb` (Debian/Ubuntu) or `.AppImage` (any distro) |
 | Windows | `.msi` |
 | macOS | universal `.dmg` |
-
-The bundles are **unsigned by design**, so macOS Gatekeeper and Windows
-SmartScreen warn on first run. On Arch-based distros (Arch, EndeavourOS,
-CachyOS) use the AppImage — the `.deb` and `.rpm` do not install there.
 
 ### In a browser, no Rust build needed
 
@@ -140,41 +136,17 @@ cargo run -p dw4ipc --example gen_ui_fixtures
 The app icons are generated from the committed 1024² source artwork with
 `tools/gen_icons.py` (needs Pillow).
 
-### Releasing
-
-`release.yml` builds all three platforms when a `v*` tag is pushed, and opens a
-**draft** release. The tag must match `version` in `src-tauri/tauri.conf.json`,
-which is what names the release — so a release is: bump that version (and the
-workspace `Cargo.toml`, `src-tauri/Cargo.toml` and `package.json`), run
-`gen_ui_fixtures`, refresh the lockfiles, then tag the matching `v<version>`.
-
-### Linux packaging notes
-
-`npm run build:appimage` applies the Wayland compatibility hook after the
-bundle is built. Two gotchas are baked into the scripts: `NO_STRIP=true` is
-required on rolling-release distros (linuxdeploy's bundled `strip` cannot read
-`.relr.dyn`), and the hook preloads the host's own `libwayland-client` so an
-AppImage built on an older distro still starts on a newer one. To force
-XWayland: `DW4ORGE_GDK_BACKEND=x11 ./DW4orge_*.AppImage`.
-
 ## Roadmap
 
 Known gaps, roughly in priority order:
 
 - [ ] **Launch the Windows `.msi` and macOS `.dmg`.** CI builds them, but no one
-  has ever run them. (The bundles will stay unsigned: Gatekeeper and SmartScreen
-  warnings are expected, not a bug.)
-- [ ] **Verify edits in PCSX2.** The automated suite cannot see whether the game
-  accepts an edited card; the eight-character name and the in-game disk cap of 9
-  were set from observation and should be re-checked after format changes.
+  has ever run them.
 - [ ] **Test the other PS2 regional releases.** Only NTSC-U is exercised. The
   NTSC-J and PAL discs may name the save on the card differently (NTSC-U is
   `BASLUS-20836savedata`) and could differ in the fields themselves; every
   measurement in `docs/save-format.md` comes from the NTSC-U image.
-- [ ] **Build a GameCube save editor.** DW4 also shipped on GameCube, and its
-  save format is not the PS2 one. That means a second format and container
-  implementation rather than a flag: either a new module in `dw4core` or a
-  sibling crate and frontend.
+- [ ] **Build a GameCube save editor.** DW4orge is only setup to work with PS2.
 - [ ] **Native Wayland without the compatibility hook**, on a real compositor.
 - [ ] **`AppInfo.name` reports `"dw4ipc"`** — it is the service crate's package
   name, not the product name.

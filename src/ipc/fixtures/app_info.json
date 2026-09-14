@@ -1,0 +1,4425 @@
+{
+  "name": "dw4ipc",
+  "version": "0.1.0",
+  "core_version": "0.1.0",
+  "save_size": 81920,
+  "block_size": 40960,
+  "schema_version": 2,
+  "ui": {
+    "catalogue": [
+      {
+        "base_id": 0,
+        "name": "Battle Hawk",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 1,
+        "name": "Battle Hawk",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 2,
+        "name": "Battle Hawk",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 3,
+        "name": "Battle Hawk",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 4,
+        "name": "Battle Hawk",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 5,
+        "name": "Van Blade",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 6,
+        "name": "Van Blade",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 7,
+        "name": "Van Blade",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8,
+        "name": "Van Blade",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 9,
+        "name": "Van Blade",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 10,
+        "name": "Crusher",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 11,
+        "name": "Crusher",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 12,
+        "name": "Crusher",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 13,
+        "name": "Crusher",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 14,
+        "name": "Crusher",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 15,
+        "name": "Destroyer",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 16,
+        "name": "Destroyer",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 17,
+        "name": "Destroyer",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 18,
+        "name": "Destroyer",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 19,
+        "name": "Destroyer",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 20,
+        "name": "Soul Burn",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 21,
+        "name": "Soul Burn",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 22,
+        "name": "Soul Burn",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 23,
+        "name": "Soul Burn",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 24,
+        "name": "Soul Burn",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 25,
+        "name": "Long Sword",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 26,
+        "name": "Long Sword",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 27,
+        "name": "Long Sword",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 28,
+        "name": "Long Sword",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 29,
+        "name": "Long Sword",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 30,
+        "name": "War Sword",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 31,
+        "name": "War Sword",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 32,
+        "name": "War Sword",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 33,
+        "name": "War Sword",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 34,
+        "name": "War Sword",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 35,
+        "name": "Victor Sword",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 36,
+        "name": "Victor Sword",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 37,
+        "name": "Victor Sword",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 38,
+        "name": "Victor Sword",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 39,
+        "name": "Victor Sword",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 40,
+        "name": "Phantom",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 41,
+        "name": "Phantom",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 42,
+        "name": "Phantom",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 43,
+        "name": "Phantom",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 44,
+        "name": "Phantom",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 45,
+        "name": "Onslaught",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 46,
+        "name": "Onslaught",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 47,
+        "name": "Onslaught",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 48,
+        "name": "Onslaught",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 49,
+        "name": "Onslaught",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 50,
+        "name": "Dyno Tooth",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 51,
+        "name": "Dyno Tooth",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 52,
+        "name": "Dyno Tooth",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 53,
+        "name": "Dyno Tooth",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 54,
+        "name": "Dyno Tooth",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 55,
+        "name": "Red Moon",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 56,
+        "name": "Red Moon",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 57,
+        "name": "Red Moon",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 58,
+        "name": "Red Moon",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 59,
+        "name": "Red Moon",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 60,
+        "name": "Rune Blade",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 61,
+        "name": "Rune Blade",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 62,
+        "name": "Rune Blade",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 63,
+        "name": "Rune Blade",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 64,
+        "name": "Rune Blade",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 65,
+        "name": "Light Ring",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 66,
+        "name": "Light Ring",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 67,
+        "name": "Light Ring",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 68,
+        "name": "Light Ring",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 69,
+        "name": "Light Ring",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 70,
+        "name": "Dragoon",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 71,
+        "name": "Dragoon",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 72,
+        "name": "Dragoon",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 73,
+        "name": "Dragoon",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 74,
+        "name": "Dragoon",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 75,
+        "name": "Kamikiri Maru",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 76,
+        "name": "Kamikiri Maru",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 77,
+        "name": "Kamikiri Maru",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 78,
+        "name": "Kamikiri Maru",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 79,
+        "name": "Kamikiri Maru",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 80,
+        "name": "Kurogane Maru",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 81,
+        "name": "Kurogane Maru",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 82,
+        "name": "Kurogane Maru",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 83,
+        "name": "Kurogane Maru",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 84,
+        "name": "Kurogane Maru",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 85,
+        "name": "Denji Prince",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 86,
+        "name": "Denji Prince",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 87,
+        "name": "Denji Prince",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 88,
+        "name": "Denji Prince",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 89,
+        "name": "Denji Prince",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 90,
+        "name": "Yasha Glass",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 91,
+        "name": "Yasha Glass",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 92,
+        "name": "Yasha Glass",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 93,
+        "name": "Yasha Glass",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 94,
+        "name": "Yasha Glass",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 95,
+        "name": "Ankokuten",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 96,
+        "name": "Ankokuten",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 97,
+        "name": "Ankokuten",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 98,
+        "name": "Ankokuten",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 99,
+        "name": "Ankokuten",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 100,
+        "name": "Dbl Axe",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 101,
+        "name": "Dbl Axe",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 102,
+        "name": "Dbl Axe",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 103,
+        "name": "Dbl Axe",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 104,
+        "name": "Dbl Axe",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 105,
+        "name": "Rage Hammer",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 106,
+        "name": "Rage Hammer",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 107,
+        "name": "Rage Hammer",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 108,
+        "name": "Rage Hammer",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 109,
+        "name": "Rage Hammer",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 110,
+        "name": "Hekatoncheir",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 111,
+        "name": "Hekatoncheir",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 112,
+        "name": "Hekatoncheir",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 113,
+        "name": "Hekatoncheir",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 114,
+        "name": "Hekatoncheir",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 115,
+        "name": "Fang Smasher",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 116,
+        "name": "Fang Smasher",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 117,
+        "name": "Fang Smasher",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 118,
+        "name": "Fang Smasher",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 119,
+        "name": "Fang Smasher",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 120,
+        "name": "Meteor Force",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 121,
+        "name": "Meteor Force",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 122,
+        "name": "Meteor Force",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 123,
+        "name": "Meteor Force",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 124,
+        "name": "Meteor Force",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 125,
+        "name": "Bone Blade",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 126,
+        "name": "Bone Blade",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 127,
+        "name": "Bone Blade",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 128,
+        "name": "Bone Blade",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 129,
+        "name": "Bone Blade",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 130,
+        "name": "Slasher",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 131,
+        "name": "Slasher",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 132,
+        "name": "Slasher",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 133,
+        "name": "Slasher",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 134,
+        "name": "Slasher",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 135,
+        "name": "Tri-edge",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 136,
+        "name": "Tri-edge",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 137,
+        "name": "Tri-edge",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 138,
+        "name": "Tri-edge",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 139,
+        "name": "Tri-edge",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 140,
+        "name": "Dark Crimson",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 141,
+        "name": "Dark Crimson",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 142,
+        "name": "Dark Crimson",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 143,
+        "name": "Dark Crimson",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 144,
+        "name": "Dark Crimson",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 145,
+        "name": "Doom Bringer",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 146,
+        "name": "Doom Bringer",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 147,
+        "name": "Doom Bringer",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 148,
+        "name": "Doom Bringer",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 149,
+        "name": "Doom Bringer",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 150,
+        "name": "Dbl Rapier",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 151,
+        "name": "Dbl Rapier",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 152,
+        "name": "Dbl Rapier",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 153,
+        "name": "Dbl Rapier",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 154,
+        "name": "Dbl Rapier",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 155,
+        "name": "Light Blade",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 156,
+        "name": "Light Blade",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 157,
+        "name": "Light Blade",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 158,
+        "name": "Light Blade",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 159,
+        "name": "Light Blade",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 160,
+        "name": "Apocalypse",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 161,
+        "name": "Apocalypse",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 162,
+        "name": "Apocalypse",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 163,
+        "name": "Apocalypse",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 164,
+        "name": "Apocalypse",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 165,
+        "name": "Flame Rose",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 166,
+        "name": "Flame Rose",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 167,
+        "name": "Flame Rose",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 168,
+        "name": "Flame Rose",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 169,
+        "name": "Flame Rose",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 170,
+        "name": "Photon Edge",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 171,
+        "name": "Photon Edge",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 172,
+        "name": "Photon Edge",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 173,
+        "name": "Photon Edge",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 174,
+        "name": "Photon Edge",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 175,
+        "name": "Mighty Talon",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 176,
+        "name": "Mighty Talon",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 177,
+        "name": "Mighty Talon",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 178,
+        "name": "Mighty Talon",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 179,
+        "name": "Mighty Talon",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 180,
+        "name": "Hook Katar",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 181,
+        "name": "Hook Katar",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 182,
+        "name": "Hook Katar",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 183,
+        "name": "Hook Katar",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 184,
+        "name": "Hook Katar",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 185,
+        "name": "D Slayer",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 186,
+        "name": "D Slayer",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 187,
+        "name": "D Slayer",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 188,
+        "name": "D Slayer",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 189,
+        "name": "D Slayer",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 190,
+        "name": "Nova Blade",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 191,
+        "name": "Nova Blade",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 192,
+        "name": "Nova Blade",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 193,
+        "name": "Nova Blade",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 194,
+        "name": "Nova Blade",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 195,
+        "name": "Drill Bunker",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 196,
+        "name": "Drill Bunker",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 197,
+        "name": "Drill Bunker",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 198,
+        "name": "Drill Bunker",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 199,
+        "name": "Drill Bunker",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 200,
+        "name": "Beam Magnum",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 201,
+        "name": "Beam Magnum",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 202,
+        "name": "Beam Magnum",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 203,
+        "name": "Beam Magnum",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 204,
+        "name": "Beam Magnum",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 205,
+        "name": "Sword Cannon",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 206,
+        "name": "Sword Cannon",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 207,
+        "name": "Sword Cannon",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 208,
+        "name": "Sword Cannon",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 209,
+        "name": "Sword Cannon",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 210,
+        "name": "Blaster Gun",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 211,
+        "name": "Blaster Gun",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 212,
+        "name": "Blaster Gun",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 213,
+        "name": "Blaster Gun",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 214,
+        "name": "Blaster Gun",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 215,
+        "name": "Sphere Nova",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 216,
+        "name": "Sphere Nova",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 217,
+        "name": "Sphere Nova",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 218,
+        "name": "Sphere Nova",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 219,
+        "name": "Sphere Nova",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 220,
+        "name": "Omega Raptor",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 221,
+        "name": "Omega Raptor",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 222,
+        "name": "Omega Raptor",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 223,
+        "name": "Omega Raptor",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 224,
+        "name": "Omega Raptor",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 225,
+        "name": "Grand Blade",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 226,
+        "name": "Grand Blade",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 227,
+        "name": "Grand Blade",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 228,
+        "name": "Grand Blade",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 229,
+        "name": "Grand Blade",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 230,
+        "name": "Pain Scimitar",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 231,
+        "name": "Pain Scimitar",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 232,
+        "name": "Pain Scimitar",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 233,
+        "name": "Pain Scimitar",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 234,
+        "name": "Pain Scimitar",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 235,
+        "name": "Sword Break",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 236,
+        "name": "Sword Break",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 237,
+        "name": "Sword Break",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 238,
+        "name": "Sword Break",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 239,
+        "name": "Sword Break",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 240,
+        "name": "Strider",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 241,
+        "name": "Strider",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 242,
+        "name": "Strider",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 243,
+        "name": "Strider",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 244,
+        "name": "Strider",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 245,
+        "name": "Infinity",
+        "category": "weapon",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 246,
+        "name": "Infinity",
+        "category": "weapon",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 247,
+        "name": "Infinity",
+        "category": "weapon",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 248,
+        "name": "Infinity",
+        "category": "weapon",
+        "grade": 3,
+        "note": null
+      },
+      {
+        "base_id": 249,
+        "name": "Infinity",
+        "category": "weapon",
+        "grade": 4,
+        "note": null
+      },
+      {
+        "base_id": 250,
+        "name": "Judgment",
+        "category": "weapon",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 251,
+        "name": "Light Bringer",
+        "category": "weapon",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 252,
+        "name": "Data Destroyer",
+        "category": "weapon",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 253,
+        "name": "Hyakki Yako",
+        "category": "weapon",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 254,
+        "name": "Orochi Slayer",
+        "category": "weapon",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 255,
+        "name": "Nightmare Lance",
+        "category": "weapon",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1280,
+        "name": "Dark Shadow",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1281,
+        "name": "Omega Blade",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1282,
+        "name": "Stargazer",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1283,
+        "name": "Invisible",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1284,
+        "name": "Kaiser Knuckle",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1285,
+        "name": "Demon Arm",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1286,
+        "name": "Nosferatus",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1287,
+        "name": "Executor",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1288,
+        "name": "Dbl Positron",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1289,
+        "name": "Plasma Blade",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1290,
+        "name": "Blunt Axe",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1291,
+        "name": "Slash Sword",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1292,
+        "name": "Stab Dagger",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1293,
+        "name": "Bash Katana",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1294,
+        "name": "Blunt Edge",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1295,
+        "name": "Slash Edge",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1296,
+        "name": "Stab Edge",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1297,
+        "name": "Bash Edge",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1298,
+        "name": "Crush Arm",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1299,
+        "name": "Shot Pistol",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 1300,
+        "name": "?????? (unidentified; appraises into random weapon, white rarity)",
+        "category": "styled",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 4096,
+        "name": "Brave Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4097,
+        "name": "Brave Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4098,
+        "name": "Brave Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4099,
+        "name": "Aegis Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4100,
+        "name": "Aegis Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4101,
+        "name": "Aegis Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4102,
+        "name": "Vulture Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4103,
+        "name": "Vulture Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4104,
+        "name": "Vulture Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4105,
+        "name": "Cipher Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4106,
+        "name": "Cipher Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4107,
+        "name": "Cipher Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4108,
+        "name": "Astral Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4109,
+        "name": "Astral Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4110,
+        "name": "Astral Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4111,
+        "name": "Wizard Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4112,
+        "name": "Wizard Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4113,
+        "name": "Wizard Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4114,
+        "name": "Element Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4115,
+        "name": "Element Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4116,
+        "name": "Element Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4117,
+        "name": "Spirit Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4118,
+        "name": "Spirit Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4119,
+        "name": "Spirit Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4120,
+        "name": "Divine Core",
+        "category": "core",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 4121,
+        "name": "Divine Core",
+        "category": "core",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 4122,
+        "name": "Divine Core",
+        "category": "core",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 4123,
+        "name": "Invincible",
+        "category": "core",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 4124,
+        "name": "Mythlandia",
+        "category": "core",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 4125,
+        "name": "Rainbow Veil",
+        "category": "core",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 4126,
+        "name": "Talis of Order",
+        "category": "core",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 4127,
+        "name": "?????? (unidentified; appraises into random core, white rarity)",
+        "category": "core",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 8192,
+        "name": "Achilles Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8193,
+        "name": "Achilles Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8194,
+        "name": "Achilles Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8195,
+        "name": "Atlas Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8196,
+        "name": "Atlas Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8197,
+        "name": "Atlas Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8198,
+        "name": "Meteor Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8199,
+        "name": "Meteor Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8200,
+        "name": "Meteor Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8201,
+        "name": "Fire Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8202,
+        "name": "Fire Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8203,
+        "name": "Fire Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8204,
+        "name": "Ice Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8205,
+        "name": "Ice Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8206,
+        "name": "Ice Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8207,
+        "name": "Bolt Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8208,
+        "name": "Bolt Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8209,
+        "name": "Bolt Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8210,
+        "name": "Dark Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8211,
+        "name": "Dark Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8212,
+        "name": "Dark Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8213,
+        "name": "Armor Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8214,
+        "name": "Armor Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8215,
+        "name": "Armor Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8216,
+        "name": "Beast Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8217,
+        "name": "Beast Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8218,
+        "name": "Beast Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8219,
+        "name": "Rack Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8220,
+        "name": "Rack Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8221,
+        "name": "Rack Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8222,
+        "name": "EXP Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8223,
+        "name": "EXP Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8224,
+        "name": "EXP Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8225,
+        "name": "BIT Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8226,
+        "name": "BIT Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8227,
+        "name": "BIT Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8228,
+        "name": "Mana Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8229,
+        "name": "Mana Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8230,
+        "name": "Mana Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8231,
+        "name": "Resist Board",
+        "category": "board",
+        "grade": 0,
+        "note": null
+      },
+      {
+        "base_id": 8232,
+        "name": "Resist Board",
+        "category": "board",
+        "grade": 1,
+        "note": null
+      },
+      {
+        "base_id": 8233,
+        "name": "Resist Board",
+        "category": "board",
+        "grade": 2,
+        "note": null
+      },
+      {
+        "base_id": 8234,
+        "name": "Filter Board",
+        "category": "board",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 8235,
+        "name": "Talis of Chaos",
+        "category": "board",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 8236,
+        "name": "?????? (unidentified; appraises into random board, white rarity)",
+        "category": "board",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12288,
+        "name": "Wisdom Chip α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12289,
+        "name": "Wisdom Chip α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12290,
+        "name": "Wisdom Chip α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12291,
+        "name": "Wisdom Chip α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12292,
+        "name": "Wisdom Chip α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12293,
+        "name": "Wisdom Chip β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12294,
+        "name": "Wisdom Chip β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12295,
+        "name": "Wisdom Chip β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12296,
+        "name": "Wisdom Chip β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12297,
+        "name": "Wisdom Chip β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12298,
+        "name": "Wisdom Chip γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12299,
+        "name": "Wisdom Chip γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12300,
+        "name": "Wisdom Chip γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12301,
+        "name": "Wisdom Chip γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12302,
+        "name": "Wisdom Chip γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12303,
+        "name": "Spirit Chip α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12304,
+        "name": "Spirit Chip α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12305,
+        "name": "Spirit Chip α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12306,
+        "name": "Spirit Chip α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12307,
+        "name": "Spirit Chip α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12308,
+        "name": "Spirit Chip β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12309,
+        "name": "Spirit Chip β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12310,
+        "name": "Spirit Chip β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12311,
+        "name": "Spirit Chip β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12312,
+        "name": "Spirit Chip β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12313,
+        "name": "Spirit Chip γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12314,
+        "name": "Spirit Chip γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12315,
+        "name": "Spirit Chip γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12316,
+        "name": "Spirit Chip γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12317,
+        "name": "Spirit Chip γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12318,
+        "name": "Speed Chip α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12319,
+        "name": "Speed Chip α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12320,
+        "name": "Speed Chip α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12321,
+        "name": "Speed Chip α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12322,
+        "name": "Speed Chip α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12323,
+        "name": "Speed Chip β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12324,
+        "name": "Speed Chip β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12325,
+        "name": "Speed Chip β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12326,
+        "name": "Speed Chip β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12327,
+        "name": "Speed Chip β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12328,
+        "name": "Speed Chip γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12329,
+        "name": "Speed Chip γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12330,
+        "name": "Speed Chip γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12331,
+        "name": "Speed Chip γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12332,
+        "name": "Speed Chip γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12333,
+        "name": "PWR Medal (fire) α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12334,
+        "name": "PWR Medal (fire) α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12335,
+        "name": "PWR Medal (fire) α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12336,
+        "name": "PWR Medal (fire) α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12337,
+        "name": "PWR Medal (fire) α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12338,
+        "name": "PWR Medal (fire) β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12339,
+        "name": "PWR Medal (fire) β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12340,
+        "name": "PWR Medal (fire) β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12341,
+        "name": "PWR Medal (fire) β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12342,
+        "name": "PWR Medal (fire) β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12343,
+        "name": "PWR Medal (fire) γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12344,
+        "name": "PWR Medal (fire) γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12345,
+        "name": "PWR Medal (fire) γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12346,
+        "name": "PWR Medal (fire) γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12347,
+        "name": "PWR Medal (fire) γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12348,
+        "name": "PWR Medal (ice) α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12349,
+        "name": "PWR Medal (ice) α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12350,
+        "name": "PWR Medal (ice) α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12351,
+        "name": "PWR Medal (ice) α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12352,
+        "name": "PWR Medal (ice) α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12353,
+        "name": "PWR Medal (ice) β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12354,
+        "name": "PWR Medal (ice) β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12355,
+        "name": "PWR Medal (ice) β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12356,
+        "name": "PWR Medal (ice) β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12357,
+        "name": "PWR Medal (ice) β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12358,
+        "name": "PWR Medal (ice) γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12359,
+        "name": "PWR Medal (ice) γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12360,
+        "name": "PWR Medal (ice) γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12361,
+        "name": "PWR Medal (ice) γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12362,
+        "name": "PWR Medal (ice) γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12363,
+        "name": "PWR Medal (lightning) α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12364,
+        "name": "PWR Medal (lightning) α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12365,
+        "name": "PWR Medal (lightning) α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12366,
+        "name": "PWR Medal (lightning) α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12367,
+        "name": "PWR Medal (lightning) α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12368,
+        "name": "PWR Medal (lightning) β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12369,
+        "name": "PWR Medal (lightning) β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12370,
+        "name": "PWR Medal (lightning) β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12371,
+        "name": "PWR Medal (lightning) β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12372,
+        "name": "PWR Medal (lightning) β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12373,
+        "name": "PWR Medal (lightning) γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12374,
+        "name": "PWR Medal (lightning) γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12375,
+        "name": "PWR Medal (lightning) γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12376,
+        "name": "PWR Medal (lightning) γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12377,
+        "name": "PWR Medal (lightning) γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12378,
+        "name": "PWR Medal (dark) α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12379,
+        "name": "PWR Medal (dark) α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12380,
+        "name": "PWR Medal (dark) α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12381,
+        "name": "PWR Medal (dark) α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12382,
+        "name": "PWR Medal (dark) α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12383,
+        "name": "PWR Medal (dark) β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12384,
+        "name": "PWR Medal (dark) β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12385,
+        "name": "PWR Medal (dark) β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12386,
+        "name": "PWR Medal (dark) β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12387,
+        "name": "PWR Medal (dark) β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12388,
+        "name": "PWR Medal (dark) γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12389,
+        "name": "PWR Medal (dark) γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12390,
+        "name": "PWR Medal (dark) γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12391,
+        "name": "PWR Medal (dark) γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12392,
+        "name": "PWR Medal (dark) γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12393,
+        "name": "Drain Ram α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12394,
+        "name": "Drain Ram β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12395,
+        "name": "Drain Ram γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12396,
+        "name": "Drain Ram δ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12397,
+        "name": "Drain Ram ε",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12398,
+        "name": "Dread Ram α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12399,
+        "name": "Dread Ram β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12400,
+        "name": "Dread Ram γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12401,
+        "name": "Dread Ram δ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12402,
+        "name": "Dread Ram ε",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12403,
+        "name": "Assault Ram α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12404,
+        "name": "Assault Ram β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12405,
+        "name": "Assault Ram γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12406,
+        "name": "Assault Ram δ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12407,
+        "name": "Assault Ram ε",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12408,
+        "name": "Resist ROM (fire) α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12409,
+        "name": "Resist ROM (fire) α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12410,
+        "name": "Resist ROM (fire) α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12411,
+        "name": "Resist ROM (fire) α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12412,
+        "name": "Resist ROM (fire) α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12413,
+        "name": "Resist ROM (fire) β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12414,
+        "name": "Resist ROM (fire) β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12415,
+        "name": "Resist ROM (fire) β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12416,
+        "name": "Resist ROM (fire) β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12417,
+        "name": "Resist ROM (fire) β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12418,
+        "name": "Resist ROM (fire) γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12419,
+        "name": "Resist ROM (fire) γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12420,
+        "name": "Resist ROM (fire) γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12421,
+        "name": "Resist ROM (fire) γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12422,
+        "name": "Resist ROM (fire) γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12423,
+        "name": "Resist ROM (ice) α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12424,
+        "name": "Resist ROM (ice) α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12425,
+        "name": "Resist ROM (ice) α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12426,
+        "name": "Resist ROM (ice) α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12427,
+        "name": "Resist ROM (ice) α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12428,
+        "name": "Resist ROM (ice) β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12429,
+        "name": "Resist ROM (ice) β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12430,
+        "name": "Resist ROM (ice) β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12431,
+        "name": "Resist ROM (ice) β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12432,
+        "name": "Resist ROM (ice) β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12433,
+        "name": "Resist ROM (ice) γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12434,
+        "name": "Resist ROM (ice) γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12435,
+        "name": "Resist ROM (ice) γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12436,
+        "name": "Resist ROM (ice) γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12437,
+        "name": "Resist ROM (ice) γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12438,
+        "name": "Resist ROM (lightning) α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12439,
+        "name": "Resist ROM (lightning) α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12440,
+        "name": "Resist ROM (lightning) α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12441,
+        "name": "Resist ROM (lightning) α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12442,
+        "name": "Resist ROM (lightning) α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12443,
+        "name": "Resist ROM (lightning) β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12444,
+        "name": "Resist ROM (lightning) β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12445,
+        "name": "Resist ROM (lightning) β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12446,
+        "name": "Resist ROM (lightning) β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12447,
+        "name": "Resist ROM (lightning) β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12448,
+        "name": "Resist ROM (lightning) γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12449,
+        "name": "Resist ROM (lightning) γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12450,
+        "name": "Resist ROM (lightning) γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12451,
+        "name": "Resist ROM (lightning) γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12452,
+        "name": "Resist ROM (lightning) γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12453,
+        "name": "Resist ROM (dark) α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12454,
+        "name": "Resist ROM (dark) α+30",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12455,
+        "name": "Resist ROM (dark) α+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12456,
+        "name": "Resist ROM (dark) α+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12457,
+        "name": "Resist ROM (dark) α+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12458,
+        "name": "Resist ROM (dark) β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12459,
+        "name": "Resist ROM (dark) β+60",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12460,
+        "name": "Resist ROM (dark) β+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12461,
+        "name": "Resist ROM (dark) β+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12462,
+        "name": "Resist ROM (dark) β+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12463,
+        "name": "Resist ROM (dark) γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12464,
+        "name": "Resist ROM (dark) γ+120",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12465,
+        "name": "Resist ROM (dark) γ+240",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12466,
+        "name": "Resist ROM (dark) γ+360",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12467,
+        "name": "Resist ROM (dark) γ+480",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12468,
+        "name": "Defence ROM α",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12469,
+        "name": "Defence ROM β",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12470,
+        "name": "Defence ROM γ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12471,
+        "name": "Defence ROM δ",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      },
+      {
+        "base_id": 12472,
+        "name": "Defence ROM ε",
+        "category": "mod",
+        "grade": null,
+        "note": null
+      }
+    ],
+    "caps": [
+      {
+        "field": "bit",
+        "cap": {
+          "normal_max": 9999999,
+          "dtype_min": 0,
+          "dtype_max": 4294967295
+        }
+      },
+      {
+        "field": "xdata",
+        "cap": {
+          "normal_max": 9999,
+          "dtype_min": 0,
+          "dtype_max": 4294967295
+        }
+      },
+      {
+        "field": "level",
+        "cap": {
+          "normal_max": 999,
+          "dtype_min": 0,
+          "dtype_max": 4294967295
+        }
+      },
+      {
+        "field": "exp",
+        "cap": {
+          "normal_max": 1133652152,
+          "dtype_min": 0,
+          "dtype_max": 4294967295
+        }
+      },
+      {
+        "field": "bank_bit",
+        "cap": {
+          "normal_max": 9999999,
+          "dtype_min": 0,
+          "dtype_max": 4294967295
+        }
+      },
+      {
+        "field": "tech",
+        "cap": {
+          "normal_max": 9999,
+          "dtype_min": -2147483648,
+          "dtype_max": 2147483647
+        }
+      },
+      {
+        "field": "upcnt",
+        "cap": {
+          "normal_max": 9999,
+          "dtype_min": 0,
+          "dtype_max": 4294967295
+        }
+      },
+      {
+        "field": "disks",
+        "cap": {
+          "normal_max": 65535,
+          "dtype_min": 0,
+          "dtype_max": 65535
+        }
+      },
+      {
+        "field": "item_bonus",
+        "cap": {
+          "normal_max": 2047,
+          "dtype_min": 0,
+          "dtype_max": 2047
+        }
+      },
+      {
+        "field": "item_mods",
+        "cap": {
+          "normal_max": 15,
+          "dtype_min": 0,
+          "dtype_max": 15
+        }
+      }
+    ],
+    "powerups": [
+      {
+        "slot": 0,
+        "stat": "HP max",
+        "normal_max": 99999
+      },
+      {
+        "slot": 1,
+        "stat": "MP max",
+        "normal_max": 99999
+      },
+      {
+        "slot": 2,
+        "stat": "Strength",
+        "normal_max": 9999
+      },
+      {
+        "slot": 3,
+        "stat": "Defense",
+        "normal_max": 9999
+      },
+      {
+        "slot": 4,
+        "stat": "Wisdom",
+        "normal_max": 9999
+      },
+      {
+        "slot": 5,
+        "stat": "Spirit",
+        "normal_max": 9999
+      },
+      {
+        "slot": 6,
+        "stat": "Speed",
+        "normal_max": 9999
+      },
+      {
+        "slot": 7,
+        "stat": "Fire res",
+        "normal_max": 9999
+      },
+      {
+        "slot": 8,
+        "stat": "Ice res",
+        "normal_max": 9999
+      },
+      {
+        "slot": 9,
+        "stat": "Thunder res",
+        "normal_max": 9999
+      },
+      {
+        "slot": 10,
+        "stat": "Dark res",
+        "normal_max": 9999
+      }
+    ],
+    "mirrors": [
+      {
+        "active": 0,
+        "normal": 699,
+        "hard": 6,
+        "very_hard": 12
+      },
+      {
+        "active": 1,
+        "normal": 700,
+        "hard": 7,
+        "very_hard": 13
+      },
+      {
+        "active": 2,
+        "normal": 701,
+        "hard": 8,
+        "very_hard": 14
+      },
+      {
+        "active": 3,
+        "normal": 702,
+        "hard": 9,
+        "very_hard": 15
+      },
+      {
+        "active": 4,
+        "normal": 703,
+        "hard": 10,
+        "very_hard": 16
+      },
+      {
+        "active": 18,
+        "normal": 705,
+        "hard": 740,
+        "very_hard": 770
+      },
+      {
+        "active": 19,
+        "normal": 706,
+        "hard": 741,
+        "very_hard": 771
+      },
+      {
+        "active": 66,
+        "normal": 707,
+        "hard": 73,
+        "very_hard": 77
+      },
+      {
+        "active": 67,
+        "normal": 708,
+        "hard": 74,
+        "very_hard": 78
+      },
+      {
+        "active": 68,
+        "normal": 709,
+        "hard": 75,
+        "very_hard": 79
+      },
+      {
+        "active": 82,
+        "normal": 711,
+        "hard": 742,
+        "very_hard": 772
+      },
+      {
+        "active": 85,
+        "normal": 712,
+        "hard": 86,
+        "very_hard": 87
+      },
+      {
+        "active": 88,
+        "normal": 713,
+        "hard": 743,
+        "very_hard": 773
+      },
+      {
+        "active": 89,
+        "normal": 714,
+        "hard": 744,
+        "very_hard": 774
+      },
+      {
+        "active": 90,
+        "normal": 715,
+        "hard": 745,
+        "very_hard": 775
+      },
+      {
+        "active": 91,
+        "normal": 716,
+        "hard": 746,
+        "very_hard": 776
+      },
+      {
+        "active": 92,
+        "normal": 717,
+        "hard": 747,
+        "very_hard": 777
+      },
+      {
+        "active": 93,
+        "normal": 718,
+        "hard": 748,
+        "very_hard": 778
+      },
+      {
+        "active": 94,
+        "normal": 719,
+        "hard": 749,
+        "very_hard": 779
+      },
+      {
+        "active": 95,
+        "normal": 720,
+        "hard": 750,
+        "very_hard": 780
+      },
+      {
+        "active": 96,
+        "normal": 721,
+        "hard": 751,
+        "very_hard": 781
+      },
+      {
+        "active": 97,
+        "normal": 722,
+        "hard": 752,
+        "very_hard": 782
+      },
+      {
+        "active": 319,
+        "normal": 724,
+        "hard": 754,
+        "very_hard": 784
+      },
+      {
+        "active": 320,
+        "normal": 725,
+        "hard": 755,
+        "very_hard": 785
+      },
+      {
+        "active": 321,
+        "normal": 726,
+        "hard": 756,
+        "very_hard": 786
+      },
+      {
+        "active": 322,
+        "normal": 727,
+        "hard": 757,
+        "very_hard": 787
+      },
+      {
+        "active": 323,
+        "normal": 728,
+        "hard": 758,
+        "very_hard": 788
+      },
+      {
+        "active": 324,
+        "normal": 729,
+        "hard": 759,
+        "very_hard": 789
+      },
+      {
+        "active": 325,
+        "normal": 730,
+        "hard": 760,
+        "very_hard": 790
+      },
+      {
+        "active": 328,
+        "normal": 732,
+        "hard": 762,
+        "very_hard": 792
+      },
+      {
+        "active": 329,
+        "normal": 733,
+        "hard": 763,
+        "very_hard": 793
+      },
+      {
+        "active": 330,
+        "normal": 734,
+        "hard": 764,
+        "very_hard": 794
+      },
+      {
+        "active": 331,
+        "normal": 735,
+        "hard": 765,
+        "very_hard": 795
+      },
+      {
+        "active": 334,
+        "normal": 737,
+        "hard": 767,
+        "very_hard": 797
+      },
+      {
+        "active": 48,
+        "normal": 800,
+        "hard": 801,
+        "very_hard": 802
+      },
+      {
+        "active": 382,
+        "normal": 803,
+        "hard": 804,
+        "very_hard": 805
+      },
+      {
+        "active": 81,
+        "normal": 806,
+        "hard": 807,
+        "very_hard": 808
+      },
+      {
+        "active": 333,
+        "normal": 809,
+        "hard": 810,
+        "very_hard": 811
+      }
+    ],
+    "folder_labels": [
+      "Humid Cave (W1, Blosso ID)",
+      "Cliff Dungeon (W1, Mammothmon ID)",
+      "Leomon rescue (W1)",
+      "Ophanimon key",
+      "Sand Labyrinth (W2, SkullGrey ID)",
+      "Ancient Ruins (W2, Scorpio ID)",
+      "Gecko Path (W3, Shogun ID)",
+      "Vine Tunnel (W3, MRS04 ID)",
+      "Vein (W3, Diaboro ID)",
+      "Mecha Nest (W4, MRE05 ID)",
+      "Electro Mine (W4, LordKnight ID)",
+      "(unused)"
+    ],
+    "flag_labels": [
+      {
+        "flag": 0,
+        "label": "Idle (no active chapter - locked if 1-6 are all off)"
+      },
+      {
+        "flag": 1,
+        "label": "Tutorial (fresh start)"
+      },
+      {
+        "flag": 2,
+        "label": "Chapter: World 1 access"
+      },
+      {
+        "flag": 3,
+        "label": "Chapter: post-W1 (Ophanimon key)"
+      },
+      {
+        "flag": 4,
+        "label": "Chapter: World 2"
+      },
+      {
+        "flag": 5,
+        "label": "Chapter: World 3"
+      },
+      {
+        "flag": 6,
+        "label": "Chapter: World 4"
+      },
+      {
+        "flag": 701,
+        "label": "World 1 era"
+      },
+      {
+        "flag": 702,
+        "label": "Post-W1 (Ophanimon key)"
+      },
+      {
+        "flag": 703,
+        "label": "World 2 era"
+      },
+      {
+        "flag": 704,
+        "label": "World 3 era"
+      },
+      {
+        "flag": 705,
+        "label": "World 4 era"
+      },
+      {
+        "flag": 706,
+        "label": "Post-W4"
+      },
+      {
+        "flag": 66,
+        "label": "Apocalymon (W1)"
+      },
+      {
+        "flag": 67,
+        "label": "BelialVamdemon (W1)"
+      },
+      {
+        "flag": 68,
+        "label": "Lucemon (W2)"
+      },
+      {
+        "flag": 69,
+        "label": "Devimon (W3)"
+      },
+      {
+        "flag": 82,
+        "label": "LordKnightmon"
+      },
+      {
+        "flag": 85,
+        "label": "Story cleared (final)"
+      },
+      {
+        "flag": 609,
+        "label": "Final scene"
+      },
+      {
+        "flag": 375,
+        "label": "Quest 1"
+      },
+      {
+        "flag": 376,
+        "label": "Quest 2"
+      },
+      {
+        "flag": 377,
+        "label": "Quest 3"
+      },
+      {
+        "flag": 378,
+        "label": "Quest 4"
+      },
+      {
+        "flag": 379,
+        "label": "Quest 5"
+      },
+      {
+        "flag": 380,
+        "label": "Final gate"
+      },
+      {
+        "flag": 24,
+        "label": "Lobby flag 24 (first-visit)"
+      },
+      {
+        "flag": 501,
+        "label": "Lobby flag 501 (save state)"
+      },
+      {
+        "flag": 508,
+        "label": "Lobby flag 508 (early state)"
+      },
+      {
+        "flag": 931,
+        "label": "Lobby flag 931 (quest init)"
+      },
+      {
+        "flag": 935,
+        "label": "Lobby flag 935 (quest init)"
+      },
+      {
+        "flag": 936,
+        "label": "Lobby flag 936 (quest init)"
+      },
+      {
+        "flag": 960,
+        "label": "Lobby flag 960 (system init)"
+      }
+    ],
+    "story_presets": [
+      {
+        "name": "Fresh (tutorial)",
+        "flags": [
+          1,
+          24,
+          501,
+          508,
+          931,
+          935,
+          936,
+          960
+        ],
+        "folders": []
+      },
+      {
+        "name": "After World 1",
+        "flags": [
+          0,
+          2,
+          66,
+          67,
+          701
+        ],
+        "folders": [
+          0,
+          1,
+          2
+        ]
+      },
+      {
+        "name": "After World 2",
+        "flags": [
+          0,
+          4,
+          66,
+          67,
+          68,
+          703
+        ],
+        "folders": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      {
+        "name": "After World 3",
+        "flags": [
+          0,
+          5,
+          67,
+          68,
+          69,
+          82,
+          704
+        ],
+        "folders": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      {
+        "name": "All worlds + keys",
+        "flags": [
+          0,
+          6,
+          67,
+          68,
+          69,
+          82,
+          705
+        ],
+        "folders": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      {
+        "name": "Story cleared (post-game)",
+        "flags": [
+          0,
+          67,
+          68,
+          69,
+          82,
+          85,
+          609
+        ],
+        "folders": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      }
+    ]
+  }
+}

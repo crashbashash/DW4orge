@@ -13,8 +13,10 @@ workspace = true
 [dependencies]
 dw4core = { path = "../dw4core", features = ["ts"] }
 serde = { version = "1", features = ["derive"] }
+# The `fixtures` module renders the browser mock's JSON; the same crate is used
+# by the drift test, so it is a normal dependency rather than a dev-only one.
+serde_json = "1"
 ts-rs = "12"
 
 [dev-dependencies]
-serde_json = "1"
 tempfile = "3"

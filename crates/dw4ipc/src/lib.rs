@@ -6,6 +6,7 @@
 pub mod bindings;
 pub mod catalogue_query;
 pub mod error;
+pub mod fixtures;
 pub mod payload;
 pub mod session;
 pub mod ui;

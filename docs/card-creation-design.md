@@ -103,34 +103,45 @@ image. It writes only these regions; everything else stays erased (`0xFF`).
 
 ### 4.2 Data area (relative clusters; absolute = relative + 41)
 
+Mirrored from the reference card, whose allocation the game accepts:
+
 | Relative clusters | Contents | Length in the parent entry |
 | --- | --- | --- |
 | 0 → 1 | root directory: `.`, `..`, the save-directory entry | 3 |
-| 2 → 3 → 4 | save directory: `.`, `..`, `icon1.ico`, the save file, `icon.sys` | 5 |
-| 5 … 38 | `icon1.ico`, 34 clusters | 34,156 bytes |
-| 39 … 118 | the save file, 80 clusters | 81,920 bytes |
+| 2 → 3 → 118 | save directory: `.`, `..`, `icon1.ico`, the save file, `icon.sys` | 5 |
+| 4 … 37 | `icon1.ico`, 34 clusters | 34,156 bytes |
+| 38 … 117 | the save file, 80 clusters | 81,920 bytes |
 | 119 | `icon.sys`, 1 cluster | 964 bytes |
 
-Directory entries are built with a small helper (`entry_slot(mode, length,
-cluster, name)`), not parsed: `Entry` has no constructor today. Fields the
-crate does not interpret are written zero, matching the reference except for
-timestamps, which are cosmetic. The exact entries are:
+Directory entries are built with `Entry::new(mode, length, cluster, name)`, then
+given the reference timestamps and, for a directory's `.`, its own cluster:
 
-| Where | name | mode | length | cluster |
-| --- | --- | --- | --- | --- |
-| root | `.` | `0x8427` | 3 | 0 |
-| root | `..` | `0xa426` | 0 | 0 |
-| root | `BASLUS-20836savedata` | `0x8427` | 5 | 2 |
-| save dir | `.` | `0x8427` | 0 | 0 |
-| save dir | `..` | `0x8427` | 0 | 0 |
-| save dir | `icon1.ico` | `0x8497` | 34,156 | 5 |
-| save dir | `BASLUS-20836savedata` | `0x8497` | 81,920 | 39 |
-| save dir | `icon.sys` | `0x8497` | 964 | 119 |
+| Where | name | mode | length | cluster | byte `0x14` |
+| --- | --- | --- | --- | --- | --- |
+| root | `.` | `0x8427` | 3 | 0 | 0 |
+| root | `..` | `0xa426` | 0 | 0 | 0 |
+| root | `BASLUS-20836savedata` | `0x8427` | 5 | 2 | 0 |
+| save dir | `.` | `0x8427` | 0 | 0 | **2** |
+| save dir | `..` | `0x8427` | 0 | 0 | 0 |
+| save dir | `icon1.ico` | `0x8497` | 34,156 | 4 | 0 |
+| save dir | `BASLUS-20836savedata` | `0x8497` | 81,920 | 38 | 0 |
+| save dir | `icon.sys` | `0x8497` | 964 | 119 | 0 |
+
+Two fields are **not** cosmetic. Both were found by running the result in an
+emulator, not by reading the format, and in each case the card was internally
+consistent and the BIOS browser still listed it:
+
+- **Timestamps.** Every entry's created and modified fields (8 bytes each) must
+  carry the reference card's values. An invented timestamp — `2000-01-01`, or a
+  recent-but-different date — makes the console refuse the card outright: the
+  slot greys out or reports "memory card not inserted".
+- **Byte `0x14`.** A directory's `.` entry stores its own first cluster there.
+  With `0` the game reports "no save data"; with `2` it loads.
 
 The save directory's `.` length of **0** mirrors the reference card; our reader
 uses the parent entry's length, so it does not depend on it, and a test asserts
-that explicitly. The `.` and `..` cluster fields are 0 on the reference and are
-written 0 here. Unused entry slots in a directory cluster are `0xFF`, not zero.
+that explicitly. Unused entry slots in a directory cluster are `0xFF`, not
+zero.
 
 Every written page gets ECC via `page_spare` plus four zero spare bytes. The
 save data itself comes from `builder::build_save`, so its checksums are already
@@ -139,10 +150,14 @@ fixed.
 ### 4.3 Allocated FAT entries
 
 - root: `0 → 1`, `1` chain end
-- save directory: `2 → 3`, `3 → 4`, `4` chain end
-- `icon1.ico`: `5 → 6 → … → 38`, `38` chain end
-- save: `39 → … → 118`, `118` chain end
+- save directory: `2 → 3 → 118`, `118` chain end
+- `icon1.ico`: `4 → … → 37`, `37` chain end
+- save: `38 → … → 117`, `117` chain end
 - `icon.sys`: `119` chain end
+
+Entries at or beyond `alloc_end` (8135) are written `0x7FFF_FFFF`. The
+reference writes `0xFFFF_FFFF` there; emulator subtraction showed the
+difference does not affect acceptance.
 
 ---
 
@@ -184,13 +199,30 @@ Both are renamed to describe the new behaviour rather than deleted.
 | The FAT is correct | allocated chains walk back exactly; every other entry is `0x7FFF_FFFF`; `from_card` re-reads the same table |
 | Directory structure is right | the reader walks root → save directory → the save file, and finds the icons |
 | Spare areas are well-formed | trailing four spare bytes zero on every in-use page, as `tests/memcard.rs` already asserts for a real card |
-| An independent reader agrees | one-off, documented in execution notes: the vendored `ps2mc` reader opens the synthesised card and returns the save |
+| Entry pages equal the reference | byte for byte, data and ECC |
+| An independent reader agrees | the vendored `ps2mc` reader opens the synthesised card and returns the save |
+| **Emulator acceptance** | in PCSX2 the card is listed in the BIOS browser and the game loads it — with the reference save *and* with a freshly built `dw4cli new` save |
 
-**The ceiling, stated plainly:** no PS2 and no emulator exist in this
-container, so *in-game and BIOS acceptance of a synthesised card is not
-verified by this plan*. The checks above prove internal consistency and
-structural agreement with the measured reference, which is the strongest
-available evidence short of hardware.
+### How the defects were actually found
+
+The BIOS browser listed the first build, which was misleading: three defects
+only appeared in-game, and none was visible to the automated tests because the
+card was internally consistent every time. They were isolated by *subtracting*
+one difference at a time from a known-good card:
+
+| Difference removed from the working card | Result |
+| --- | --- |
+| backup block (clusters 8184–8191) | still loads — not required |
+| page 1 | still loads — not required |
+| FAT entries at or after `alloc_end` | still loads — not required |
+| the invented contiguous cluster layout | failed; mirroring the reference fixed the FAT exactly |
+| entry timestamps | replacing them with invented values greyed the card out or reported "not inserted" |
+| savedir `.` byte `0x14` | `0` reports "no save data"; `2` loads |
+
+Two lessons worth keeping: **the BIOS listing a save does not mean the game
+will**, and a card can be entirely self-consistent and still be rejected on
+metadata nobody documented. Anything here that was not measured — layout,
+timestamps, that byte — was wrong.
 
 ---
 
@@ -198,10 +230,10 @@ available evidence short of hardware.
 
 | Risk | Mitigation |
 | --- | --- |
-| Page 1 is genuinely required and we leave it erased | Four reference cards have it erased; the field is documented as a known unknown, and `--card` still copies a donor for a byte-exact card |
+| A console rejects the embedded timestamps because its clock is earlier | They are the reference card's own values, so they are exactly as acceptable as a real card's |
 | `superblock.bin` embeds a tail we do not understand | It is a constant across all ten references, pinned to the fixture, and never derived from the save |
-| Synthesised entries omit timestamps/attributes the PS2 wants | Fields are zero only where the crate does not interpret them; committed tests pin every field we do set against the reference card |
-| The layout hardcodes cluster numbers | The allocation is a pure function of the fixed save and icon sizes; a test asserts chains, entries and FAT agree |
+| A future firmware wants other entry fields | Every field we set is now byte-identical to the reference, and a test pins the entry pages against it |
+| The layout hardcodes cluster numbers | It is the reference card's own allocation; the FAT it produces matches the reference exactly |
 | Silent behaviour change (`save_as` no longer errors) | Called out in this doc, in `docs/save-format.md`, and in the PR body |
 
 ---

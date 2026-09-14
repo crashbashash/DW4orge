@@ -685,15 +685,24 @@ clusters 9–40, then the data area at relative clusters 0–119:
 | Clusters | Contents |
 | --- | --- |
 | 0–1 | root directory: `.`, `..`, the save-directory entry |
-| 2–4 | save directory: `.`, `..`, `icon1.ico`, the save, `icon.sys` |
-| 5–38 | `icon1.ico` |
-| 39–118 | the save, 80 clusters |
+| 2, 3, 118 | save directory: `.`, `..`, `icon1.ico`, the save, `icon.sys` |
+| 4–37 | `icon1.ico` |
+| 38–117 | the save, 80 clusters |
 | 119 | `icon.sys` |
 
-Every written page carries ECC; page 1 is left erased, as it is on four of the
-reference cards. The FAT's on-disk encoding is: free `0x7FFFFFFF`, allocated
-pointer `0x80000000 | next`, chain end `0xFFFFFFFF`. A donor card passed as the
-source is still copied verbatim, so its icons and any other files survive.
+The allocation mirrors the reference card. Two entry fields are required and
+were found only by running the result in an emulator: each entry's **created and
+modified timestamps** must carry the reference card's values (an invented value
+greys the card out or reports "not inserted"), and the save directory's `.`
+entry stores its own first cluster in byte **`0x14`** (`0` reports "no save
+data"). Neither is derivable from the format; both are tabulated in
+`crates/dw4core/src/memcard/format.rs`.
+
+Every written page carries ECC; page 1 is left erased, and the backup block is
+not written. Emulator testing by subtraction showed neither is required. The
+FAT's on-disk encoding is: free `0x7FFFFFFF`, allocated pointer
+`0x80000000 | next`, chain end `0xFFFFFFFF`. A donor card passed as the source
+is still copied verbatim, so its icons and any other files survive.
 The layout and the measurements behind it are in
 `docs/card-creation-design.md`.
 

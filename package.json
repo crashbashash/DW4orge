@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "check:contrast": "node tools/check_contrast.mjs",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:appimage": "tauri build --bundles appimage && bash src-tauri/scripts/patch-appimage.sh"
   },
   "dependencies": {
     "@tauri-apps/api": "^2",

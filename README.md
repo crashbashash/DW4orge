@@ -91,13 +91,38 @@ EndeavourOS, CachyOS) — use the AppImage there, or build one locally:
 ```bash
 sudo pacman -S --needed webkit2gtk-4.1 gtk3 librsvg
 npm install
-npm run tauri -- build --bundles appimage
+npm run build:appimage
 ```
 
-The build needs a system webkit2gtk-4.1 (`--bundles appimage` on its own; the
-default bundle set would also try `deb`/`rpm` and fail without `dpkg-deb` or
-`rpmbuild`). AppImages need FUSE to run; without it, use
-`./DW4orge_*.AppImage --appimage-extract-and-run`.
+`build:appimage` is `tauri build --bundles appimage` followed by
+`src-tauri/scripts/patch-appimage.sh`. Specify the bundle: the default set also
+tries `deb` and `rpm`, which need `dpkg-deb`/`rpmbuild` and fail on Arch.
+AppImages need FUSE to run; without it, append `--appimage-extract-and-run`.
+
+#### Wayland
+
+AppImages built by linuxdeploy bundle the *build machine's* Wayland client
+libraries. On a host with a newer Wayland — Arch, for instance — the bundled
+`libwayland-client` cannot talk to the compositor and WebKitGTK aborts at
+startup with:
+
+```text
+Could not create default EGL display: EGL_BAD_PARAMETER. Aborting...
+```
+
+The patch step appends a hook to the AppImage that preloads the host's own
+`libwayland-client`, and drops linuxdeploy's `GDK_BACKEND=x11` pin so GTK can use
+Wayland directly instead of going through XWayland. It searches the usual distro
+paths and does nothing if none is found.
+
+To force XWayland anyway (or to test whether a Wayland problem is ours):
+
+```bash
+DW4ORGE_GDK_BACKEND=x11 ./DW4orge_0.1.0_amd64.AppImage
+```
+
+The `.deb` and the raw binary need none of this — they use the system's own
+libraries.
 
 ## Verifying a save in-game
 

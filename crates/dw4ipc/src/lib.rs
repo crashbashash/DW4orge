@@ -5,10 +5,12 @@
 
 pub mod error;
 pub mod payload;
+pub mod session;
 pub mod ui;
 
 pub use error::IpcError;
 pub use payload::{
     AppInfo, NamedCap, NewSaveRequest, OpenResult, PowerupLimit, SourceKind, UiData,
 };
+pub use session::EditorSession;
 pub use ui::{app_info, ui_data};

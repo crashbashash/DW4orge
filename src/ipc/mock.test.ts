@@ -7,7 +7,7 @@ describe('createMockBackend', () => {
     const backend = createMockBackend();
     const info = await backend.appInfo();
     expect(info.ui.catalogue).toHaveLength(539);
-    expect(info.schema_version).toBe(2);
+    expect(info.schema_version).toBe(3);
     const opened = await backend.openSave('/mock/x.raw');
     expect(opened.source).toBe('raw');
     expect(opened.view.species).toBe('Dorumon');

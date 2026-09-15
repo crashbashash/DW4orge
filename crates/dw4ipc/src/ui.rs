@@ -71,7 +71,9 @@ pub fn ui_data() -> UiData {
 ///
 /// `schema_version` is bumped whenever a payload changes shape, so a frontend
 /// built against older bindings can refuse rather than mis-render. Version 2
-/// adds the `species_stats` command's payload.
+/// adds the `species_stats` command's payload; version 3 moves the mirror
+/// target onto each `StoryEdit` and drops `EditSet::difficulty`, so one save
+/// can carry edits made on several difficulties.
 #[must_use]
 pub fn app_info() -> AppInfo {
     AppInfo {
@@ -80,7 +82,7 @@ pub fn app_info() -> AppInfo {
         core_version: dw4core::VERSION.to_string(),
         save_size: dw4core::SAVE_SIZE,
         block_size: dw4core::BLOCK,
-        schema_version: 2,
+        schema_version: 3,
         ui: ui_data(),
     }
 }

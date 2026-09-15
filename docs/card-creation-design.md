@@ -1,12 +1,9 @@
 # Design — creating a memory-card image from scratch
 
-Design reference for a plan that lets DW4orge synthesise a standard 8 MB PS2
-memory card containing a save and the game's own icon, instead of requiring a
-donor card. `docs/save-format.md` remains the format reference; this document
-covers the creation algorithm layered on it.
-
-Approved 2026-09-14. Branch `feat/dw4core-card-creation`, cut from
-`feat/dw4cli-tauri` so the CLI test it must change travels with it.
+Design reference for synthesising a standard 8 MB PS2 memory card containing a
+save and the game's own icon, instead of requiring a donor card.
+`docs/save-format.md` remains the format reference; this document covers the
+creation algorithm layered on it.
 
 ---
 
@@ -22,14 +19,13 @@ Creating a card is implementable because the format is now fully measured
 against ten real images in `Decomp/DW4/`. The goal is that
 `dw4cli new -o x.ps2` and the GUI's save-as-to-`.ps2` simply work.
 
-### Decisions confirmed with the user
+### Design decisions
 
 | # | Decision | Choice |
 | --- | --- | --- |
-| 1 | Where the work lives | A separate plan, landed **before** plan 6, so the frontend is built against a complete New Save flow. Plan 7 stays packaging |
-| 2 | What a fresh card contains | The save **and the game's own icon**, extracted once from a real card and committed as an asset |
-| 3 | How creation is triggered | **Automatic**: `save_as` to a non-existent `.ps2` with no source card formats one. `--card` stays as an override |
-| 4 | Definition of done | Structural verification plus a cross-check with the vendored `ps2mc` reader. In-game acceptance is explicitly **unverified** |
+| 1 | What a fresh card contains | The save **and the game's own icon**, extracted once from a real card and committed as an asset |
+| 2 | How creation is triggered | **Automatic**: `save_as` to a non-existent `.ps2` with no source card formats one. `--card` stays as an override |
+| 3 | Definition of done | Structural verification plus a cross-check with the vendored `ps2mc` reader. In-game acceptance is explicitly **unverified** |
 
 ---
 
@@ -219,7 +215,7 @@ one difference at a time from a known-good card:
 | entry timestamps | replacing them with invented values greyed the card out or reported "not inserted" |
 | savedir `.` byte `0x14` | `0` reports "no save data"; `2` loads |
 
-Two lessons worth keeping: **the BIOS listing a save does not mean the game
+Two conclusions: **the BIOS listing a save does not mean the game
 will**, and a card can be entirely self-consistent and still be rejected on
 metadata nobody documented. Anything here that was not measured — layout,
 timestamps, that byte — was wrong.
@@ -247,7 +243,7 @@ timestamps, that byte — was wrong.
 - Any change to `Document::save`'s write-safety policy.
 - In-game verification (see §6).
 
-## 9. Deliverable sequence (detail deferred to writing-plans)
+## 9. Implementation order
 
 1. Extract and commit `data/card/{superblock.bin,icon.sys,icon1.ico}`; extend
    `PROVENANCE.md`; pin lengths and hashes.

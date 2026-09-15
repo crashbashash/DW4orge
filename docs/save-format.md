@@ -418,7 +418,9 @@ records each here.
    Python Story tab also always displays the *live* flags, so changing its
    difficulty dropdown does not change the checkboxes. DW4orge instead mirrors
    each edit into the chosen difficulty **and every lower one**, and the Story
-   tab shows the selected difficulty's stored column. See §4.5.
+   tab shows the selected difficulty's stored column. The tab also keeps a
+   separate in-flight draft per difficulty, so changing the selector never
+   discards unsaved edits. See §4.5.
 
 8. **Difficulty detection breaks ties toward the hardest difficulty.** The
    Python `_detect_difficulty` keeps the first maximum, so a tie reads as
@@ -813,15 +815,16 @@ and story-preset composition.
 | Items | device folder, 30 slots in 3 pages × 10 rows: bucket, searchable item picker, rarity colour and seed-derived `+N`, mod count; Advanced allows raw hex IDs |
 | Equipment | 3 weapons, armor, board, 5 weapon mods, 5 armor mods; pickers filtered to the correct category, live mismatch warnings, mod chips auto-added to inventory |
 | Disks | the 12 named `DISKFOLDER` counts (HP/MP Disk α–γ, Cure, Raise, Gate, Recovery, B. Pack, Key Chain), 0–9 in Normal mode (0–65535 in Advanced) |
-| Story | difficulty selector with detected badge, preset dropdown, grouped flag/folder checkboxes (intro, chapters, bosses, quests, lobby, folders) and a live mirror preview |
+| Story | difficulty selector with detected badge, preset dropdown, grouped flag/folder checkboxes (intro, chapters, bosses, quests, lobby, folders) and a live mirror preview; one in-flight draft per difficulty |
 | Bank | balance plus 96 slots in 8 pages of 12, matching the in-game bank, reusing the Items row widget |
 
 New Save is a dialog (species, name, story preset, difficulty). Destructive and
-unsaved-changes actions use confirm dialogs; validation failures surface both
-inline on the offending control and in the status bar.
+unsaved-changes actions use confirm dialogs, including closing the window;
+validation failures surface both inline on the offending control and in the
+status bar.
 
-**Implemented** (plan 6). The app runs in a plain browser against a fixture-
-backed mock, and in the Tauri shell against the real commands. The concrete
+**Implemented.** The app runs in a plain browser against a fixture-backed mock,
+and in the Tauri shell against the real commands. The concrete
 architecture — the backend seam, store, validation flow and the game knowledge
 mirrored in `src/lib/` — is recorded in
 [`docs/frontend-design.md`](frontend-design.md).

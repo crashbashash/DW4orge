@@ -1,46 +1,42 @@
 # Design — `dw4ipc`, `dw4cli`, `src-tauri`, and `ts-rs` bindings
 
-Design reference for plan 5 (CLI, IPC and bindings). Approved 2026-09-14 before
-implementation. The format itself is `docs/save-format.md`; this document covers
-the public API layered on top of it.
+Design reference for the `dw4ipc` service layer, the `dw4cli` binary, the Tauri
+shell and the TypeScript bindings. The format itself is `docs/save-format.md`;
+this document covers the public API layered on top of it.
 
 ---
 
 ## 1. Context
 
-`dw4core` is feature-complete (plans 1–4): 227 tests passing, fmt and clippy
-clean on the verified baseline `30d5de8`. Plan 5 is the first plan that fixes a
-**public API**: the IPC surface the React frontend (plan 6) consumes and the
-CLI's output contract. That is why it was brainstormed and confirmed rather
-than executed autonomously.
+`dw4core` is feature-complete: its tests, fmt and clippy are clean. This layer
+fixes a **public API**: the IPC surface the React frontend consumes and the
+CLI's output contract.
 
 Spec references: `docs/save-format.md` §3.1 (layout), §3.2 (boundaries),
 §3.3 (data flow), §3.4 (IPC surface), §3.5 (write safety), §12 steps 7–8.
 
-### Decisions confirmed with the user
+### Design decisions
 
 | # | Decision | Choice |
 | --- | --- | --- |
-| 1 | Tauri shell cannot compile here (no `webkit2gtk-4.1`) | Put commands + payloads in a pure `dw4ipc` crate; `src-tauri` is a thin excluded shell proven by `cargo check` on a host |
-| 2 | IPC surface | Confirm the spec's seven commands; add `OpenResult` (file identity) and `IpcError` wrappers. Plan 6 later added an eighth, `species_stats`, for the Character selector's species switch. |
+| 1 | The Tauri shell needs a webkit sysroot (`webkit2gtk-4.1`) | Put commands + payloads in a pure `dw4ipc` crate; `src-tauri` is a thin excluded shell checked by `cargo check` on a host |
+| 2 | IPC surface | The spec's seven commands, plus `OpenResult` (file identity) and `IpcError` wrappers. An eighth, `species_stats`, serves the Character selector's species switch. |
 | 3 | CLI output | Five verbs, human-readable by default, global `--json` sharing the IPC payloads; exit 0/1/2 |
 | 4 | `ts-rs` derives | Feature-gated in `dw4core` (`ts`), generation test owned by `dw4ipc` |
 | 5 | Static UI data the frontend needs (catalogue, caps, mirrors, labels, presets) | `app_info()` returns it once in `AppInfo.ui`; `OpenResult` stays lean |
 
-### Facts verified from source, not memory
+### Verified against source
 
 - `SaveView` (`document.rs`) has **no** path/source field, so `open_save` needs
   a wrapper for file identity.
 - `Warning` is a **type alias** of `FieldError` (`document.rs:82`).
 - `Document::save` already does atomic write + `.bak` + post-write verification
-  for every container type; plan 5 must not reimplement any of it.
+  for every container type; this layer must not reimplement any of it.
 - `render_container` (`memcard/mod.rs`) raises `NoSave` when a new `.ps2` is
   requested with no source card. A brand-new card image cannot be synthesised.
 - `Document::validate` / `apply` return `Result<Vec<Warning>, Vec<FieldError>>`.
 - Versions on crates.io at design time: `ts-rs 12.0.1`, `tauri 2.11.5`,
   `tauri-build 2.6.3`, `clap 4.6.6`.
-- `docs/superpowers/` is gitignored scratch; crates.io is reachable from the
-  container (the handoff's "no reliable network" note is stale).
 
 ---
 
@@ -58,14 +54,14 @@ src/bindings/  NEW: generated TypeScript, checked in
 ```
 
 `src-tauri` goes in the root workspace's `exclude`, not `members`. Rationale:
-`cargo test/clippy --workspace` in this container would otherwise fail on the
-missing `webkit2gtk-4.1`, making the gate that protects plans 1–4 unusable.
-Excluded, it keeps its own lockfile and is checked by a host/CI job that
-installs `libwebkit2gtk-4.1-dev`.
+`cargo test/clippy --workspace` would otherwise fail on the missing
+`webkit2gtk-4.1`, making the workspace gate unusable. Excluded, it keeps its own
+lockfile and is checked by a host/CI job that installs
+`libwebkit2gtk-4.1-dev`.
 
 `dw4ipc` is pure Rust. It has no Tauri dependency, so it compiles and is tested
-here. The Tauri shell and the CLI are both thin consumers of it, which is what
-makes the CLI and frontend share one serializer.
+by the workspace gate. The Tauri shell and the CLI are both thin consumers of
+it, which is what makes the CLI and frontend share one serializer.
 
 ### 2.2 Dependency boundaries
 
@@ -107,7 +103,7 @@ pub struct OpenResult {
     pub view: SaveView,
 }
 
-pub struct SpeciesStats {       // response-only; added by plan 6
+pub struct SpeciesStats {       // response-only
     pub level: u32,
     pub exp: u32,               // lifted to the level threshold in Normal mode
     pub tech: [i32; 9],
@@ -115,7 +111,7 @@ pub struct SpeciesStats {       // response-only; added by plan 6
 }
 
 pub struct AppInfo {
-    pub name: String,
+    pub name: String,          // product name: "DW4orge"
     pub version: String,
     pub core_version: String,
     pub save_size: usize,
@@ -147,12 +143,12 @@ dependency; the derives are additive) and `TS` behind the `ts` feature.
 be `Serialize` + `TS` only, never `Deserialize`; that in turn makes `AppInfo`
 and `UiData` Serialize-only, since they carry those two types.
 
-**Verified against ts-rs 12.0.1 by probe, not assumed:** borrowed `'static`
+**Verified against ts-rs 12.0.1:** borrowed `'static`
 fields derive cleanly (`&'static str` → `string`, `&'static [u32]` →
 `Array<number>`), and `Category::Unknown(u8)` → `{ "unknown": number }`. No
 owned view types are needed.
 
-This is an agreed deviation from §3.3's literal wording ("`open_save` returns
+This deviates from §3.3's literal wording ("`open_save` returns
 … the item catalogue, the caps/limits table"): those tables are static and ship
 once through `app_info` instead of on every open, new, save and save-as. The
 §3.3 intent — inline validation with no per-keystroke round-trip — is preserved.
@@ -191,7 +187,7 @@ The seven operations, as methods:
 | `save(edits: EditSet, mode: Mode) -> Result<OpenResult, IpcError>` | re-validates and applies the draft, then writes over the loaded path; writes nothing on rejection (spec §3.3). A pathless (`new`) session returns `Unsupported { "no path; use save_as" }` |
 | `save_as(path, edits: EditSet, mode: Mode) -> Result<OpenResult, IpcError>` | the same draft/validate/apply/write to a new path; card-from-raw needs the source card |
 | `app_info() -> AppInfo` | static; carries `ui: UiData`; never fails |
-| `species_stats(species, mode) -> Result<SpeciesStats, IpcError>` | one species' stored level/EXP/techniques/power-ups, with `view`'s Normal-mode EXP lift. Added in plan 6 for the Character selector. |
+| `species_stats(species, mode) -> Result<SpeciesStats, IpcError>` | one species' stored level/EXP/techniques/power-ups, with `view`'s Normal-mode EXP lift. Serves the Character selector. |
 
 Non-IPC service calls, used only by the CLI: `verify(path) -> VerifyReport`
 (parse + checksums; card also ECC/chain/directory) and
@@ -240,32 +236,23 @@ dependency.
 Thin: `src/lib.rs` builds the app, `src/commands.rs` holds the seven
 `#[tauri::command]` functions, each taking `State<Mutex<EditorSession>>` and
 delegating straight to `dw4ipc`; `src/state.rs` owns the mutex; `src/error.rs`
-is unnecessary because `IpcError` is already `Serialize`. Capabilities grant
-only the file-dialog plugin.
+is unnecessary because `IpcError` is already `Serialize`. Capabilities grant the
+file-dialog plugin, the native window theme and window destroy.
 
-Verification reality, recorded rather than papered over: this crate is excluded
-from the root workspace so a missing webkit sysroot cannot break the workspace
-gate. It is proven by `cargo check` run from `src-tauri/` (its own workspace;
-`cargo check -p dw4orge` does not resolve from the root) on a machine with the
-Linux build dependencies:
+This crate is excluded from the root workspace so a missing webkit sysroot
+cannot break the workspace gate. It is checked with `cargo check` from
+`src-tauri/` (its own workspace; `cargo check -p dw4orge` does not resolve from
+the root), which needs the Linux build dependencies:
 
 ```text
 libwebkit2gtk-4.1-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev librsvg2-dev
 ```
 
-The command bodies are one-line delegations whose logic is tested through
-`dw4ipc`. `bundle.active` was `false` with no icon paths until plan 7 supplied
-them, because `generate_context!` otherwise fails on a missing icon.
-
-**Update (plan 7).** This section originally said the crate *cannot* be compiled
-in the working container. That turned out to be an `apt-get update` away from
-false: refreshed sources do offer `libwebkit2gtk-4.1-dev` (2.52.6 on Ubuntu
-24.04), the container now has it, and `cargo check --all-targets`, `cargo clippy
--D warnings` and `cargo fmt --check` all run clean in `src-tauri/`. The first
-ever compile found two defects this caveat had been hiding — `commands.rs`
-imported `dw4core` while `Cargo.toml` declared only `dw4ipc`, and the `session()`
-helper elided two lifetimes into one `MutexGuard`. `ci.yml` now runs that check
-on every push, so it cannot go unbuilt again.
+`cargo check --all-targets`, `cargo clippy -D warnings` and `cargo fmt --check`
+run clean there, and `ci.yml` runs that check on every push. The command bodies
+are one-line delegations whose logic is tested through `dw4ipc`. `bundle.active`
+requires icon paths, because `generate_context!` otherwise fails on a missing
+icon.
 
 ---
 
@@ -308,10 +295,9 @@ on every push, so it cannot go unbuilt again.
 | `dw4ipc` | integration tests over committed fixtures: open→view→edit→validate→save to tempdir→reopen; rejected validation writes nothing; card round-trip; `save_as *.ps2` with no source card errors |
 | bindings | drift test above |
 | `dw4cli` | spawn the binary for all five verbs, human and `--json` |
-| `src-tauri` | `cargo check` on a webkit host/CI only — **not verifiable here**, and not claimed |
+| `src-tauri` | `cargo check` on a webkit host/CI only — outside the root workspace gate, and not claimed |
 
-Gate, run as its own step (never chained with `;`, which once let a commit run
-on failing fmt):
+Gate, run as its own step (never chained with `;`):
 
 ```bash
 cargo fmt --all && cargo fmt --all --check
@@ -323,7 +309,7 @@ cargo test --workspace
 
 ---
 
-## 8. Deliverable sequence (plan detail deferred to writing-plans)
+## 8. Implementation order
 
 1. Read the ts-rs 12 render API from docs.rs; pin the signatures. Decide the
    `FlagLabel`/`StoryPreset` borrowed-field question.
@@ -346,7 +332,7 @@ cargo test --workspace
 
 ## 9. Out of scope
 
-- The React frontend (plan 6) and polish/release (plan 7).
+- The React frontend and release packaging.
 - Creating a memory-card image from nothing.
 - Exposing RE data the Python editor never surfaced, per spec §1.
 - Reimplementing any part of `Document::save`'s atomic-write/`.bak`/verify
@@ -356,9 +342,9 @@ cargo test --workspace
 
 | Risk | Mitigation |
 | --- | --- |
-| ts-rs 12 API differs from expectation | Task 1 reads docs.rs first; no binding code until the signature is pinned |
+| ts-rs 12 API differs from expectation | The render API is read from docs.rs before any binding code is written |
 | Feature unification silently enables `ts` for all workspace builds | Acceptable: `ts-rs` is a derive-only dep; the default `dw4core` build is checked explicitly |
-| `src-tauri` breaks on the host because it is never compiled here | Keep it to one-line delegations; CI job with webkit is the compile gate; logic tested via `dw4ipc` |
-| `clap`/`tauri` derive macros trip new clippy lints | Gate runs `-D warnings`; fix inline as plans 1–4 did |
+| `src-tauri` is not compiled by the root workspace gate | Keep it to one-line delegations; CI job with webkit is the compile gate; logic tested via `dw4ipc` |
+| `clap`/`tauri` derive macros trip new clippy lints | Gate runs `-D warnings`; fix inline |
 | `Category::Unknown(u8)` or borrowed fields do not derive cleanly for ts-rs | Resolved by probe: both derive. Generation pins `large_int = "number"` because `Cap` holds `i64` |
 | Adding serde derives to `dw4core` types changes the public API beyond `ts` | Derives are additive, need no new dependency, and the default `dw4core` build and its 227 tests are re-run unchanged |

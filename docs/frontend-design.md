@@ -5,8 +5,6 @@ is held and undone, how validation works, and which game knowledge is mirrored
 on the TypeScript side. The format itself is `docs/save-format.md`; the IPC
 surface it consumes is `docs/dw4ipc-cli-tauri-design.md`.
 
-Implemented in plan 6 (2026-09-14) on `feat/dw4frontend`.
-
 ---
 
 ## 1. The backend seam
@@ -212,6 +210,9 @@ them.
   focus.
 - **`src/app/errorStates.test.tsx`** covers the failure banner and the
   busy-disabled toolbar.
+- **`src/app/CloseGuard.test.tsx`** covers the close guard: a clean request does
+  not prompt, a dirty one warns and Cancel keeps the window open, and Discard
+  closes it.
 - **`tools/check_contrast.mjs`** (`npm run check:contrast`) reads the real tokens
   and asserts the WCAG ratios for both themes: 4.5:1 for text, 3:1 for non-text.
   It is a plain Node script rather than a Vitest test because it reads a file and
@@ -221,10 +222,10 @@ them.
 
 ## 8. Not verified
 
-There is no browser and no `webkit2gtk` in the development container, so:
+The following paths are outside the automated gate:
 
-- **No visual check.** Layout, colour and focus behaviour are unverified here;
-  they are exercised by running `npm run dev` on a machine with a browser.
+- **No visual check.** Layout, colour and focus behaviour are not covered by the
+  test suite; they need `npm run dev` in a browser.
 - **The Tauri shell is compiled, packaged and launched — on Linux only, and only
   under a virtual display.** `src-tauri` is excluded from the root workspace and
   has its own gate: `cargo check --all-targets`, `cargo clippy -D warnings` and
@@ -239,13 +240,13 @@ There is no browser and no `webkit2gtk` in the development container, so:
 - **The native window-close prompt.** `CloseGuard` is exercised in jsdom
   against a mock that fires the handler by hand; the real
   `getCurrentWindow().onCloseRequested` / `destroy()` path needs the Tauri
-  shell, so it is compiled (`cargo check`) but not driven here.
+  shell, so it is compiled (`cargo check`) but not driven by a real window.
 - **The native title bar following the app theme** (`theme.ts` calling Tauri's
   `set_theme`, which tao maps to `gtk-application-prefer-dark-theme`) is a
   real-Wayland path. jsdom and Xvfb cannot show the GTK client-side header bar,
   so this is only observable on a compositor that draws it (KDE Plasma on
   Wayland).
 - **The workflows have never run.** They are actionlint-clean and every action
-  is pinned to a commit, but there is no GitHub access here, so `ci.yml` and
-  `release.yml` are unexercised and the first `v*` tag is cut by hand.
+  is pinned to a commit, but `ci.yml` and `release.yml` are unexercised and the
+  first `v*` tag is cut by hand.
 - **Whether the game accepts an edited save** remains a manual PCSX2 check.

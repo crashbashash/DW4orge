@@ -20,9 +20,10 @@ DW4orge synthesises a complete memory card that PCSX2 mounts and the game loads.
 
 Edits go through six sections (below), with validation on every change that
 points at the exact field and says how to fix it. Undo/redo spans the whole
-session, and an indicator shows whether there are unsaved changes. Saving is
-atomic, keeps a `.bak` of the previous file, and verifies the result before
-reporting success.
+session, and an indicator shows whether there are unsaved changes — a save you
+have not written yet counts as unsaved from the moment it is created, and
+closing the window asks before discarding. Saving is atomic, keeps a `.bak` of
+the previous file, and verifies the result before reporting success.
 
 Two modes keep you honest:
 
@@ -43,7 +44,7 @@ native window title bar.
 | **Items** | The 30-slot device folder: searchable picker over the 539-item catalogue, rarity colour, `+N` bonus and mod count; Advanced also edits raw ids |
 | **Equipment** | 3 weapons, armor, board, and the 5 weapon / 5 armor mod sockets. A mod chip that is not in the inventory is added for you |
 | **Disks** | The 12 disk counts — HP/MP α–γ, Cure, Raise, Gate, Recovery, B. Pack, Key Chain |
-| **Story** | Difficulty, six one-click story presets, and the 1024 story flags and folders grouped by intro, chapters, bosses, quests, lobby and folders, with a live preview of the difficulty's mirrors |
+| **Story** | Difficulty, six one-click story presets, and the 1024 story flags and folders grouped by intro, chapters, bosses, quests, lobby and folders, with a live preview of the difficulty's mirrors. Each difficulty keeps its own in-flight draft, so switching it does not discard unsaved edits |
 | **Bank** | Balance and the item slots |
 
 The item catalogue and every game constant are vendored from the disassembly,

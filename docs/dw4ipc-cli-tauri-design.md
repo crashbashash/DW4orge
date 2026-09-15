@@ -115,7 +115,7 @@ pub struct SpeciesStats {       // response-only; added by plan 6
 }
 
 pub struct AppInfo {
-    pub name: String,
+    pub name: String,          // product name: "DW4orge"
     pub version: String,
     pub core_version: String,
     pub save_size: usize,

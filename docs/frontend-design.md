@@ -212,6 +212,9 @@ them.
   focus.
 - **`src/app/errorStates.test.tsx`** covers the failure banner and the
   busy-disabled toolbar.
+- **`src/app/CloseGuard.test.tsx`** covers the close guard: a clean request does
+  not prompt, a dirty one warns and Cancel keeps the window open, and Discard
+  closes it.
 - **`tools/check_contrast.mjs`** (`npm run check:contrast`) reads the real tokens
   and asserts the WCAG ratios for both themes: 4.5:1 for text, 3:1 for non-text.
   It is a plain Node script rather than a Vitest test because it reads a file and

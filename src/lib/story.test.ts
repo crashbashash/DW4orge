@@ -105,11 +105,10 @@ describe('mirrorPreview', () => {
   it('lists the mirror target for each edited bit at the chosen difficulty and below', () => {
     const preview = mirrorPreview(
       [
-        { kind: 'flag', index: 66, value: true },
-        { kind: 'folder', index: 0, value: true },
+        { kind: 'flag', index: 66, value: true, difficulty: 'Hard' },
+        { kind: 'folder', index: 0, value: true, difficulty: 'Hard' },
       ],
       appInfoJson.ui.mirrors,
-      'Hard',
     );
     expect(preview).toContainEqual({ difficulty: 'Normal', flag: 707, value: true });
     expect(preview).toContainEqual({ difficulty: 'Hard', flag: 73, value: true });
@@ -121,9 +120,8 @@ describe('mirrorPreview', () => {
 
   it('copies a Very Hard edit into all three columns', () => {
     const preview = mirrorPreview(
-      [{ kind: 'flag', index: 66, value: true }],
+      [{ kind: 'flag', index: 66, value: true, difficulty: 'VeryHard' }],
       appInfoJson.ui.mirrors,
-      'VeryHard',
     );
     expect(preview).toEqual([
       { difficulty: 'Normal', flag: 707, value: true },
@@ -134,18 +132,16 @@ describe('mirrorPreview', () => {
 
   it('keeps a Normal edit on Normal alone', () => {
     const preview = mirrorPreview(
-      [{ kind: 'flag', index: 66, value: true }],
+      [{ kind: 'flag', index: 66, value: true, difficulty: 'Normal' }],
       appInfoJson.ui.mirrors,
-      'Normal',
     );
     expect(preview).toEqual([{ difficulty: 'Normal', flag: 707, value: true }]);
   });
 
   it('skips a bit that has no mirror', () => {
     const preview = mirrorPreview(
-      [{ kind: 'flag', index: 999, value: true }],
+      [{ kind: 'flag', index: 999, value: true, difficulty: 'Normal' }],
       appInfoJson.ui.mirrors,
-      'Normal',
     );
     expect(preview).toEqual([]);
   });

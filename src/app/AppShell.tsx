@@ -7,6 +7,7 @@ import { DisksSection } from '../features/disks/DisksSection';
 import { EquipmentSection } from '../features/equipment/EquipmentSection';
 import { ItemsSection } from '../features/items/ItemsSection';
 import { StorySection } from '../features/story/StorySection';
+import { CloseGuard } from './CloseGuard';
 import { useEditor } from './EditorProvider';
 import { TopBar } from './TopBar';
 import { useShortcuts } from './useShortcuts';
@@ -25,6 +26,7 @@ export function AppShell() {
   return (
     <div className="app">
       <TopBar />
+      <CloseGuard />
       <div className="body">
         <Sidebar />
         <main className="main">

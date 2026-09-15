@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { BackendProvider } from '../ipc/context';
 import { createMockBackend, type MockOptions } from '../ipc/mock';
 import { EditorProvider, useEditor } from './EditorProvider';
+import { dirty } from './selectors';
 
 function Probe() {
   const api = useEditor();
@@ -14,6 +15,7 @@ function Probe() {
       <span data-testid="bit">{api.state.draft?.bit ?? '-'}</span>
       <span data-testid="errors">{api.state.validation.errors.length}</span>
       <span data-testid="error">{api.state.error ?? ''}</span>
+      <span data-testid="dirty">{dirty(api.state) ? 'yes' : 'no'}</span>
       <button onClick={() => void api.openSample()}>sample</button>
       <button onClick={() => void api.newSave({ species: 'Dorumon', name: 'TST', story: null, difficulty: 'auto' })}>
         new
@@ -51,8 +53,18 @@ describe('EditorProvider', () => {
     renderProbe();
     await userEvent.click(screen.getByRole('button', { name: 'sample' }));
     await waitFor(() => expect(screen.getByTestId('species').textContent).toBe('Dorumon'));
+    expect(screen.getByTestId('dirty').textContent).toBe('no');
     await userEvent.click(screen.getByRole('button', { name: 'edit' }));
     expect(screen.getByTestId('bit').textContent).toBe('7');
+    expect(screen.getByTestId('dirty').textContent).toBe('yes');
+  });
+
+  it('marks a new save as unsaved before any edit', async () => {
+    renderProbe();
+    await userEvent.click(screen.getByRole('button', { name: 'new' }));
+    await waitFor(() => expect(screen.getByTestId('species').textContent).toBe('Dorumon'));
+    // The file has never been written, so it is unsaved from the start.
+    expect(screen.getByTestId('dirty').textContent).toBe('yes');
   });
 
   it('surfaces a rejected validation as an error', async () => {

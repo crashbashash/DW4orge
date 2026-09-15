@@ -17,6 +17,9 @@ pub mod session;
 pub mod ui;
 pub mod verify;
 
+/// The product name: what the title bar, installers and `AppInfo` report.
+pub const PRODUCT_NAME: &str = "DW4orge";
+
 // The core types that appear in command signatures and payloads, re-exported so
 // the CLI and the shell need one dependency.
 pub use dw4core::{EditSet, Mode, SaveView, Species, Warning};

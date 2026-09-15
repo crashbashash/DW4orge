@@ -351,12 +351,15 @@ editor reads and writes the columns like this:
   bytes with that difficulty's mirror column overlaid. Mirrored bits come from
   the column; everything else (lobby flags, quests, chapters) is shared and
   stays live. Selecting a different difficulty therefore changes the checkboxes.
-- **Writing.** A story edit is written to the live bytes, to the chosen
-  difficulty's column, **and to every lower difficulty's column** (Normal ≤
-  Hard ≤ Very Hard). A save that is played on a harder difficulty still has to
-  satisfy the lower difficulties' unlock state, so a higher difficulty must
-  never leave a lower one behind. An edit never reaches a *higher* difficulty:
-  Very Hard stays empty while the user works on Normal.
+- **Writing.** Each `StoryEdit` names the difficulty it was made on. It is
+  written to the live bytes, to that difficulty's column, **and to every lower
+  difficulty's column** (Normal ≤ Hard ≤ Very Hard). A save that is played on a
+  harder difficulty still has to satisfy the lower difficulties' unlock state,
+  so a higher difficulty must never leave a lower one behind. An edit never
+  reaches a *higher* difficulty: Very Hard stays empty while the user works on
+  Normal. Because the editor keeps a draft per difficulty, one save can carry
+  edits made on several difficulties; they are applied in ascending difficulty
+  order, so a harder edit wins when two disagree about the same bit.
 
 ---
 

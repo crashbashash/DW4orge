@@ -130,17 +130,17 @@ function mirrorFor(row: Mirror, difficulty: Difficulty): number {
 /**
  * The `(difficulty, flag)` mirror targets one edited bit writes.
  *
- * Rust mirrors each edit into the chosen difficulty **and every lower one**, so
- * an edit made while Very Hard is selected also lands in Hard and Normal
- * (`Document::apply`). Display only: Rust performs the real writes.
+ * The edit names the difficulty it was made on; Rust mirrors it into that
+ * difficulty **and every lower one**, so an edit made while Very Hard is
+ * selected also lands in Hard and Normal (`Document::apply`). Display only:
+ * Rust performs the real writes.
  */
 export function mirrorTargets(
   edit: StoryEdit,
   mirrors: readonly Mirror[],
-  difficulty: Difficulty,
 ): { difficulty: Difficulty; flag: number }[] {
   const out: { difficulty: Difficulty; flag: number }[] = [];
-  for (const target of difficultiesUpTo(difficulty)) {
+  for (const target of difficultiesUpTo(edit.difficulty)) {
     if (edit.kind === 'flag') {
       const row = mirrors.find((entry) => entry.active === edit.index);
       if (row) out.push({ difficulty: target, flag: mirrorFor(row, target) });
@@ -156,10 +156,9 @@ export function mirrorTargets(
 export function mirrorPreview(
   edits: readonly StoryEdit[],
   mirrors: readonly Mirror[],
-  difficulty: Difficulty,
 ): { difficulty: Difficulty; flag: number; value: boolean }[] {
   return edits.flatMap((edit) =>
-    mirrorTargets(edit, mirrors, difficulty).map((target) => ({
+    mirrorTargets(edit, mirrors).map((target) => ({
       ...target,
       value: edit.value,
     })),

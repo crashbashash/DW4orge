@@ -9,7 +9,7 @@ import type { UiData } from "./UiData";
  */
 export type AppInfo = { 
 /**
- * Binary name.
+ * Product name.
  */
 name: string, 
 /**

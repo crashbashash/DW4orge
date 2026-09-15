@@ -1,24 +1,32 @@
 import type { FieldError } from '../bindings';
-import { diffStory, resolveDifficulty, type StoreState } from './store';
+import { DIFFICULTY_ORDER } from '../lib/story';
+import { diffStory, type StoreState } from './store';
 
 /**
  * Whether the draft differs from what was loaded.
  *
+ * A session with no path has never been written — the in-memory save
+ * `new_save` returns — so it is unsaved work even before the first edit.
+ * Saving once sets the path and the comparison below takes over.
+ *
  * The `EditSet`s are built by the same function at load, so their key order
- * matches and a JSON comparison is a faithful deep-equal; `story` and
- * `difficulty` are compared separately because they live beside the draft.
+ * matches and a JSON comparison is a faithful deep-equal; the story drafts are
+ * compared separately because they live beside the draft, one per difficulty.
  */
 export function dirty(state: StoreState): boolean {
-  if (!state.draft || !state.story || !state.session) return false;
-  const difficulty = resolveDifficulty(state.difficulty, state.session);
-  if (diffStory(state.story, state.session.baselines[difficulty]).length > 0) return true;
+  if (!state.draft || !state.session) return false;
+  if (state.session.path === null) return true;
+  for (const difficulty of DIFFICULTY_ORDER) {
+    const pending = diffStory(
+      state.stories[difficulty],
+      state.session.baselines[difficulty],
+      difficulty,
+    );
+    if (pending.length > 0) return true;
+  }
 
-  const current = { ...state.draft, story: [], difficulty: state.difficulty };
-  const baseline = {
-    ...state.session.baseline,
-    story: [],
-    difficulty: state.session.baseline.difficulty,
-  };
+  const current = { ...state.draft, story: [] };
+  const baseline = { ...state.session.baseline, story: [] };
   return JSON.stringify(current) !== JSON.stringify(baseline);
 }
 

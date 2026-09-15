@@ -47,7 +47,6 @@ describe('viewToEditSet', () => {
     expect(edits.junk).toBe(view.junk_counter);
     expect(edits.wmods.every((mod) => mod === null || mod <= 0xffff)).toBe(true);
     expect(edits.story).toEqual([]);
-    expect(edits.difficulty).toEqual({ fixed: view.difficulty });
     expect(edits.device).toHaveLength(30);
     expect(edits.bank_items).toHaveLength(96);
     // The real card's save has three devices in slots 0-2 and the rest empty.
@@ -93,12 +92,12 @@ describe('resolveDifficulty', () => {
 });
 
 describe('diffStory', () => {
-  it('emits only the bits that changed', () => {
+  it('emits only the bits that changed, tagged with their difficulty', () => {
     const base = { flags: [false, false], folders: [false] };
     const next = { flags: [true, false], folders: [true] };
-    expect(diffStory(next, base)).toEqual([
-      { kind: 'flag', index: 0, value: true },
-      { kind: 'folder', index: 0, value: true },
+    expect(diffStory(next, base, 'VeryHard')).toEqual([
+      { kind: 'flag', index: 0, value: true, difficulty: 'VeryHard' },
+      { kind: 'folder', index: 0, value: true, difficulty: 'VeryHard' },
     ]);
   });
 });
@@ -130,34 +129,48 @@ describe('reducer', () => {
     expect(redone.draft?.bit).toBe(5);
   });
 
-  it('records a difficulty change', () => {
+  it('treats a difficulty change as a view change, not an edit', () => {
     const loaded = reducer(initialState, { type: 'loaded', result: openResult });
     const changed = reducer(loaded, { type: 'difficulty', difficulty: { fixed: 'Hard' } });
     expect(changed.difficulty).toEqual({ fixed: 'Hard' });
-    expect(changed.history.past).toHaveLength(1);
+    // Switching the selector must not push an undo step or discard a draft.
+    expect(changed.history.past).toHaveLength(0);
+    expect(changed.stories).toBe(loaded.stories);
   });
 
-  it('re-seeds the visible story from the selected difficulty', () => {
+  it('seeds one draft per difficulty and keeps them apart', () => {
     const loaded = reducer(withAppInfo(), { type: 'loaded', result: openResult });
-    expect(loaded.story?.flags[1]).toBe(true);
-
-    const changed = reducer(loaded, { type: 'difficulty', difficulty: { fixed: 'Hard' } });
-    // The card stores no Hard column, so the mirrored bit reads off...
-    expect(changed.story?.flags[1]).toBe(false);
-    // ...while the shared lobby flag survives the switch.
-    expect(changed.story?.flags[24]).toBe(true);
-    // And the diff is taken against Hard's baseline, so nothing looks modified.
-    expect(diffStory(changed.story!, changed.session!.baselines.Hard)).toEqual([]);
-
-    const undone = reducer(changed, { type: 'undo' });
-    expect(undone.story?.flags[1]).toBe(true);
+    // The card is a Normal save: flag 1 is live and its Normal mirror is set.
+    expect(loaded.stories.Normal.flags[1]).toBe(true);
+    // The card stores no Hard column, so Hard's own draft reads the bit off...
+    expect(loaded.stories.Hard.flags[1]).toBe(false);
+    // ...while the shared lobby flag is the same on every difficulty.
+    expect(loaded.stories.Hard.flags[24]).toBe(true);
+    expect(loaded.stories.VeryHard.flags[24]).toBe(true);
   });
 
-  it('diffs a story edit against the difficulty on screen', () => {
+  it('diffs a story edit against the difficulty it was made on', () => {
     const loaded = reducer(withAppInfo(), { type: 'loaded', result: openResult });
     const onHard = reducer(loaded, { type: 'difficulty', difficulty: { fixed: 'Hard' } });
     const edited = reducer(onHard, { type: 'story', kind: 'flag', index: 1, value: true });
-    expect(toEditSet(edited).story).toEqual([{ kind: 'flag', index: 1, value: true }]);
-    expect(toEditSet(edited).difficulty).toEqual({ fixed: 'Hard' });
+    expect(toEditSet(edited).story).toEqual([
+      { kind: 'flag', index: 1, value: true, difficulty: 'Hard' },
+    ]);
+  });
+
+  it('keeps an edit made on one difficulty when the selector moves away and back', () => {
+    // Regression: applying a preset and then changing difficulty used to
+    // re-seed the visible draft and silently drop the unsaved edit.
+    const loaded = reducer(withAppInfo(), { type: 'loaded', result: openResult });
+    const onHard = reducer(loaded, { type: 'difficulty', difficulty: { fixed: 'Hard' } });
+    const edited = reducer(onHard, { type: 'story', kind: 'flag', index: 1, value: true });
+    expect(edited.stories.Hard.flags[1]).toBe(true);
+
+    const onNormal = reducer(edited, { type: 'difficulty', difficulty: { fixed: 'Normal' } });
+    const backOnHard = reducer(onNormal, { type: 'difficulty', difficulty: { fixed: 'Hard' } });
+    expect(backOnHard.stories.Hard.flags[1]).toBe(true);
+    expect(toEditSet(backOnHard).story).toEqual([
+      { kind: 'flag', index: 1, value: true, difficulty: 'Hard' },
+    ]);
   });
 });

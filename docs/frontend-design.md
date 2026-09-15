@@ -11,7 +11,7 @@ Implemented in plan 6 (2026-09-14) on `feat/dw4frontend`.
 
 ## 1. The backend seam
 
-Everything the UI can ask of Rust goes through one interface,
+Everything the UI can ask of the shell goes through one interface,
 `src/ipc/backend.ts`:
 
 ```ts
@@ -26,6 +26,8 @@ export interface Backend {
   speciesStats(species: Species, mode: Mode): Promise<SpeciesStats>;
   pickOpenPath(): Promise<string | null>;
   pickSavePath(defaultName: string): Promise<string | null>;
+  onCloseRequested(handler: () => boolean): Promise<() => void>;
+  closeWindow(): Promise<void>;
   openSample?(): Promise<OpenResult>; // browser mock only
 }
 ```
@@ -41,6 +43,16 @@ Two implementations:
 
 `src/main.tsx` picks the real adapter when `__TAURI_INTERNALS__` is present and
 the mock otherwise. Tests inject the mock through `BackendProvider`.
+
+**Closing with unsaved work.** `CloseGuard` (`src/app/CloseGuard.tsx`) subscribes
+through `onCloseRequested`; the handler returns `true` to keep the window open
+when the draft is dirty. The native close is then only performed by
+`closeWindow` (`destroy`, which skips the event) after the same discard prompt
+Open/New use. The browser mock's guard is inert, so `npm run dev` is unaffected.
+Both paths need `core:window:allow-destroy` in
+`src-tauri/capabilities/default.json`: Tauri's JS wrapper calls `destroy()`
+itself when the handler does not prevent the event, and `destroy` is **not** in
+`core:window:default` — without it the close button silently does nothing.
 
 **Validation is a value, not an exception.** `validate_edits` rejects with
 `IpcError::Validation`, but being invalid is a normal state, so the adapter
@@ -59,8 +71,8 @@ store, `src/app/store.ts`, holds:
 | --- | --- |
 | `session` | the loaded `SaveView`, its path/source, the **baseline** draft, and each difficulty's **stored story** (`baselines`) |
 | `draft` | the wire `EditSet` being edited |
-| `story` | two boolean arrays (1024 flags, 12 folders) for the **selected difficulty** |
-| `difficulty` | `auto` or a fixed `Difficulty`; selects which difficulty's story the Story tab shows and edits |
+| `stories` | one `StoryDraft` (1024 flags, 12 folders) per difficulty, all in flight at once |
+| `difficulty` | `auto` or a fixed `Difficulty`; selects which of `stories` the Story tab shows. Changing it is a view change, never an edit |
 | `mode` | `normal` / `advanced` |
 | `validation` | the last `ValidationReport` |
 | `history` | undo/redo stacks |
@@ -70,22 +82,25 @@ Two conversions are the whole contract with Rust:
 
 - **`viewToEditSet(view)`** mirrors `SaveView::to_edit_set`. It copies the
   scalars and tuples, maps the mod sockets from device *indices* to chip *base
-  ids* (`socketBaseId`), copies `junk_counter` into `EditSet::junk`, and sets
-  `difficulty = { fixed: view.difficulty }`.
-- **`buildEditSet(draft, story, baselineStory, difficulty)`** emits the wire
-  payload, with `story` containing **only the bits that differ** from the
-  baseline (`diffStory`). A bit the user never touched is never written.
+  ids* (`socketBaseId`), and copies `junk_counter` into `EditSet::junk`.
+- **`buildEditSet(draft, stories, baselines)`** emits the wire payload, with
+  `story` holding **only the bits that differ** from each difficulty's
+  baseline (`diffStory`), tagged with the difficulty they were edited on. A
+  bit the user never touched is never written.
 
 A save keeps one live flag/folder block plus three per-difficulty mirror
 columns, and the title screen restores `active ← mirror` on load, so a
 difficulty's mirror column *is* its stored story. `session.baselines` therefore
 holds one `StoryDraft` per difficulty, produced by
 `storyDraftsFromView(view, mirrors)` (the live bytes with that difficulty's
-column overlaid). The Story tab edits one difficulty at a time: changing the
-difficulty selector **re-seeds** `story` from that difficulty's baseline — which
-is what makes the checkboxes show the selected difficulty's flags — and Undo
-restores the previous view. Rust mirrors each edit into the chosen difficulty
-and every lower one, so editing Very Hard also completes Normal and Hard.
+column overlaid). The Story tab edits one difficulty at a time, and each
+difficulty keeps its own in-flight draft, so changing the selector only changes
+which draft is on screen: a half-finished preset or a single checkbox survives
+a look at another difficulty, and nothing has to be saved in between. Undo/redo
+therefore does not record a difficulty switch. Each wire `StoryEdit` names its
+own difficulty; Rust mirrors it into that difficulty and every lower one, so
+editing Very Hard also completes Normal and Hard, and a save can carry drafts
+from several difficulties at once.
 
 `EditorProvider` (`src/app/EditorProvider.tsx`) owns the reducer and the async
 orchestration — open/new/save/saveAs/speciesStats — and exposes it as
@@ -93,7 +108,7 @@ orchestration — open/new/save/saveAs/speciesStats — and exposes it as
 
 ### Undo/redo
 
-`src/app/history.ts` is pure: a `Snapshot` is `{ draft, story, difficulty }`,
+`src/app/history.ts` is pure: a `Snapshot` is `{ draft, stories, difficulty }`,
 and an edit records the *previous* snapshot together with a **tag**. When
 consecutive edits carry the same tag (typing in one number field), they
 coalesce into one undo step; a discrete action passes `null` and always pushes.
@@ -102,9 +117,11 @@ simpler and safer than patches.
 
 ### Dirty state
 
-`dirty(state)` compares the current draft and story against the session
-baseline. Both `EditSet`s are produced by the same function at load, so their
-key order matches and a JSON comparison is a faithful deep-equal.
+`dirty(state)` compares the current draft, and every difficulty's story draft,
+against the session baseline. Both `EditSet`s are produced by the same function
+at load, so their key order matches and a JSON comparison is a faithful
+deep-equal. A session with no path — the in-memory save `new_save` returns — is
+dirty by definition before that comparison: it has never been written.
 
 ---
 
@@ -219,6 +236,10 @@ There is no browser and no `webkit2gtk` in the development container, so:
   as checksum-ok with no ECC mismatches. **Not covered:** Windows and macOS
   bundles (never built), and any real desktop — so window-manager behaviour, the
   taskbar/window icon and the native dialog on those platforms are unexercised.
+- **The native window-close prompt.** `CloseGuard` is exercised in jsdom
+  against a mock that fires the handler by hand; the real
+  `getCurrentWindow().onCloseRequested` / `destroy()` path needs the Tauri
+  shell, so it is compiled (`cargo check`) but not driven here.
 - **The native title bar following the app theme** (`theme.ts` calling Tauri's
   `set_theme`, which tao maps to `gtk-application-prefer-dark-theme`) is a
   real-Wayland path. jsdom and Xvfb cannot show the GTK client-side header bar,

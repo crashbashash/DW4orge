@@ -28,7 +28,6 @@ const EDIT_SET_KEYS: readonly string[] = [
   'wmods',
   'amods',
   'story',
-  'difficulty',
   'bank_bit',
   'disks',
   'bank_items',
@@ -79,7 +78,9 @@ describe('open → edit → save', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(saves).toHaveLength(1));
-    expect(saves[0]?.story).toEqual([{ kind: 'flag', index: 66, value: true }]);
+    expect(saves[0]?.story).toEqual([
+      { kind: 'flag', index: 66, value: true, difficulty: 'Normal' },
+    ]);
   });
 
   it('refreshes the summary from the saved view', async () => {

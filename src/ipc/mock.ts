@@ -19,6 +19,8 @@ export type MockOptions = {
   speciesStats?: (species: Species, mode: Mode) => SpeciesStats;
   openPaths?: (string | null)[];
   savePaths?: (string | null)[];
+  onCloseRequested?: (handler: () => boolean) => Promise<() => void>;
+  closeWindow?: () => Promise<void>;
 };
 
 const NO_DOCUMENT: IpcError = { kind: 'no_open_document' };
@@ -98,6 +100,11 @@ export function createMockBackend(options: MockOptions = {}): Backend {
 
     pickOpenPath: async () => openPaths.shift() ?? null,
     pickSavePath: async () => savePaths.shift() ?? null,
+
+    // The browser has no native window to close, so the guard stays inert
+    // unless a test supplies its own handler.
+    onCloseRequested: options.onCloseRequested ?? (async () => () => {}),
+    closeWindow: options.closeWindow ?? (async () => {}),
   };
 }
 
@@ -105,17 +112,16 @@ export function createMockBackend(options: MockOptions = {}): Backend {
 function applyEdits(view: SaveView, edits: EditSet, mirrors: AppInfo['ui']['mirrors']): SaveView {
   const storyFlags = [...view.story_flags];
   const storyFolders = [...view.story_folders];
-  const difficulty = edits.difficulty === 'auto' ? view.difficulty : edits.difficulty.fixed;
   for (const edit of edits.story) {
     const value = edit.value ? 1 : 0;
     if (edit.kind === 'flag') storyFlags[edit.index] = value;
     else storyFolders[edit.index] = value;
   }
-  // Rust copies each edit into the chosen difficulty's mirror column and every
+  // Rust copies each edit into its own difficulty's mirror column and every
   // lower one; the mock follows so dev saves look right.
   for (const edit of edits.story) {
     const value = edit.value ? 1 : 0;
-    for (const { flag } of mirrorTargets(edit, mirrors, difficulty)) storyFlags[flag] = value;
+    for (const { flag } of mirrorTargets(edit, mirrors)) storyFlags[flag] = value;
   }
 
   return {

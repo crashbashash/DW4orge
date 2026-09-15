@@ -25,15 +25,18 @@ export function StorySection() {
   const { state, setStory, setStoryDraft, setDifficulty } = useEditor();
   // The preset control is an action, not a stored value, so it resets itself.
   const [preset, setPreset] = useState('');
-  const { draft, story, appInfo, session } = state;
-  if (!draft || !story || !appInfo || !session) return null;
+  const { draft, appInfo, session } = state;
+  if (!draft || !appInfo || !session) return null;
 
   const groups = storyGroups(appInfo.ui.flag_labels);
   const governed = groups.flatMap((group) => group.flags.map((flag) => flag.flag));
 
+  // Each difficulty keeps its own draft, so this is only the one on screen;
+  // the others stay in the store untouched until their turn comes.
   const activeDifficulty = resolveDifficulty(state.difficulty, session);
-  const pending = diffStory(story, session.baselines[activeDifficulty]);
-  const preview = mirrorPreview(pending, appInfo.ui.mirrors, activeDifficulty);
+  const story = state.stories[activeDifficulty];
+  const pending = diffStory(story, session.baselines[activeDifficulty], activeDifficulty);
+  const preview = mirrorPreview(pending, appInfo.ui.mirrors);
 
   const difficultyValue = state.difficulty === 'auto' ? 'auto' : state.difficulty.fixed;
 

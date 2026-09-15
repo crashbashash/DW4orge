@@ -33,6 +33,11 @@ async function setup() {
   await screen.findByText('Story');
 }
 
+async function chooseDifficulty(name: string) {
+  await userEvent.click(screen.getByRole('button', { name: /difficulty/i }));
+  await userEvent.click(await screen.findByRole('option', { name }));
+}
+
 describe('StorySection', () => {
   it('applies a preset by replacing the governed flags', async () => {
     await setup();
@@ -63,13 +68,34 @@ describe('StorySection', () => {
     // The card is a Normal save: flag 1 is live and its Normal mirror is set.
     expect(tutorial().checked).toBe(true);
 
-    await userEvent.click(screen.getByRole('button', { name: /difficulty/i }));
-    await userEvent.click(await screen.findByRole('option', { name: 'Hard' }));
+    await chooseDifficulty('Hard');
 
     // The card has no Hard mirror column stored, so the mirrored bit reads off.
     expect(tutorial().checked).toBe(false);
     // A lobby flag has no mirror at all, so it is shared and stays checked.
     expect((screen.getByLabelText(/lobby flag 24/i) as HTMLInputElement).checked).toBe(true);
+  });
+
+  it('keeps a preset applied on one difficulty when the selector moves away and back', async () => {
+    // Regression: changing difficulty used to re-seed the visible draft, so an
+    // unsaved preset silently vanished until you saved after every change.
+    await setup();
+    const tutorial = () => screen.getByLabelText(/tutorial \(fresh start\)/i) as HTMLInputElement;
+    const world1 = () => screen.getByLabelText(/world 1 access/i) as HTMLInputElement;
+
+    // Apply the preset on Normal, the detected difficulty.
+    await userEvent.click(screen.getByRole('button', { name: /preset/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'After World 1' }));
+    expect(tutorial().checked).toBe(false);
+    expect(world1().checked).toBe(true);
+
+    // Look at Hard, then come back to Normal.
+    await chooseDifficulty('Hard');
+    await chooseDifficulty('Normal');
+
+    // The unsaved Normal edits are still there.
+    expect(tutorial().checked).toBe(false);
+    expect(world1().checked).toBe(true);
   });
 
   it('keeps the mirror writes behind a collapsed toggle', async () => {

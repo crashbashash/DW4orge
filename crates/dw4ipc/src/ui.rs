@@ -75,7 +75,7 @@ pub fn ui_data() -> UiData {
 #[must_use]
 pub fn app_info() -> AppInfo {
     AppInfo {
-        name: env!("CARGO_PKG_NAME").to_string(),
+        name: crate::PRODUCT_NAME.to_string(),
         version: env!("CARGO_PKG_VERSION").to_string(),
         core_version: dw4core::VERSION.to_string(),
         save_size: dw4core::SAVE_SIZE,

@@ -33,6 +33,6 @@ fn app_info_reports_both_versions() {
     assert_eq!(info.save_size, 81_920);
     assert_eq!(info.block_size, 40_960);
     assert_eq!(info.core_version, dw4core::VERSION);
-    assert_eq!(info.schema_version, 2);
+    assert_eq!(info.schema_version, 3);
     assert_eq!(info.name, "DW4orge");
 }

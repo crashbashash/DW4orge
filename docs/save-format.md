@@ -823,8 +823,8 @@ unsaved-changes actions use confirm dialogs, including closing the window;
 validation failures surface both inline on the offending control and in the
 status bar.
 
-**Implemented** (plan 6). The app runs in a plain browser against a fixture-
-backed mock, and in the Tauri shell against the real commands. The concrete
+**Implemented.** The app runs in a plain browser against a fixture-backed mock,
+and in the Tauri shell against the real commands. The concrete
 architecture — the backend seam, store, validation flow and the game knowledge
 mirrored in `src/lib/` — is recorded in
 [`docs/frontend-design.md`](frontend-design.md).

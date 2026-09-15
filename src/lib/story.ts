@@ -47,10 +47,46 @@ const FOLDER_MIRROR_BASE: Record<Difficulty, number> = { Normal: 518, Hard: 530,
 /** `flags::MIRRORED_FOLDERS`. */
 const MIRRORED_FOLDERS = 10;
 
+/** Difficulty order, matching `Difficulty::ALL` and `Difficulty::index`. */
+export const DIFFICULTY_ORDER: readonly Difficulty[] = ['Normal', 'Hard', 'VeryHard'];
+
+/** The difficulties at or below `difficulty`, Normal first. */
+export function difficultiesUpTo(difficulty: Difficulty): Difficulty[] {
+  return DIFFICULTY_ORDER.slice(0, DIFFICULTY_ORDER.indexOf(difficulty) + 1);
+}
+
 /** The flag that mirrors folder `folder` on `difficulty`, if it has one. */
 export function folderMirrorFlag(folder: number, difficulty: Difficulty): number | null {
   if (folder < 0 || folder >= MIRRORED_FOLDERS) return null;
   return FOLDER_MIRROR_BASE[difficulty] + folder;
+}
+
+/**
+ * The story a save has stored for `difficulty`.
+ *
+ * A save keeps one live `BASE_FLAG`/`BASE_FLAGFOLDER` pair plus a
+ * per-difficulty mirror column, and the title screen restores active <- mirror
+ * on load. A difficulty's *stored* story is therefore the live bytes with
+ * **that difficulty's mirror column overlaid**: every mirrored bit comes from
+ * the column, while the rest (lobby, quests, chapters) is shared and stays
+ * live. This is why switching difficulty changes the checkboxes.
+ */
+export function storyForDifficulty(
+  flags: readonly boolean[],
+  folders: readonly boolean[],
+  difficulty: Difficulty,
+  mirrors: readonly Mirror[],
+): StoryDraft {
+  const nextFlags = [...flags];
+  const nextFolders = [...folders];
+  for (const row of mirrors) {
+    nextFlags[row.active] = flags[mirrorFor(row, difficulty)];
+  }
+  for (let i = 0; i < MIRRORED_FOLDERS; i += 1) {
+    const flag = folderMirrorFlag(i, difficulty);
+    if (flag !== null) nextFolders[i] = flags[flag];
+  }
+  return { flags: nextFlags, folders: nextFolders };
 }
 
 /**
@@ -92,24 +128,39 @@ function mirrorFor(row: Mirror, difficulty: Difficulty): number {
 }
 
 /**
- * The mirror bits a set of story edits will write at `difficulty`.
+ * The `(difficulty, flag)` mirror targets one edited bit writes.
  *
- * Display only: Rust performs the real mirroring in `Document::apply`.
+ * The edit names the difficulty it was made on; Rust mirrors it into that
+ * difficulty **and every lower one**, so an edit made while Very Hard is
+ * selected also lands in Hard and Normal (`Document::apply`). Display only:
+ * Rust performs the real writes.
  */
-export function mirrorPreview(
-  edits: readonly StoryEdit[],
+export function mirrorTargets(
+  edit: StoryEdit,
   mirrors: readonly Mirror[],
-  difficulty: Difficulty,
-): { flag: number; value: boolean }[] {
-  const out: { flag: number; value: boolean }[] = [];
-  for (const edit of edits) {
+): { difficulty: Difficulty; flag: number }[] {
+  const out: { difficulty: Difficulty; flag: number }[] = [];
+  for (const target of difficultiesUpTo(edit.difficulty)) {
     if (edit.kind === 'flag') {
       const row = mirrors.find((entry) => entry.active === edit.index);
-      if (row) out.push({ flag: mirrorFor(row, difficulty), value: edit.value });
+      if (row) out.push({ difficulty: target, flag: mirrorFor(row, target) });
     } else {
-      const target = folderMirrorFlag(edit.index, difficulty);
-      if (target !== null) out.push({ flag: target, value: edit.value });
+      const flag = folderMirrorFlag(edit.index, target);
+      if (flag !== null) out.push({ difficulty: target, flag });
     }
   }
   return out;
+}
+
+/** The mirror bits a set of story edits will write, with their values. */
+export function mirrorPreview(
+  edits: readonly StoryEdit[],
+  mirrors: readonly Mirror[],
+): { difficulty: Difficulty; flag: number; value: boolean }[] {
+  return edits.flatMap((edit) =>
+    mirrorTargets(edit, mirrors).map((target) => ({
+      ...target,
+      value: edit.value,
+    })),
+  );
 }

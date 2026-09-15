@@ -19,7 +19,7 @@ export type ValidationReport = {
   warnings: FieldError[];
 };
 
-/** Everything the UI can ask of the Rust side. */
+/** Everything the UI can ask of the shell. */
 export interface Backend {
   appInfo(): Promise<AppInfo>;
   openSave(path: string): Promise<OpenResult>;
@@ -31,6 +31,15 @@ export interface Backend {
   speciesStats(species: Species, mode: Mode): Promise<SpeciesStats>;
   pickOpenPath(): Promise<string | null>;
   pickSavePath(defaultName: string): Promise<string | null>;
+  /**
+   * Register a handler for the shell's window-close request (the title bar's
+   * close button, Alt+F4). The handler returns `true` to keep the window open
+   * — the caller shows its own confirmation — and `false` to let the close
+   * proceed. Returns an unsubscribe.
+   */
+  onCloseRequested(handler: () => boolean): Promise<() => void>;
+  /** Force the window closed, bypassing {@link onCloseRequested}. */
+  closeWindow(): Promise<void>;
   /**
    * Present only on the browser mock. The shell offers a one-click sample load
    * when it is defined, so `npm run dev` has something to show without a file

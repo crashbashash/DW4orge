@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { SectionCard } from '../../components/SectionCard';
 import { SelectField } from '../../components/SelectField';
 import { useEditor } from '../../app/EditorProvider';
-import { diffStory } from '../../app/store';
+import { diffStory, resolveDifficulty } from '../../app/store';
 import { applyPresetToStory, mirrorPreview, storyGroups } from '../../lib/story';
 
 const DIFFICULTIES = ['Normal', 'Hard', 'VeryHard'] as const;
@@ -25,16 +25,18 @@ export function StorySection() {
   const { state, setStory, setStoryDraft, setDifficulty } = useEditor();
   // The preset control is an action, not a stored value, so it resets itself.
   const [preset, setPreset] = useState('');
-  const { draft, story, appInfo, session } = state;
-  if (!draft || !story || !appInfo || !session) return null;
+  const { draft, appInfo, session } = state;
+  if (!draft || !appInfo || !session) return null;
 
   const groups = storyGroups(appInfo.ui.flag_labels);
   const governed = groups.flatMap((group) => group.flags.map((flag) => flag.flag));
 
-  const pending = diffStory(story, session.baselineStory);
-  const activeDifficulty =
-    state.difficulty === 'auto' ? session.view.difficulty : state.difficulty.fixed;
-  const preview = mirrorPreview(pending, appInfo.ui.mirrors, activeDifficulty);
+  // Each difficulty keeps its own draft, so this is only the one on screen;
+  // the others stay in the store untouched until their turn comes.
+  const activeDifficulty = resolveDifficulty(state.difficulty, session);
+  const story = state.stories[activeDifficulty];
+  const pending = diffStory(story, session.baselines[activeDifficulty], activeDifficulty);
+  const preview = mirrorPreview(pending, appInfo.ui.mirrors);
 
   const difficultyValue = state.difficulty === 'auto' ? 'auto' : state.difficulty.fixed;
 
@@ -66,6 +68,12 @@ export function StorySection() {
           }}
         />
       </div>
+
+      <p className="muted">
+        Story is stored per difficulty, so these checkboxes show{' '}
+        {DIFFICULTY_LABELS[activeDifficulty]}&apos;s flags. Saving a difficulty also
+        fills in the easier ones, so a harder mode stays usable.
+      </p>
 
       {groups.map((group) => (
         <fieldset key={group.key}>
@@ -113,8 +121,8 @@ export function StorySection() {
         ) : (
           <ul className="mirror-preview">
             {preview.map((row, index) => (
-              <li key={`${row.flag}-${index}`}>
-                flag {row.flag} ={' '}
+              <li key={`${row.difficulty}-${row.flag}-${index}`}>
+                {DIFFICULTY_LABELS[row.difficulty]} · flag {row.flag} ={' '}
                 <span className={row.value ? 'mirror-set' : 'mirror-clear'}>
                   {row.value ? 'set' : 'cleared'}
                 </span>

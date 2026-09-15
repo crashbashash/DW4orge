@@ -109,10 +109,12 @@ pub enum StoryKind {
     Folder,
 }
 
-/// One story bit to write.
+/// One story bit to write, and the difficulty it was edited on.
 ///
 /// Mirrors one entry of the Python `collect()` story dict, which is keyed by
-/// `(kind, index)` and valued `0`/`1`.
+/// `(kind, index)` and valued `0`/`1`. `difficulty` replaces the Python GUI's
+/// single `difficulty_var`, so one save can carry edits made on several
+/// difficulties at once.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub struct StoryEdit {
@@ -122,26 +124,31 @@ pub struct StoryEdit {
     pub index: u16,
     /// The value to write.
     pub value: bool,
+    /// The difficulty whose mirror column this edit targets, and every lower
+    /// one. The live bytes are written either way.
+    pub difficulty: Difficulty,
 }
 
 impl StoryEdit {
-    /// An edit to `BASE_FLAG[index]`.
+    /// An edit to `BASE_FLAG[index]` made on `difficulty`.
     #[must_use]
-    pub fn flag(index: u16, value: bool) -> Self {
+    pub fn flag(difficulty: Difficulty, index: u16, value: bool) -> Self {
         Self {
             kind: StoryKind::Flag,
             index,
             value,
+            difficulty,
         }
     }
 
-    /// An edit to `BASE_FLAGFOLDER[index]`.
+    /// An edit to `BASE_FLAGFOLDER[index]` made on `difficulty`.
     #[must_use]
-    pub fn folder(index: u16, value: bool) -> Self {
+    pub fn folder(difficulty: Difficulty, index: u16, value: bool) -> Self {
         Self {
             kind: StoryKind::Folder,
             index,
             value,
+            difficulty,
         }
     }
 }
@@ -210,9 +217,10 @@ pub struct EditSet {
     /// 5 armor mod sockets, as mod-chip base ids.
     pub amods: [Option<u32>; 5],
     /// Story bits to write. Bits absent from this list keep their stored value.
+    ///
+    /// Each edit names the difficulty it was made on, so one save can carry
+    /// edits made on several difficulties at once.
     pub story: Vec<StoryEdit>,
-    /// Which difficulty's mirrors to write for those story bits.
-    pub difficulty: DifficultyChoice,
     /// Bank balance.
     pub bank_bit: u32,
     /// The 12 owned disk counts.
@@ -246,7 +254,6 @@ impl Default for EditSet {
             wmods: [None; 5],
             amods: [None; 5],
             story: Vec::new(),
-            difficulty: DifficultyChoice::Auto,
             bank_bit: 0,
             disks: [0; 12],
             bank_items: vec![EMPTY; BANK_SLOTS],
@@ -334,7 +341,6 @@ impl SaveView {
             wmods: self.wmods.map(|i| socket_base_id(&self.device, i)),
             amods: self.amods.map(|i| socket_base_id(&self.device, i)),
             story: Vec::new(),
-            difficulty: DifficultyChoice::Fixed(self.difficulty),
             bank_bit: self.bank_bit,
             disks: self.disks,
             bank_items: self.bank_items.clone(),
@@ -755,43 +761,54 @@ fn apply_to(data: &mut SaveData, edits: &EditSet) {
     }
 }
 
-/// Write the story edits into the live flag/folder bytes, then write each edited
-/// bit's difficulty mirror.
+/// Write the story edits into the live flag/folder bytes, then write each
+/// edit's difficulty mirror **and every lower difficulty's**.
 ///
 /// The title screen restores active <- mirror on load, so an active-only edit
-/// reverts. Unlike the Python `apply`, which mirrors through the GUI's partial
-/// 10-flag table, this mirrors the **complete** table (spec 5.1) - the
-/// deliberate divergence.
+/// reverts. A save that is played on a harder difficulty still has to satisfy
+/// the lower difficulties' unlock state, so an edit made while Hard is selected
+/// also lands in Normal's column - a higher difficulty must never leave a lower
+/// one behind. Edits never reach *higher* difficulties: Very Hard stays empty
+/// when the user is working on Normal.
+///
+/// Each edit carries the difficulty it was made on, because the GUI keeps a
+/// draft per difficulty and sends them in one save. They are applied in
+/// ascending difficulty order, so when two of them disagree about one bit the
+/// harder one wins.
+///
+/// Unlike the Python `apply`, which mirrors through the GUI's partial 10-flag
+/// table, this mirrors the **complete** table (spec 5.1) - the deliberate
+/// divergence.
 fn mirror_story(data: &mut SaveData, edits: &EditSet) {
-    let difficulty = match edits.difficulty {
-        DifficultyChoice::Fixed(d) => d,
-        DifficultyChoice::Auto => detect_difficulty(data.raw_flags()),
-    };
-
     let mut flags = data.raw_flags().to_vec();
     let mut folders = data.raw_folders().to_vec();
 
-    for edit in &edits.story {
-        let value = u8::from(edit.value);
-        match edit.kind {
-            StoryKind::Flag => flags[edit.index as usize] = value,
-            StoryKind::Folder => folders[edit.index as usize] = value,
-        }
-    }
-
-    for edit in &edits.story {
-        let value = u8::from(edit.value);
-        match edit.kind {
-            StoryKind::Flag => {
-                if let Some(row) = MIRRORS.iter().find(|r| r.active == u32::from(edit.index)) {
-                    flags[row.mirror_for(difficulty) as usize] = value;
-                }
+    for difficulty in Difficulty::ALL {
+        // `ALL` is ordered Normal, Hard, Very Hard, so the slice up to and
+        // including `difficulty` is that difficulty and everything below it.
+        let down_to = &Difficulty::ALL[..=difficulty.index()];
+        for edit in edits.story.iter().filter(|e| e.difficulty == difficulty) {
+            let value = u8::from(edit.value);
+            match edit.kind {
+                StoryKind::Flag => flags[edit.index as usize] = value,
+                StoryKind::Folder => folders[edit.index as usize] = value,
             }
-            StoryKind::Folder => {
-                if (edit.index as usize) < MIRRORED_FOLDERS
-                    && let Some(target) = folder_mirror(edit.index as usize, difficulty)
-                {
-                    flags[target as usize] = value;
+            for target in down_to {
+                match edit.kind {
+                    StoryKind::Flag => {
+                        if let Some(row) =
+                            MIRRORS.iter().find(|r| r.active == u32::from(edit.index))
+                        {
+                            flags[row.mirror_for(*target) as usize] = value;
+                        }
+                    }
+                    StoryKind::Folder => {
+                        if (edit.index as usize) < MIRRORED_FOLDERS
+                            && let Some(flag) = folder_mirror(edit.index as usize, *target)
+                        {
+                            flags[flag as usize] = value;
+                        }
+                    }
                 }
             }
         }
@@ -1122,16 +1139,16 @@ mod tests {
         assert!(e.story.is_empty());
         assert_eq!(e.disks, [0u16; 12]);
         assert_eq!(e.bank_items, vec![crate::EMPTY; BANK_SLOTS]);
-        assert_eq!(e.difficulty, DifficultyChoice::Auto);
     }
 
     #[test]
-    fn a_story_edit_names_its_kind_index_and_value() {
-        let s = StoryEdit::flag(66, true);
+    fn a_story_edit_names_its_kind_index_value_and_difficulty() {
+        let s = StoryEdit::flag(Difficulty::Hard, 66, true);
         assert_eq!(s.kind, StoryKind::Flag);
         assert_eq!(s.index, 66);
         assert!(s.value);
-        let f = StoryEdit::folder(3, false);
+        assert_eq!(s.difficulty, Difficulty::Hard);
+        let f = StoryEdit::folder(Difficulty::Normal, 3, false);
         assert_eq!(f.kind, StoryKind::Folder);
         assert!(!f.value);
     }
@@ -1489,8 +1506,7 @@ mod tests {
         // Flag 0 is in every difficulty's mirror set. Normal mirrors it to 699.
         let mut doc = fresh_document();
         let edits = EditSet {
-            story: vec![StoryEdit::flag(0, true)],
-            difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+            story: vec![StoryEdit::flag(Difficulty::Normal, 0, true)],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());
@@ -1499,25 +1515,90 @@ mod tests {
     }
 
     #[test]
-    fn story_edits_mirror_into_the_chosen_difficulty() {
+    fn story_edits_mirror_into_their_difficulty_and_every_lower_one() {
+        // A save played on Very Hard still has to satisfy Hard and Normal, so
+        // the edit is copied down the whole column stack.
         let mut doc = fresh_document();
         let edits = EditSet {
-            story: vec![StoryEdit::flag(0, true)],
-            difficulty: DifficultyChoice::Fixed(Difficulty::VeryHard),
+            story: vec![StoryEdit::flag(Difficulty::VeryHard, 0, true)],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());
         assert_eq!(doc.data().raw_flags()[0], 1);
         assert_eq!(doc.data().raw_flags()[12], 1, "Very Hard mirror of flag 0");
-        assert_eq!(doc.data().raw_flags()[699], 0, "Normal mirror untouched");
+        assert_eq!(doc.data().raw_flags()[6], 1, "Hard mirror of flag 0");
+        assert_eq!(doc.data().raw_flags()[699], 1, "Normal mirror of flag 0");
+    }
+
+    #[test]
+    fn a_hard_edit_leaves_very_hard_alone() {
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            story: vec![StoryEdit::flag(Difficulty::Hard, 0, true)],
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        assert_eq!(doc.data().raw_flags()[6], 1, "Hard mirror of flag 0");
+        assert_eq!(doc.data().raw_flags()[699], 1, "Normal mirror of flag 0");
+        assert_eq!(doc.data().raw_flags()[12], 0, "Very Hard mirror untouched");
+    }
+
+    #[test]
+    fn a_clear_copies_down_as_well() {
+        let mut doc = fresh_document();
+        let seed = EditSet {
+            story: vec![StoryEdit::flag(Difficulty::VeryHard, 0, true)],
+            ..Default::default()
+        };
+        assert!(doc.apply(&seed, Mode::Normal).is_ok());
+
+        let clear = EditSet {
+            story: vec![StoryEdit::flag(Difficulty::VeryHard, 0, false)],
+            ..Default::default()
+        };
+        assert!(doc.apply(&clear, Mode::Normal).is_ok());
+        assert_eq!(doc.data().raw_flags()[0], 0);
+        for mirror in [699usize, 6, 12] {
+            assert_eq!(doc.data().raw_flags()[mirror], 0, "mirror {mirror}");
+        }
+    }
+
+    #[test]
+    fn folders_copy_down_to_lower_difficulties_too() {
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            story: vec![StoryEdit::folder(Difficulty::VeryHard, 2, true)],
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        assert_eq!(doc.data().raw_folders()[2], 1);
+        assert_eq!(
+            doc.data().raw_flags()[542 + 2],
+            1,
+            "Very Hard folder mirror"
+        );
+        assert_eq!(doc.data().raw_flags()[530 + 2], 1, "Hard folder mirror");
+        assert_eq!(doc.data().raw_flags()[518 + 2], 1, "Normal folder mirror");
+    }
+
+    #[test]
+    fn an_unmirrored_flag_copies_down_to_nothing() {
+        // Flag 24 is a lobby flag: no difficulty has a mirror for it, so the
+        // copy-down loop must simply skip it.
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            story: vec![StoryEdit::flag(Difficulty::VeryHard, 24, true)],
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        assert_eq!(doc.data().raw_flags()[24], 1);
     }
 
     #[test]
     fn a_folder_edit_mirrors_to_its_flag() {
         let mut doc = fresh_document();
         let edits = EditSet {
-            story: vec![StoryEdit::folder(2, true)],
-            difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+            story: vec![StoryEdit::folder(Difficulty::Normal, 2, true)],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());
@@ -1529,20 +1610,60 @@ mod tests {
     fn a_story_bit_that_is_not_edited_keeps_its_stored_value() {
         let mut doc = fresh_document();
         let seed = EditSet {
-            story: vec![StoryEdit::flag(100, true), StoryEdit::flag(200, true)],
-            difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+            story: vec![
+                StoryEdit::flag(Difficulty::Normal, 100, true),
+                StoryEdit::flag(Difficulty::Normal, 200, true),
+            ],
             ..Default::default()
         };
         assert!(doc.apply(&seed, Mode::Normal).is_ok());
 
         let partial = EditSet {
-            story: vec![StoryEdit::flag(100, false)],
-            difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+            story: vec![StoryEdit::flag(Difficulty::Normal, 100, false)],
             ..Default::default()
         };
         assert!(doc.apply(&partial, Mode::Normal).is_ok());
         assert_eq!(doc.data().raw_flags()[100], 0);
         assert_eq!(doc.data().raw_flags()[200], 1, "untouched flag survives");
+    }
+
+    #[test]
+    fn edits_on_several_difficulties_all_land_in_one_save() {
+        // The GUI keeps a draft per difficulty and sends them in a single save,
+        // so each edit keeps its own column target.
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            story: vec![
+                StoryEdit::flag(Difficulty::Normal, 0, true),
+                StoryEdit::flag(Difficulty::Hard, 66, true),
+                StoryEdit::flag(Difficulty::VeryHard, 88, true),
+            ],
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        let flags = doc.data().raw_flags();
+        // Flag 0 was edited on Normal, so it stays out of the harder columns.
+        assert_eq!((flags[699], flags[6], flags[12]), (1, 0, 0));
+        // Flag 66 was edited on Hard, so Normal and Hard get it, Very Hard not.
+        assert_eq!((flags[707], flags[73], flags[77]), (1, 1, 0));
+        // Flag 88 was edited on Very Hard, so all three columns get it.
+        assert_eq!((flags[713], flags[743], flags[773]), (1, 1, 1));
+    }
+
+    #[test]
+    fn a_harder_edit_wins_a_conflict_on_the_same_bit() {
+        let mut doc = fresh_document();
+        let edits = EditSet {
+            story: vec![
+                StoryEdit::flag(Difficulty::Normal, 0, true),
+                StoryEdit::flag(Difficulty::VeryHard, 0, false),
+            ],
+            ..Default::default()
+        };
+        assert!(doc.apply(&edits, Mode::Normal).is_ok());
+        let flags = doc.data().raw_flags();
+        assert_eq!(flags[0], 0, "the harder edit wins the live byte");
+        assert_eq!((flags[699], flags[6], flags[12]), (0, 0, 0));
     }
 
     #[test]
@@ -1566,8 +1687,7 @@ mod tests {
         let mut doc = fresh_document();
         let edits = EditSet {
             bit: 5_000,
-            story: vec![StoryEdit::flag(0, true)],
-            difficulty: DifficultyChoice::Auto,
+            story: vec![StoryEdit::flag(Difficulty::Normal, 0, true)],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());

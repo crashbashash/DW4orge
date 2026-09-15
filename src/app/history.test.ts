@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { Snapshot } from './history';
 import { record, redo, undo } from './history';
 
+const emptyStory = () => ({ flags: [], folders: [] });
+
 const snap = (bit: number): Snapshot => ({
   // SAFETY: the test only reads `bit`; the rest of the EditSet is irrelevant.
   draft: { bit } as unknown as Snapshot['draft'],
-  story: { flags: [], folders: [] },
+  stories: { Normal: emptyStory(), Hard: emptyStory(), VeryHard: emptyStory() },
   difficulty: 'auto',
 });
 

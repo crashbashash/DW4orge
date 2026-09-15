@@ -32,7 +32,6 @@ export function emptyEditSet(): EditSet {
     wmods: [null, null, null, null, null],
     amods: [null, null, null, null, null],
     story: [],
-    difficulty: 'auto',
     bank_bit: 0,
     disks: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     bank_items: bankItems,

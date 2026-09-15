@@ -82,6 +82,11 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
           }}
         />
       </div>
+
+      <p className="muted">
+        A difficulty also fills in the easier ones, so the save can be loaded on
+        any mode up to the one you pick.
+      </p>
     </Modal>
   );
 }

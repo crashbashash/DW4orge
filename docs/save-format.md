@@ -339,8 +339,27 @@ Folders: `folder[i]` mirrors to flag `518+i` (Normal), `530+i` (Hard),
 `542+i` (Very Hard), for `i` in 0–9.
 
 Difficulty is **not stored in the save**. It is inferred by scoring each
-difficulty's mirror set against the live bytes and taking the highest; the
-result is shown as a badge and can be overridden in the UI.
+difficulty's mirror set against the live bytes and taking the highest; a tie
+goes to the hardest difficulty, so a save whose columns a copy-down edit filled
+equally still names the difficulty it was edited for (an unmirrored save reads
+as Normal). The result is shown as a badge and can be overridden in the UI.
+
+Because a difficulty's mirror column *is* that difficulty's stored story, the
+editor reads and writes the columns like this:
+
+- **Reading.** The Story tab shows the **selected difficulty's** story: the live
+  bytes with that difficulty's mirror column overlaid. Mirrored bits come from
+  the column; everything else (lobby flags, quests, chapters) is shared and
+  stays live. Selecting a different difficulty therefore changes the checkboxes.
+- **Writing.** Each `StoryEdit` names the difficulty it was made on. It is
+  written to the live bytes, to that difficulty's column, **and to every lower
+  difficulty's column** (Normal ≤ Hard ≤ Very Hard). A save that is played on a
+  harder difficulty still has to satisfy the lower difficulties' unlock state,
+  so a higher difficulty must never leave a lower one behind. An edit never
+  reaches a *higher* difficulty: Very Hard stays empty while the user works on
+  Normal. Because the editor keeps a draft per difficulty, one save can carry
+  edits made on several difficulties; they are applied in ascending difficulty
+  order, so a harder edit wins when two disagree about the same bit.
 
 ---
 
@@ -365,8 +384,9 @@ records each here.
 2. **New-save difficulty.** The Python New dialog never asks for a difficulty,
    and `dw4build._build_story` hardcodes the Normal mirror map, silently
    locking every synthesised save to Normal. DW4orge adds a difficulty selector
-   to New Save and writes that difficulty's mirror set, defaulting to Normal.
-   Explicit story state from an existing save is unaffected.
+   to New Save and writes that difficulty's mirror set — and every lower one
+   (item 7) — defaulting to Normal. Explicit story state from an existing save
+   is unaffected.
 
 3. **Raw offset editing is dropped.** The Python tool's advanced "Raw edits"
    tab accepted free-form `offset = value` pairs (u32 or `:u8`) against the
@@ -390,6 +410,23 @@ records each here.
 6. **Techniques are labelled with the `codes::TECHNIQUES` names** (`blunt`,
    `slash`, …), as the Python editor labels them. The names are not in any IPC
    payload, so the frontend mirrors the nine strings.
+
+7. **Story edits copy down to the lower difficulties.** The Python `apply`
+   mirrors an edit only into the difficulty selected in its dropdown (or the
+   detected one for `auto`) and leaves the other two columns untouched, so a
+   save edited on Very Hard still reads as unfinished on Normal and Hard. The
+   Python Story tab also always displays the *live* flags, so changing its
+   difficulty dropdown does not change the checkboxes. DW4orge instead mirrors
+   each edit into the chosen difficulty **and every lower one**, and the Story
+   tab shows the selected difficulty's stored column. See §4.5.
+
+8. **Difficulty detection breaks ties toward the hardest difficulty.** The
+   Python `_detect_difficulty` keeps the first maximum, so a tie reads as
+   Normal. Because DW4orge copies story edits down (item 7), a save it edits can
+   have all three columns equally live, which the Python tie-break could never
+   name. DW4orge keeps the **last** maximum instead, so such a save reads as
+   Very Hard; a wholly unmirrored save still reads as Normal because no column
+   scores above zero.
 
 ### Story presets
 

@@ -30,8 +30,9 @@ pub enum Difficulty {
 impl Difficulty {
     /// Every difficulty, in the order the Python editor scores them.
     ///
-    /// Order matters: `detect_difficulty` keeps the first maximum, so ties
-    /// resolve to Normal, exactly as the Python editor's strict `>` does.
+    /// Order is Normal → Hard → Very Hard; `detect_difficulty` keeps the last
+    /// maximum, so ties resolve to the **hardest** difficulty (see that
+    /// function for why).
     pub const ALL: [Difficulty; 3] = [Difficulty::Normal, Difficulty::Hard, Difficulty::VeryHard];
 
     /// The display label, matching the Python editor's dropdown.
@@ -165,8 +166,13 @@ pub fn mirror_of(active: u32, difficulty: Difficulty) -> Option<u32> {
 /// Infer the save's difficulty from which mirror set is live.
 ///
 /// Counts how many bytes in each difficulty's mirror set are set and takes the
-/// largest. Ties go to the earlier entry in [`Difficulty::ALL`], so an empty or
-/// unmirrored save reads as Normal — the same tie-break as the Python editor.
+/// largest. Ties go to the **hardest** entry in [`Difficulty::ALL`], so a save
+/// whose columns an editor copy-down filled to equality still names the
+/// difficulty the user was working on. An empty or unmirrored save reads as
+/// Normal, because no count above zero ever appears.
+///
+/// The Python editor instead keeps the first (Normal) maximum, which can never
+/// name a copy-down-filled save; this is the deliberate divergence in spec 5.8.
 ///
 /// # Panics
 ///
@@ -195,7 +201,9 @@ pub fn detect_difficulty(flags: &[u8]) -> Difficulty {
             })
             .count();
 
-        if count > best_count {
+        // `>=` walks up to the hardest tied entry; `count > 0` keeps a wholly
+        // unmirrored save at the Normal default.
+        if count > 0 && count >= best_count {
             best = difficulty;
             best_count = count;
         }
@@ -452,8 +460,11 @@ pub struct StoryState {
 
 /// Resolve a preset into flag and folder bytes for `difficulty`.
 ///
-/// Writes every active flag **and its difficulty mirror**, because the title
-/// screen restores active ← mirror on load and an active-only edit reverts.
+/// Writes every active flag **and its difficulty mirror and every lower
+/// difficulty's mirror**, because the title screen restores active ← mirror on
+/// load and an active-only edit reverts. Copying down matches
+/// `Document::apply`: a save played on a harder difficulty still has to satisfy
+/// the lower difficulties' unlock state.
 ///
 /// Explicit preset flags are re-applied last: some of them (701, 703, 705) are
 /// also mirror targets, and must keep the value the preset asked for. The
@@ -470,13 +481,20 @@ pub fn apply_story(preset: &StoryPreset, difficulty: Difficulty) -> StoryState {
         folders[folder as usize] = 1;
     }
 
-    // Mirror the active state for this save's difficulty.
+    // `Difficulty::ALL` is ordered Normal, Hard, Very Hard, so the slice up to
+    // and including `difficulty` is that difficulty and everything below it.
+    let down_to = &Difficulty::ALL[..=difficulty.index()];
     for row in MIRRORS {
-        flags[row.mirror_for(difficulty) as usize] = flags[row.active as usize];
+        let active = flags[row.active as usize];
+        for target in down_to {
+            flags[row.mirror_for(*target) as usize] = active;
+        }
     }
     for (folder, &set) in folders.iter().enumerate().take(MIRRORED_FOLDERS) {
-        if let Some(mirror) = folder_mirror(folder, difficulty) {
-            flags[mirror as usize] = set;
+        for target in down_to {
+            if let Some(mirror) = folder_mirror(folder, *target) {
+                flags[mirror as usize] = set;
+            }
         }
     }
 
@@ -646,7 +664,8 @@ mod tests {
 
     #[test]
     fn detection_picks_the_difficulty_whose_mirrors_are_live() {
-        // An empty save has no live mirrors anywhere; ties go to Normal.
+        // An empty save has no live mirrors anywhere, so nothing beats the
+        // Normal default.
         let mut flags = vec![0u8; offsets::FLAG_COUNT];
         assert_eq!(detect_difficulty(&flags), Difficulty::Normal);
 
@@ -663,24 +682,33 @@ mod tests {
     }
 
     #[test]
-    fn a_tie_between_two_difficulties_resolves_to_normal() {
-        // All three columns hold 38 flags, so lighting two of them ties. The
-        // Python editor keeps the first maximum in Normal/Hard/Very Hard
-        // order, and so do we.
+    fn a_tie_between_difficulties_resolves_to_the_harder_one() {
+        // Two equal columns cannot say which difficulty is playing, and a
+        // copy-down edit fills all three equally. Taking the hardest is the
+        // only choice that names the difficulty the user was working on.
         let mut flags = vec![0u8; offsets::FLAG_COUNT];
         for row in MIRRORS {
             flags[row.normal as usize] = 1;
             flags[row.hard as usize] = 1;
         }
-        assert_eq!(detect_difficulty(&flags), Difficulty::Normal);
+        assert_eq!(detect_difficulty(&flags), Difficulty::Hard);
 
-        // Normal + Very Hard ties too.
+        // Normal + Very Hard ties too, and the hardest entry wins.
         let mut flags = vec![0u8; offsets::FLAG_COUNT];
         for row in MIRRORS {
             flags[row.normal as usize] = 1;
             flags[row.very_hard as usize] = 1;
         }
-        assert_eq!(detect_difficulty(&flags), Difficulty::Normal);
+        assert_eq!(detect_difficulty(&flags), Difficulty::VeryHard);
+
+        // All three equal, as after an editor copy-down.
+        let mut flags = vec![0u8; offsets::FLAG_COUNT];
+        for row in MIRRORS {
+            for mirror in [row.normal, row.hard, row.very_hard] {
+                flags[mirror as usize] = 1;
+            }
+        }
+        assert_eq!(detect_difficulty(&flags), Difficulty::VeryHard);
     }
 
     #[test]
@@ -759,6 +787,28 @@ mod tests {
                 "{difficulty:?} mirror"
             );
         }
+    }
+
+    #[test]
+    fn a_preset_copies_down_to_the_lower_difficulties() {
+        let only_intro = StoryPreset {
+            name: "intro",
+            flags: &[0],
+            folders: &[0],
+        };
+
+        let very_hard = apply_story(&only_intro, Difficulty::VeryHard);
+        assert_eq!(very_hard.flags[12], 1, "Very Hard mirror");
+        assert_eq!(very_hard.flags[6], 1, "Hard mirror");
+        assert_eq!(very_hard.flags[699], 1, "Normal mirror");
+        assert_eq!(very_hard.flags[542], 1, "Very Hard folder mirror");
+        assert_eq!(very_hard.flags[530], 1, "Hard folder mirror");
+        assert_eq!(very_hard.flags[518], 1, "Normal folder mirror");
+
+        let normal = apply_story(&only_intro, Difficulty::Normal);
+        assert_eq!(normal.flags[699], 1, "Normal mirror");
+        assert_eq!(normal.flags[6], 0, "Normal reaches no harder column");
+        assert_eq!(normal.flags[12], 0, "Normal reaches no harder column");
     }
 
     #[test]

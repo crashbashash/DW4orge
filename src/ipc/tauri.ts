@@ -28,4 +28,17 @@ export const tauriBackend: Backend = {
     return typeof picked === 'string' ? picked : null;
   },
   pickSavePath: (defaultName) => save({ defaultPath: defaultName, filters: SAVE_FILTERS }),
+  async onCloseRequested(handler) {
+    // Imported lazily, like `theme.ts`, so the window module stays out of the
+    // initial bundle.
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    return getCurrentWindow().onCloseRequested((event) => {
+      if (handler()) event.preventDefault();
+    });
+  },
+  async closeWindow() {
+    // `destroy` skips the close event, so the guard is not asked again.
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    await getCurrentWindow().destroy();
+  },
 };

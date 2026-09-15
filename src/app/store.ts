@@ -1,7 +1,9 @@
 import type {
   AppInfo,
+  Difficulty,
   DifficultyChoice,
   EditSet,
+  Mirror,
   Mode,
   OpenResult,
   SaveView,
@@ -11,12 +13,15 @@ import type {
 } from '../bindings';
 import type { ValidationReport } from '../ipc/backend';
 import { socketBaseId } from '../lib/items';
-import type { StoryDraft } from '../lib/story';
+import { DIFFICULTY_ORDER, storyForDifficulty, type StoryDraft } from '../lib/story';
 import type { History, Snapshot } from './history';
 import { record, redo, undo } from './history';
 import type { Theme } from './theme';
 
 export type SectionId = 'character' | 'items' | 'equipment' | 'disks' | 'story' | 'bank';
+
+/** One story draft per difficulty, keyed like `Difficulty::ALL`. */
+export type StoryDrafts = Record<Difficulty, StoryDraft>;
 
 /** The open save plus the state a dirty check compares against. */
 export type Session = {
@@ -24,7 +29,13 @@ export type Session = {
   source: SourceKind;
   view: SaveView;
   baseline: EditSet;
-  baselineStory: StoryDraft;
+  /**
+   * The story each difficulty is stored with, one entry per difficulty.
+   *
+   * It is both that difficulty's diff baseline and the value the Story tab
+   * shows when the selector points at it.
+   */
+  baselines: StoryDrafts;
 };
 
 /**
@@ -44,7 +55,12 @@ export type StoreState = {
   appInfo: AppInfo | null;
   session: Session | null;
   draft: EditSet | null;
-  story: StoryDraft | null;
+  /**
+   * The three in-flight story drafts. Switching the Story difficulty chooses
+   * one of these for display; it never resets them, so a half-finished set of
+   * story edits survives a look at another difficulty.
+   */
+  stories: StoryDrafts;
   difficulty: DifficultyChoice;
   mode: Mode;
   validation: ValidationReport;
@@ -75,12 +91,18 @@ export type Action =
   | { type: 'theme'; theme: Theme }
   | { type: 'section'; section: SectionId };
 
+/** Fresh empty drafts, before any save is open. */
+function emptyStories(): StoryDrafts {
+  const empty = (): StoryDraft => ({ flags: [], folders: [] });
+  return { Normal: empty(), Hard: empty(), VeryHard: empty() };
+}
+
 export const initialState: StoreState = {
   status: 'loading',
   appInfo: null,
   session: null,
   draft: null,
-  story: null,
+  stories: emptyStories(),
   difficulty: 'auto',
   mode: 'normal',
   validation: { errors: [], warnings: [] },
@@ -127,14 +149,13 @@ export function viewToEditSet(view: SaveView): EditSet {
       socketBaseId(view.device, a4),
     ],
     story: [],
-    difficulty: { fixed: view.difficulty },
     bank_bit: view.bank_bit,
     disks: view.disks,
     bank_items: [...view.bank_items],
   };
 }
 
-/** The boolean story draft a view starts from. */
+/** The live/active story draft a view starts from. */
 export function storyDraftFromView(view: SaveView): StoryDraft {
   return {
     flags: view.story_flags.map((byte) => byte !== 0),
@@ -142,19 +163,61 @@ export function storyDraftFromView(view: SaveView): StoryDraft {
   };
 }
 
-/** The story bits that differ from the baseline, as the wire wants them. */
-export function diffStory(current: StoryDraft, baseline: StoryDraft): StoryEdit[] {
+/**
+ * Each difficulty's stored story, read from the save's mirror columns.
+ *
+ * The live bytes are the shared base; `storyForDifficulty` overlays the
+ * selected difficulty's mirrored bits on top of them.
+ */
+export function storyDraftsFromView(
+  view: SaveView,
+  mirrors: readonly Mirror[],
+): StoryDrafts {
+  const live = storyDraftFromView(view);
+  return {
+    Normal: storyForDifficulty(live.flags, live.folders, 'Normal', mirrors),
+    Hard: storyForDifficulty(live.flags, live.folders, 'Hard', mirrors),
+    VeryHard: storyForDifficulty(live.flags, live.folders, 'VeryHard', mirrors),
+  };
+}
+
+/**
+ * The difficulty a selector value resolves to.
+ *
+ * `auto` follows the save's detected difficulty, which is what the Rust side
+ * does too, so the draft shown and the mirrors written always agree.
+ */
+export function resolveDifficulty(
+  choice: DifficultyChoice,
+  session: Session | null,
+): Difficulty {
+  if (choice === 'auto') return session?.view.difficulty ?? 'Normal';
+  return choice.fixed;
+}
+
+/**
+ * The story bits that differ from the baseline.
+ *
+ * Each edit is tagged with the difficulty it was made on: Rust mirrors it into
+ * that difficulty's column and every lower one, so one save can carry drafts
+ * from several difficulties without them being confused for one another.
+ */
+export function diffStory(
+  current: StoryDraft,
+  baseline: StoryDraft,
+  difficulty: Difficulty,
+): StoryEdit[] {
   const out: StoryEdit[] = [];
   const flags = Math.min(current.flags.length, baseline.flags.length);
   for (let i = 0; i < flags; i += 1) {
     if (current.flags[i] !== baseline.flags[i]) {
-      out.push({ kind: 'flag', index: i, value: current.flags[i] ?? false });
+      out.push({ kind: 'flag', index: i, value: current.flags[i] ?? false, difficulty });
     }
   }
   const folders = Math.min(current.folders.length, baseline.folders.length);
   for (let i = 0; i < folders; i += 1) {
     if (current.folders[i] !== baseline.folders[i]) {
-      out.push({ kind: 'folder', index: i, value: current.folders[i] ?? false });
+      out.push({ kind: 'folder', index: i, value: current.folders[i] ?? false, difficulty });
     }
   }
   return out;
@@ -168,11 +231,14 @@ export function diffStory(current: StoryDraft, baseline: StoryDraft): StoryEdit[
  */
 export function buildEditSet(
   draft: EditSet,
-  story: StoryDraft,
-  baselineStory: StoryDraft,
-  difficulty: DifficultyChoice,
+  stories: StoryDrafts,
+  baselines: StoryDrafts,
 ): EditSet {
-  return { ...draft, story: diffStory(story, baselineStory), difficulty };
+  const story: StoryEdit[] = [];
+  for (const difficulty of DIFFICULTY_ORDER) {
+    story.push(...diffStory(stories[difficulty], baselines[difficulty], difficulty));
+  }
+  return { ...draft, story };
 }
 
 /**
@@ -181,15 +247,15 @@ export function buildEditSet(
  * Throws when there is no draft; every caller guards on `state.draft` first.
  */
 export function toEditSet(state: StoreState): EditSet {
-  if (!state.draft || !state.story || !state.session) {
+  if (!state.draft || !state.session) {
     throw new Error('no draft to serialise');
   }
-  return buildEditSet(state.draft, state.story, state.session.baselineStory, state.difficulty);
+  return buildEditSet(state.draft, state.stories, state.session.baselines);
 }
 
 function snapshotOf(state: StoreState): Snapshot | null {
-  if (!state.draft || !state.story) return null;
-  return { draft: state.draft, story: state.story, difficulty: state.difficulty };
+  if (!state.draft) return null;
+  return { draft: state.draft, stories: state.stories, difficulty: state.difficulty };
 }
 
 /** Apply a pure change to the draft/story and record it in history. */
@@ -199,23 +265,37 @@ function edit(
   tag: string | null,
 ): StoreState {
   const current = snapshotOf(state);
-  if (!current || !state.draft || !state.story) return state;
-  const next = mutate(state.draft, state.story);
+  if (!current || !state.draft) return state;
+  const difficulty = resolveDifficulty(state.difficulty, state.session);
+  const next = mutate(state.draft, state.stories[difficulty]);
   return {
     ...state,
     draft: next.draft,
-    story: next.story,
+    stories: { ...state.stories, [difficulty]: next.story },
     history: record(state.history, current, tag),
   };
 }
 
-function sessionFrom(result: OpenResult): Session {
+/** A deep copy, so an edit to one difficulty cannot touch the baseline. */
+function cloneStories(stories: StoryDrafts): StoryDrafts {
+  const clone = (story: StoryDraft): StoryDraft => ({
+    flags: [...story.flags],
+    folders: [...story.folders],
+  });
+  return {
+    Normal: clone(stories.Normal),
+    Hard: clone(stories.Hard),
+    VeryHard: clone(stories.VeryHard),
+  };
+}
+
+function sessionFrom(result: OpenResult, mirrors: readonly Mirror[]): Session {
   return {
     path: result.path,
     source: result.source,
     view: result.view,
     baseline: viewToEditSet(result.view),
-    baselineStory: storyDraftFromView(result.view),
+    baselines: storyDraftsFromView(result.view, mirrors),
   };
 }
 
@@ -225,24 +305,30 @@ function withSlot(slots: boolean[], index: number, value: boolean): boolean[] {
   return next;
 }
 
+/** The state a freshly opened or saved document starts in. */
+function opened(state: StoreState, result: OpenResult, mirrors: readonly Mirror[]): StoreState {
+  const session = sessionFrom(result, mirrors);
+  return {
+    ...state,
+    status: 'ready',
+    session,
+    draft: viewToEditSet(result.view),
+    stories: cloneStories(session.baselines),
+    difficulty: { fixed: result.view.difficulty },
+    validation: { errors: [], warnings: [] },
+    history: { past: [], future: [], tag: null },
+    error: null,
+  };
+}
+
 export function reducer(state: StoreState, action: Action): StoreState {
   switch (action.type) {
     case 'appInfo':
       return { ...state, appInfo: action.info, status: 'ready' };
 
     case 'loaded': {
-      return {
-        ...state,
-        status: 'ready',
-        session: sessionFrom(action.result),
-        draft: viewToEditSet(action.result.view),
-        story: storyDraftFromView(action.result.view),
-        difficulty: { fixed: action.result.view.difficulty },
-        validation: { errors: [], warnings: [] },
-        history: { past: [], future: [], tag: null },
-        lastWrite: null,
-        error: null,
-      };
+      const mirrors = state.appInfo?.ui.mirrors ?? [];
+      return { ...opened(state, action.result, mirrors), lastWrite: null };
     }
 
     case 'field':
@@ -288,15 +374,11 @@ export function reducer(state: StoreState, action: Action): StoreState {
     case 'storyDraft':
       return edit(state, (draft) => ({ draft, story: action.story }), null);
 
-    case 'difficulty': {
-      const current = snapshotOf(state);
-      if (!current) return state;
-      return {
-        ...state,
-        difficulty: action.difficulty,
-        history: record(state.history, current, null),
-      };
-    }
+    case 'difficulty':
+      // A view change only: each difficulty keeps its own draft, so nothing is
+      // discarded and there is nothing to undo. `EditSet.difficulty` is gone;
+      // every story edit names its own difficulty instead.
+      return { ...state, difficulty: action.difficulty };
 
     case 'mode':
       return { ...state, mode: action.mode };
@@ -323,19 +405,13 @@ export function reducer(state: StoreState, action: Action): StoreState {
     case 'busy':
       return { ...state, status: action.busy ? 'busy' : state.session ? 'ready' : 'loading' };
 
-    case 'saved':
+    case 'saved': {
+      const mirrors = state.appInfo?.ui.mirrors ?? [];
       return {
-        ...state,
-        status: 'ready',
-        session: sessionFrom(action.result),
-        draft: viewToEditSet(action.result.view),
-        story: storyDraftFromView(action.result.view),
-        difficulty: { fixed: action.result.view.difficulty },
-        validation: { errors: [], warnings: [] },
-        history: { past: [], future: [], tag: null },
+        ...opened(state, action.result, mirrors),
         lastWrite: { path: action.result.path, message: action.message },
-        error: null,
       };
+    }
 
     case 'failed':
       return { ...state, status: state.session ? 'ready' : 'loading', error: action.message };

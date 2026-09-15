@@ -1,10 +1,14 @@
-import type { DifficultyChoice, EditSet } from '../bindings';
+import type { Difficulty, DifficultyChoice, EditSet } from '../bindings';
 import type { StoryDraft } from '../lib/story';
 
 /** The whole editable state at one point, for undo/redo. */
 export type Snapshot = {
   draft: EditSet;
-  story: StoryDraft;
+  /**
+   * One draft per difficulty, so switching the Story difficulty is a view
+   * change and never discards in-flight edits.
+   */
+  stories: Record<Difficulty, StoryDraft>;
   difficulty: DifficultyChoice;
 };
 

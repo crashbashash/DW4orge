@@ -4,7 +4,7 @@
 //! The *order* of writes is transcribed from `save_editor_gui.py:1197`, which
 //! cannot be imported here (tkinter), so the mirror comparison below is
 //! restricted to the flags the Python GUI's partial table actually covers.
-use dw4core::document::{DifficultyChoice, Document, EditSet, Mode, StoryEdit};
+use dw4core::document::{Document, EditSet, Mode, StoryEdit};
 use dw4core::flags::Difficulty;
 use serde_json::Value;
 
@@ -46,11 +46,10 @@ fn scripted_edits() -> EditSet {
         wmods: [None; 5],
         amods: [None; 5],
         story: vec![
-            StoryEdit::flag(0, true),
-            StoryEdit::flag(1, true),
-            StoryEdit::folder(0, true),
+            StoryEdit::flag(Difficulty::Normal, 0, true),
+            StoryEdit::flag(Difficulty::Normal, 1, true),
+            StoryEdit::folder(Difficulty::Normal, 0, true),
         ],
-        difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
         bank_bit: 55_555,
         disks: std::array::from_fn(|i| (i * 3) as u16),
         bank_items,

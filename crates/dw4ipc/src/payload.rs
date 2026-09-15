@@ -66,7 +66,7 @@ pub struct SpeciesStats {
 /// `'static` borrowed fields and so cannot be deserialised.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, TS)]
 pub struct AppInfo {
-    /// Binary name.
+    /// Product name.
     pub name: String,
     /// Binary version.
     pub version: String,

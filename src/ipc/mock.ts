@@ -12,12 +12,15 @@ import type {
 import type { Backend, ValidationReport } from './backend';
 import appInfoJson from './fixtures/app_info.json';
 import openResultJson from './fixtures/open_result.raw.json';
+import { mirrorTargets } from '../lib/story';
 
 export type MockOptions = {
   validateEdits?: (edits: EditSet, mode: Mode) => ValidationReport;
   speciesStats?: (species: Species, mode: Mode) => SpeciesStats;
   openPaths?: (string | null)[];
   savePaths?: (string | null)[];
+  onCloseRequested?: (handler: () => boolean) => Promise<() => void>;
+  closeWindow?: () => Promise<void>;
 };
 
 const NO_DOCUMENT: IpcError = { kind: 'no_open_document' };
@@ -77,13 +80,13 @@ export function createMockBackend(options: MockOptions = {}): Backend {
 
     save: async (edits) => {
       const doc = needDoc();
-      current = { ...doc, view: applyEdits(doc.view, edits) };
+      current = { ...doc, view: applyEdits(doc.view, edits, appInfo.ui.mirrors) };
       return structuredClone(current);
     },
 
     saveAs: async (path, edits) => {
       const doc = needDoc();
-      current = { ...doc, path, view: applyEdits(doc.view, edits) };
+      current = { ...doc, path, view: applyEdits(doc.view, edits, appInfo.ui.mirrors) };
       return structuredClone(current);
     },
 
@@ -97,17 +100,28 @@ export function createMockBackend(options: MockOptions = {}): Backend {
 
     pickOpenPath: async () => openPaths.shift() ?? null,
     pickSavePath: async () => savePaths.shift() ?? null,
+
+    // The browser has no native window to close, so the guard stays inert
+    // unless a test supplies its own handler.
+    onCloseRequested: options.onCloseRequested ?? (async () => () => {}),
+    closeWindow: options.closeWindow ?? (async () => {}),
   };
 }
 
 /** Mock-only: fold a draft back into a view so edits are visible in dev. */
-function applyEdits(view: SaveView, edits: EditSet): SaveView {
+function applyEdits(view: SaveView, edits: EditSet, mirrors: AppInfo['ui']['mirrors']): SaveView {
   const storyFlags = [...view.story_flags];
   const storyFolders = [...view.story_folders];
   for (const edit of edits.story) {
     const value = edit.value ? 1 : 0;
     if (edit.kind === 'flag') storyFlags[edit.index] = value;
     else storyFolders[edit.index] = value;
+  }
+  // Rust copies each edit into its own difficulty's mirror column and every
+  // lower one; the mock follows so dev saves look right.
+  for (const edit of edits.story) {
+    const value = edit.value ? 1 : 0;
+    for (const { flag } of mirrorTargets(edit, mirrors)) storyFlags[flag] = value;
   }
 
   return {

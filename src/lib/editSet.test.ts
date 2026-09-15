@@ -23,6 +23,5 @@ describe('emptyEditSet', () => {
     expect(edits.tech).toEqual([1, 1, 1, 1, 1, 1, 1, 1, 1]);
     expect(edits.device.every((id) => id === EMPTY)).toBe(true);
     expect(edits.story).toEqual([]);
-    expect(edits.difficulty).toBe('auto');
   });
 });

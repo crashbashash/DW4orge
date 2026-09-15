@@ -18,6 +18,25 @@ describe('selectors', () => {
     );
   });
 
+  it('marks a brand-new, never-written save as unsaved', () => {
+    // `new_save` returns a pathless in-memory save: nothing has been written
+    // yet, even though the draft matches its baseline exactly.
+    const created = reducer(initialState, {
+      type: 'loaded',
+      result: { ...openResult, path: null },
+    });
+    expect(created.session?.path).toBeNull();
+    expect(dirty(created)).toBe(true);
+
+    // Once it is written, the draft-vs-baseline comparison takes over.
+    const saved = reducer(created, {
+      type: 'saved',
+      result: { ...openResult, path: '/mock/new.ps2' },
+      message: 'Saved',
+    });
+    expect(dirty(saved)).toBe(false);
+  });
+
   it('counts errors and groups them by path', () => {
     const state = reducer(initialState, {
       type: 'validation',

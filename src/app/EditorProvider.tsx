@@ -73,10 +73,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     };
   }, [backend]);
 
+  // Every difficulty's draft goes into the one payload; each story edit names
+  // its own difficulty, so changing the selector never drops a pending edit.
   const edits = useMemo(() => {
-    if (!state.draft || !state.story || !state.session) return null;
-    return buildEditSet(state.draft, state.story, state.session.baselineStory, state.difficulty);
-  }, [state.draft, state.story, state.difficulty, state.session]);
+    if (!state.draft || !state.session) return null;
+    return buildEditSet(state.draft, state.stories, state.session.baselines);
+  }, [state.draft, state.session, state.stories]);
 
   // Authoritative validation, debounced. The local cap checks in the sections
   // give instant feedback; this is the single source of truth for the rest.

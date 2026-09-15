@@ -671,14 +671,22 @@ mod tests {
             assert_eq!(h[flag], 1, "Hard active {flag}");
             assert_eq!(v[flag], 1, "Very Hard active {flag}");
         }
-        // ...but the mirrors are not: 66 mirrors to 707 / 73 / 77.
+        // ...but the mirrors are not: each difficulty writes its own column and
+        // every lower one, so 66 mirrors to 707 / 707+73 / 707+73+77.
         assert_eq!((n[707], h[73], v[77]), (1, 1, 1));
-        assert_eq!(n[73], 0, "73 is not a Normal mirror");
-        assert_eq!(h[707], 0, "707 is not a Hard mirror");
+        assert_eq!((n[73], n[77]), (0, 0), "Normal reaches no harder column");
+        assert_eq!(
+            (h[707], h[77]),
+            (1, 0),
+            "Hard fills Normal but not Very Hard"
+        );
+        assert_eq!((v[707], v[73]), (1, 1), "Very Hard fills the whole stack");
 
-        // And the folder bands differ: 518 / 530 / 542.
+        // And the folder bands differ the same way.
         assert_eq!((n[518], h[530], v[542]), (1, 1, 1));
-        assert_eq!(n[542], 0);
+        assert_eq!((n[530], n[542]), (0, 0), "Normal reaches no harder band");
+        assert_eq!((h[518], h[542]), (1, 0), "Hard fills Normal's band only");
+        assert_eq!((v[518], v[530]), (1, 1), "Very Hard fills every band");
 
         // Each save reports the difficulty it was built for.
         assert_eq!(crate::detect_difficulty(&n), crate::Difficulty::Normal);

@@ -1,6 +1,6 @@
 //! End-to-end behaviour of the document layer: load, edit, save, reload.
 use dw4core::builder::{SaveSpec, build_save};
-use dw4core::document::{DifficultyChoice, Document, EditSet, Mode, StoryEdit};
+use dw4core::document::{Document, EditSet, Mode, StoryEdit};
 use dw4core::flags::Difficulty;
 
 mod common;
@@ -44,8 +44,7 @@ fn edits_survive_a_save_and_reload() {
     let edits = EditSet {
         bit: 42_424,
         name: "ZZZ".to_string(),
-        story: vec![StoryEdit::flag(0, true)],
-        difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+        story: vec![StoryEdit::flag(Difficulty::Normal, 0, true)],
         ..Default::default()
     };
     doc.apply(&edits, Mode::Normal).expect("apply");

@@ -44,7 +44,7 @@ native window title bar.
 | **Items** | The 30-slot device folder: searchable picker over the 539-item catalogue, rarity colour, `+N` bonus and mod count; Advanced also edits raw ids |
 | **Equipment** | 3 weapons, armor, board, and the 5 weapon / 5 armor mod sockets. A mod chip that is not in the inventory is added for you |
 | **Disks** | The 12 disk counts — HP/MP α–γ, Cure, Raise, Gate, Recovery, B. Pack, Key Chain |
-| **Story** | Difficulty, six one-click story presets, and the 1024 story flags and folders grouped by intro, chapters, bosses, quests, lobby and folders, with a live preview of the difficulty's mirrors. Each difficulty keeps its own in-flight draft, so switching it does not discard unsaved edits |
+| **Story** | Kinda works, kinda doesn't. Still need to work on it. |
 | **Bank** | Balance and the item slots |
 
 The item catalogue and every game constant are vendored from the disassembly,
@@ -148,9 +148,8 @@ Known gaps, roughly in priority order:
   `BASLUS-20836savedata`) and could differ in the fields themselves; every
   measurement in `docs/save-format.md` comes from the NTSC-U image.
 - [ ] **Build a GameCube save editor.** DW4orge is only setup to work with PS2.
-- [ ] **Native Wayland without the compatibility hook**, on a real compositor.
-- [ ] **Packaging for Arch and Flatpak.** The `.deb` and `.rpm` do not install on
-  Arch-based distros, so those users are limited to the AppImage.
+- [ ] **Native Wayland Support**, currently uses a compatibility hook (sorta jank).
+- [ ] **Packaging for Arch and Flatpak.**
 - [ ] **Story changes not fully tested** Still need to test story changes
   so don't expect the presets to be working properly.
 
@@ -173,6 +172,10 @@ src-tauri        the Tauri 2 shell (excluded from the root workspace)
 src              the React 19 + TypeScript frontend
 tools            the fixture and icon generators
 ```
+
+## Disclaimer
+
+This tool and the reverse engineering that went into it have been made with the assistance of AI.
 
 ## Licence
 

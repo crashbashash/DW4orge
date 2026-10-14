@@ -1,0 +1,204 @@
+{
+ "category": 16,
+ "stride": 3,
+ "grades": [
+  "alpha",
+  "beta",
+  "gamma"
+ ],
+ "items": [
+  {
+   "id": 4096,
+   "model": 0,
+   "grade": "alpha",
+   "name": "Brave Core"
+  },
+  {
+   "id": 4097,
+   "model": 0,
+   "grade": "beta",
+   "name": "Brave Core"
+  },
+  {
+   "id": 4098,
+   "model": 0,
+   "grade": "gamma",
+   "name": "Brave Core"
+  },
+  {
+   "id": 4099,
+   "model": 1,
+   "grade": "alpha",
+   "name": "Aegis Core"
+  },
+  {
+   "id": 4100,
+   "model": 1,
+   "grade": "beta",
+   "name": "Aegis Core"
+  },
+  {
+   "id": 4101,
+   "model": 1,
+   "grade": "gamma",
+   "name": "Aegis Core"
+  },
+  {
+   "id": 4102,
+   "model": 2,
+   "grade": "alpha",
+   "name": "Vulture Core"
+  },
+  {
+   "id": 4103,
+   "model": 2,
+   "grade": "beta",
+   "name": "Vulture Core"
+  },
+  {
+   "id": 4104,
+   "model": 2,
+   "grade": "gamma",
+   "name": "Vulture Core"
+  },
+  {
+   "id": 4105,
+   "model": 3,
+   "grade": "alpha",
+   "name": "Cipher Core"
+  },
+  {
+   "id": 4106,
+   "model": 3,
+   "grade": "beta",
+   "name": "Cipher Core"
+  },
+  {
+   "id": 4107,
+   "model": 3,
+   "grade": "gamma",
+   "name": "Cipher Core"
+  },
+  {
+   "id": 4108,
+   "model": 4,
+   "grade": "alpha",
+   "name": "Astral Core"
+  },
+  {
+   "id": 4109,
+   "model": 4,
+   "grade": "beta",
+   "name": "Astral Core"
+  },
+  {
+   "id": 4110,
+   "model": 4,
+   "grade": "gamma",
+   "name": "Astral Core"
+  },
+  {
+   "id": 4111,
+   "model": 5,
+   "grade": "alpha",
+   "name": "Wizard Core"
+  },
+  {
+   "id": 4112,
+   "model": 5,
+   "grade": "beta",
+   "name": "Wizard Core"
+  },
+  {
+   "id": 4113,
+   "model": 5,
+   "grade": "gamma",
+   "name": "Wizard Core"
+  },
+  {
+   "id": 4114,
+   "model": 6,
+   "grade": "alpha",
+   "name": "Element Core"
+  },
+  {
+   "id": 4115,
+   "model": 6,
+   "grade": "beta",
+   "name": "Element Core"
+  },
+  {
+   "id": 4116,
+   "model": 6,
+   "grade": "gamma",
+   "name": "Element Core"
+  },
+  {
+   "id": 4117,
+   "model": 7,
+   "grade": "alpha",
+   "name": "Spirit Core"
+  },
+  {
+   "id": 4118,
+   "model": 7,
+   "grade": "beta",
+   "name": "Spirit Core"
+  },
+  {
+   "id": 4119,
+   "model": 7,
+   "grade": "gamma",
+   "name": "Spirit Core"
+  },
+  {
+   "id": 4120,
+   "model": 8,
+   "grade": "alpha",
+   "name": "Divine Core"
+  },
+  {
+   "id": 4121,
+   "model": 8,
+   "grade": "beta",
+   "name": "Divine Core"
+  },
+  {
+   "id": 4122,
+   "model": 8,
+   "grade": "gamma",
+   "name": "Divine Core"
+  },
+  {
+   "id": 4123,
+   "model": null,
+   "grade": null,
+   "name": "Invincible"
+  },
+  {
+   "id": 4124,
+   "model": null,
+   "grade": null,
+   "name": "Mythlandia"
+  },
+  {
+   "id": 4125,
+   "model": null,
+   "grade": null,
+   "name": "Rainbow Veil"
+  },
+  {
+   "id": 4126,
+   "model": null,
+   "grade": null,
+   "name": "Talis of Order"
+  },
+  {
+   "id": 4127,
+   "model": null,
+   "grade": null,
+   "name": "?????? (unidentified; appraises into random core, white rarity)"
+  }
+ ],
+ "invalid": "0x1020-0x103f blank (0x1026 crashes when selected); string-table has orphan text entries for 0x1024/0x1026-0x102e but no real items"
+}

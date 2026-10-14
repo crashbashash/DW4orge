@@ -1,0 +1,282 @@
+{
+ "category": 32,
+ "stride": 3,
+ "grades": [
+  "alpha",
+  "beta",
+  "gamma"
+ ],
+ "items": [
+  {
+   "id": 8192,
+   "model": 0,
+   "grade": "alpha",
+   "name": "Achilles Board"
+  },
+  {
+   "id": 8193,
+   "model": 0,
+   "grade": "beta",
+   "name": "Achilles Board"
+  },
+  {
+   "id": 8194,
+   "model": 0,
+   "grade": "gamma",
+   "name": "Achilles Board"
+  },
+  {
+   "id": 8195,
+   "model": 1,
+   "grade": "alpha",
+   "name": "Atlas Board"
+  },
+  {
+   "id": 8196,
+   "model": 1,
+   "grade": "beta",
+   "name": "Atlas Board"
+  },
+  {
+   "id": 8197,
+   "model": 1,
+   "grade": "gamma",
+   "name": "Atlas Board"
+  },
+  {
+   "id": 8198,
+   "model": 2,
+   "grade": "alpha",
+   "name": "Meteor Board"
+  },
+  {
+   "id": 8199,
+   "model": 2,
+   "grade": "beta",
+   "name": "Meteor Board"
+  },
+  {
+   "id": 8200,
+   "model": 2,
+   "grade": "gamma",
+   "name": "Meteor Board"
+  },
+  {
+   "id": 8201,
+   "model": 3,
+   "grade": "alpha",
+   "name": "Fire Board"
+  },
+  {
+   "id": 8202,
+   "model": 3,
+   "grade": "beta",
+   "name": "Fire Board"
+  },
+  {
+   "id": 8203,
+   "model": 3,
+   "grade": "gamma",
+   "name": "Fire Board"
+  },
+  {
+   "id": 8204,
+   "model": 4,
+   "grade": "alpha",
+   "name": "Ice Board"
+  },
+  {
+   "id": 8205,
+   "model": 4,
+   "grade": "beta",
+   "name": "Ice Board"
+  },
+  {
+   "id": 8206,
+   "model": 4,
+   "grade": "gamma",
+   "name": "Ice Board"
+  },
+  {
+   "id": 8207,
+   "model": 5,
+   "grade": "alpha",
+   "name": "Bolt Board"
+  },
+  {
+   "id": 8208,
+   "model": 5,
+   "grade": "beta",
+   "name": "Bolt Board"
+  },
+  {
+   "id": 8209,
+   "model": 5,
+   "grade": "gamma",
+   "name": "Bolt Board"
+  },
+  {
+   "id": 8210,
+   "model": 6,
+   "grade": "alpha",
+   "name": "Dark Board"
+  },
+  {
+   "id": 8211,
+   "model": 6,
+   "grade": "beta",
+   "name": "Dark Board"
+  },
+  {
+   "id": 8212,
+   "model": 6,
+   "grade": "gamma",
+   "name": "Dark Board"
+  },
+  {
+   "id": 8213,
+   "model": 7,
+   "grade": "alpha",
+   "name": "Armor Board"
+  },
+  {
+   "id": 8214,
+   "model": 7,
+   "grade": "beta",
+   "name": "Armor Board"
+  },
+  {
+   "id": 8215,
+   "model": 7,
+   "grade": "gamma",
+   "name": "Armor Board"
+  },
+  {
+   "id": 8216,
+   "model": 8,
+   "grade": "alpha",
+   "name": "Beast Board"
+  },
+  {
+   "id": 8217,
+   "model": 8,
+   "grade": "beta",
+   "name": "Beast Board"
+  },
+  {
+   "id": 8218,
+   "model": 8,
+   "grade": "gamma",
+   "name": "Beast Board"
+  },
+  {
+   "id": 8219,
+   "model": 9,
+   "grade": "alpha",
+   "name": "Rack Board"
+  },
+  {
+   "id": 8220,
+   "model": 9,
+   "grade": "beta",
+   "name": "Rack Board"
+  },
+  {
+   "id": 8221,
+   "model": 9,
+   "grade": "gamma",
+   "name": "Rack Board"
+  },
+  {
+   "id": 8222,
+   "model": 10,
+   "grade": "alpha",
+   "name": "EXP Board"
+  },
+  {
+   "id": 8223,
+   "model": 10,
+   "grade": "beta",
+   "name": "EXP Board"
+  },
+  {
+   "id": 8224,
+   "model": 10,
+   "grade": "gamma",
+   "name": "EXP Board"
+  },
+  {
+   "id": 8225,
+   "model": 11,
+   "grade": "alpha",
+   "name": "BIT Board"
+  },
+  {
+   "id": 8226,
+   "model": 11,
+   "grade": "beta",
+   "name": "BIT Board"
+  },
+  {
+   "id": 8227,
+   "model": 11,
+   "grade": "gamma",
+   "name": "BIT Board"
+  },
+  {
+   "id": 8228,
+   "model": 12,
+   "grade": "alpha",
+   "name": "Mana Board"
+  },
+  {
+   "id": 8229,
+   "model": 12,
+   "grade": "beta",
+   "name": "Mana Board"
+  },
+  {
+   "id": 8230,
+   "model": 12,
+   "grade": "gamma",
+   "name": "Mana Board"
+  },
+  {
+   "id": 8231,
+   "model": 13,
+   "grade": "alpha",
+   "name": "Resist Board"
+  },
+  {
+   "id": 8232,
+   "model": 13,
+   "grade": "beta",
+   "name": "Resist Board"
+  },
+  {
+   "id": 8233,
+   "model": 13,
+   "grade": "gamma",
+   "name": "Resist Board"
+  },
+  {
+   "id": 8234,
+   "model": null,
+   "grade": null,
+   "name": "Filter Board"
+  },
+  {
+   "id": 8235,
+   "model": null,
+   "grade": null,
+   "name": "Talis of Chaos"
+  },
+  {
+   "id": 8236,
+   "model": null,
+   "grade": null,
+   "name": "?????? (unidentified; appraises into random board, white rarity)"
+  }
+ ],
+ "invalid": "0x202d-0x203f crash (some give 9999 stats)"
+}

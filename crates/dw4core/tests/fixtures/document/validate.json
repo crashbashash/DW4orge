@@ -1,0 +1,45 @@
+{
+ "bit": {
+  "dtype_max": 4294967295,
+  "dtype_min": 0,
+  "normal_max": 9999999
+ },
+ "exp": {
+  "dtype_max": 4294967295,
+  "dtype_min": 0,
+  "normal_max": 1133652152
+ },
+ "level": {
+  "dtype_max": 4294967295,
+  "dtype_min": 0,
+  "normal_max": 999
+ },
+ "tech": {
+  "dtype_max": 2147483647,
+  "dtype_min": -2147483648,
+  "normal_max": 9999
+ },
+ "upcnt": {
+  "dtype_max": 4294967295,
+  "dtype_min": 0,
+  "normal_max": 9999
+ },
+ "upcnt_safe_cap": [
+  99999,
+  99999,
+  9999,
+  9999,
+  9999,
+  9999,
+  9999,
+  9999,
+  9999,
+  9999,
+  9999
+ ],
+ "xdata": {
+  "dtype_max": 4294967295,
+  "dtype_min": 0,
+  "normal_max": 9999
+ }
+}

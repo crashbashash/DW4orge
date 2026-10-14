@@ -1,0 +1,91 @@
+{
+ "category": 5,
+ "stride": 1,
+ "items": [
+  {
+   "id": 1280,
+   "name": "Dark Shadow"
+  },
+  {
+   "id": 1281,
+   "name": "Omega Blade"
+  },
+  {
+   "id": 1282,
+   "name": "Stargazer"
+  },
+  {
+   "id": 1283,
+   "name": "Invisible"
+  },
+  {
+   "id": 1284,
+   "name": "Kaiser Knuckle"
+  },
+  {
+   "id": 1285,
+   "name": "Demon Arm"
+  },
+  {
+   "id": 1286,
+   "name": "Nosferatus"
+  },
+  {
+   "id": 1287,
+   "name": "Executor"
+  },
+  {
+   "id": 1288,
+   "name": "Dbl Positron"
+  },
+  {
+   "id": 1289,
+   "name": "Plasma Blade"
+  },
+  {
+   "id": 1290,
+   "name": "Blunt Axe"
+  },
+  {
+   "id": 1291,
+   "name": "Slash Sword"
+  },
+  {
+   "id": 1292,
+   "name": "Stab Dagger"
+  },
+  {
+   "id": 1293,
+   "name": "Bash Katana"
+  },
+  {
+   "id": 1294,
+   "name": "Blunt Edge"
+  },
+  {
+   "id": 1295,
+   "name": "Slash Edge"
+  },
+  {
+   "id": 1296,
+   "name": "Stab Edge"
+  },
+  {
+   "id": 1297,
+   "name": "Bash Edge"
+  },
+  {
+   "id": 1298,
+   "name": "Crush Arm"
+  },
+  {
+   "id": 1299,
+   "name": "Shot Pistol"
+  },
+  {
+   "id": 1300,
+   "name": "?????? (unidentified; appraises into random weapon, white rarity)"
+  }
+ ],
+ "invalid": "0x0515-0x053f blank/crash (see glitch notes)"
+}

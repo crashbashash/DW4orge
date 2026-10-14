@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "DW4orge",
+  "version": "0.1.2",
+  "identifier": "io.github.crashbashash.dw4orge",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "DW4orge",
+        "width": 1100,
+        "height": 760
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "RolePlayingGame",
+    "shortDescription": "Save editor for Digimon World 4 (PS2)",
+    "longDescription": "Reads and writes Digimon World 4 save files and PS2 memory-card images: character, items, equipment, disks, story flags and the bank.",
+    "copyright": "Copyright (C) 2026 DW4orge contributors. GPL-3.0-or-later.",
+    "publisher": "DW4orge contributors",
+    "license": "GPL-3.0-or-later"
+  }
+}

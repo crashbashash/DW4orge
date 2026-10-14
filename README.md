@@ -1,6 +1,6 @@
 # DW4orge
 
-A save editor for **Digimon World 4** / **Digimon World X** on PS2: USA, Europe and Japan.
+A save editor for **Digimon World 4** / **Digimon World X** on PS2 (USA, Europe and Japan) and GameCube.
 
 Point it at a memory-card image or a bare save file, change your Digimon,
 inventory or progress in a normal form UI, and write it back. It also ships a
@@ -14,12 +14,19 @@ scriptable CLI.
 
 ## Using it
 
-Open a `.ps2` memory card or a bare 81,920-byte save — the file's own bytes
-decide which, not the extension. A new save can be created from nothing:
+Open a `.ps2` memory card, a GameCube `.raw`/`.gcp` memory card or `.gci` save,
+or a bare 81,920-byte save —
+the file's own bytes decide which, not the extension. GCI edits preserve the
+original header and banner. A new PS2 save can be created from nothing:
 DW4orge synthesises a complete memory card that PCSX2 mounts and the game loads.
 Choose **Region** in New Save: USA, Europe or Japan. Existing cards are detected
 automatically and keep their region, icons and other files when edited or copied.
 If a card contains saves from multiple regions, choose which one to edit.
+
+GameCube card edits preserve the complete card filesystem and unrelated saves.
+Save As to `.raw`/`.gcp` copies the opened card; `.gci` exports its DW4 save, and
+`.bin` exports only the game-data blocks. Dolphin can create a blank GameCube
+card by setting Slot A to Memory Card and choosing a new `.raw` path.
 
 | Release | Executable | Save directory and file |
 | --- | --- | --- |
@@ -172,7 +179,9 @@ Known gaps, roughly in priority order:
 
 - [ ] **Launch the Windows `.msi` and macOS `.dmg`.** CI builds them, but no one
   has ever run them.
-- [ ] **Build a GameCube save editor.** DW4orge is only setup to work with PS2.
+- [x] **GameCube card and GCI editing.** Existing `.raw`/`.gcp` cards and `.gci`
+  saves support big-endian fields and checksums. New-save GameCube synthesis
+  and selection of the other character save boxes remain future work.
 - [ ] **Native Wayland Support**, currently uses a compatibility hook (sorta jank).
 - [ ] **Packaging for Arch and Flatpak.**
 - [ ] **Complete campaign playthroughs after preset loading.** Automated retail tests cover loading, restoration and player control; subsequent boss and quest playthroughs remain separate.

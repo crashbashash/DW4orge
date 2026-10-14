@@ -1,8 +1,9 @@
 # DW4orge — save format and design reference
 
-How DW4orge talks to Digimon World 4 save files: the on-disk layout, the item
-encoding, the story-flag mirror system, and the places where DW4orge
-deliberately differs from the original Python editor.
+How DW4orge reads and writes Digimon World 4 saves: the PS2 and GameCube
+containers, the on-disk record layout, the item encoding, the story-flag mirror
+system, and the places where DW4orge deliberately differs from the original
+Python editor.
 
 **Repo:** <https://github.com/crashbashash/DW4orge> (GPL-3.0)
 
@@ -10,9 +11,10 @@ deliberately differs from the original Python editor.
 
 ## 1. Purpose
 
-DW4orge is a desktop save editor for **Digimon World 4** / **Digimon World X** (PS2, USA, Europe and Japan). It rewrites the original Python/tkinter editor as a
+DW4orge is a desktop save editor for **Digimon World 4** / **Digimon World X** (PS2, USA, Europe and Japan, plus GameCube GCI saves). It rewrites the original Python/tkinter editor as a
 **Tauri 2** application (Rust core + React frontend), with a redesigned
-interface and a headless CLI.
+interface and a headless CLI. It supports PS2 memory-card images and raw saves,
+plus GameCube `.raw`/`.gcp` memory-card images, `.gci` saves and raw GameCube save data.
 
 Reverse-engineering findings, item tables and reference memory-card images
 provide the format knowledge and golden test fixtures. The committed data is
@@ -26,6 +28,8 @@ build or runtime dependency.
 - Feature parity with the Python editor: character, device folder, equipment,
   disks, story flags/folders, bank, and from-scratch save synthesis.
 - `.ps2` memory-card images (read and in-place write) and raw 81920-byte saves.
+- GameCube `.gci` saves (read and in-place write) and raw 81920-byte save data.
+- GameCube `.raw`/`.gcp` memory-card images (read, in-place write, Save As, GCI export).
 - Normal (safe) and Advanced (guard-rails off) editing modes.
 - A headless CLI over the same core library.
 - Windows, macOS and Linux desktop builds.
@@ -882,7 +886,7 @@ regenerate fixtures on demand.
   hosts (see the README's Linux section).
 
 Bundle identity: product name `DW4orge`, identifier
-`io.github.crashbashash.dw4orge`, version `0.2.0`. The icon set lives in
+`io.github.crashbashash.dw4orge`, version `0.3.0`. The icon set lives in
 `src-tauri/icons/` and is generated from `src-tauri/icons/source.png` by
 `tools/gen_icons.py`.
 
@@ -979,3 +983,108 @@ IPC adds `NewSaveRequest.region`, `OpenResult.region`, optional region arguments
 for open/save-as, and `region_choice` errors carrying the available regions. The
 UI asks for a region on mixed-card open and unknown-raw-to-card export. The CLI
 accepts `--region usa|europe|japan` for explicit selection and new-card creation.
+
+## GameCube GCI support
+
+The USA GameCube release is disc ID `GDJEB2` (the Japanese World X disc is
+`GDJJB2`). Retail saves are named `NDMWSaveData` in the GCI directory. A GCI
+file is not a raw 81,920-byte save: its 0x40-byte GCI header and 0x2000-byte
+banner/icon area precede the game data. In the inspected USA GCI, the game data
+starts at file offset `0x2040` and is exactly two `0xA000`-byte blocks, for a
+file size of `0x16040` bytes.
+
+The two save blocks are byte-identical. They use the same block-relative field
+offsets as PS2, including version at `+0x04`, `ISUSE` at `+0x08`,
+`DIGIMONNAME` at `+0x10`, and `PLAYERNAME` at `+0x30`. The GameCube serializer
+stores u32 and UTF-16 values big-endian. Each checksum is the wrapping sum of
+big-endian u32 words from block `+0x04` through `+0x9FFC`; the retail sample's
+stored and calculated checksum both equal `0xFD2BC397` in each mirror.
+
+The GCI writer replaces only those two game-data blocks. It preserves the
+original GCI header and banner/icon bytes. Save As to a new `.gci` uses the
+opened GCI as a metadata donor; a pathless synthesized save has no banner donor
+yet, so it cannot create a new GCI by itself. Opening a GCI is content-detected,
+and the editor reports its container as “GameCube GCI save”. Raw GameCube save
+data can also be edited as a standalone 81,920-byte file; the version bytes
+select big-endian access automatically.
+
+Evidence: USA GameCube `main.dol` extracted from the local `GDJEB2` RVZ with
+`dtk 1.8.4`, plus the private reference GCI at
+`Decomp/local/evidence/dw4-gamecube/reference-NDMWSaveData.gci`. The DOL's
+reflection data contains `beSaveDataDeliver`, `beSvPlatDataGC`, `beSvSlotGC`,
+and the `SAVEUTILITY`/`REQUEST_FILEMAKE`/`REQUEST_FILEFIND` interface names.
+
+On 2026-10-14, the USA retail game created a fresh Dorumon save through the
+Central Area Save Keeper in the private Dolphin build (`8d2ad1a`). Dolphin's
+GCI-folder memory card wrote `GC/USA/Card A/B2-GDJE-NDMWSaveData.gci`, 90,176
+bytes. DW4orge's `Document::save` wrote an edited copy with name `GCEDIT`, BIT
+123,456, and X-Data 4,321. A separate Dolphin profile cold-booted the USA RVZ,
+loaded that edited GCI through Call Digimon, and displayed all three edited
+values in gameplay. The GCI header/banner remained byte-identical, both save
+blocks remained identical, and both stored checksums matched their big-endian
+sums. Private samples, screenshots, and the validation record are under
+`Decomp/local/evidence/dw4-gamecube/` (`dolphin-validation.json`). This verifies
+the USA first-character GCI edit/load path; other save boxes, Japanese saves,
+and GCI synthesis still require separate work. Full memory-card validation is
+recorded below.
+
+## GameCube raw memory-card support
+
+DW4orge detects complete GameCube `.raw`/`.gcp` cards by their size and card
+header geometry. Standard 59, 123, 251, 507, 1019 and 2043-block cards are
+supported (512 KiB through 16 MiB). The `.raw` extension also names bare game
+save data; content and size distinguish those inputs.
+
+| Card block | Contents |
+| --- | --- |
+| 0 | Format header, card identity, size, encoding and header checksums |
+| 1, 2 | Two directory copies, each with 127 entries of 0x40 bytes |
+| 3, 4 | Two block allocation table (BAT) copies |
+| 5 onward | File data in 0x2000-byte blocks |
+
+Header, directory and BAT checksums are wrapping sums and complement sums of
+big-endian u16 words. The current directory and BAT are chosen independently
+using their signed update counters; ties select the first copy. One invalid
+metadata copy can be bypassed, as the retail SDK does, but two invalid copies
+cause rejection. The reader validates file lengths, chain bounds, termination,
+loops, shared blocks, and BAT free-block counts. It follows fragmented chains
+rather than assuming contiguous save data.
+
+The DW4 file is identified by `GDJ*`/`B2` and `NDMWSaveData`. Its regional game
+code selects USA, Japan or Europe; mixed-region cards require a choice. The
+file's first 0x2000 bytes contain its banner/icons, followed by the two 0xA000
+savedata blocks described above. Same-size edits scatter the rewritten file
+back through its existing chain. The card header, directory copies, BAT copies,
+banner and unrelated files retain their original bytes, so filesystem checksums
+and allocation remain intact.
+
+Save As to `.raw` or `.gcp` uses the opened card as a donor. GCI export uses the
+file's existing directory entry and banner; `.bin` exports only the savedata.
+The existing atomic-write, backup and post-write verification rules apply.
+Cross-platform writes that would put GameCube data in a PS2 card, or PS2 data
+in a GameCube container, are rejected. This implements editing existing cards;
+blank-card/new-save synthesis and a selector for the other three character
+save boxes are separate work.
+
+The filesystem contract was checked against the local Dolphin implementation
+in `Core/HW/GCMemcard/GCMemcard.{h,cpp}`. Synthetic tests cover fragmentation,
+metadata copy selection, corruption/chain rejection, unrelated-data retention,
+Save As, backups, GCI export and byte-order rejection. Real-game evidence is
+kept privately under `Decomp/local/evidence/dw4-gamecube/`.
+
+On 2026-10-14, Dolphin generated a 251-block (2 MiB) USA raw card with Slot A
+set to Memory Card. The retail USA game created `NDMWSaveData` on that card
+through the Save Keeper. Its 11-block file occupied card blocks 5–15. DW4orge
+read the card, changed the first character to `CARDTEST` with BIT 654,321 and
+X-Data 2,468, and wrote a full-card copy. Only 48 bytes changed, all within the
+DW4 file; the entire five-block filesystem area remained byte-identical.
+A cold boot with that edited raw card showed `CARDTEST` in Call Digimon and
+all three edited values in gameplay. The Save Keeper then overwrote the same
+slot successfully; DW4orge reopened and verified that game-written card.
+
+The private full-card samples are `dolphin-full-fresh.USA.raw`,
+`dolphin-full-edited.USA.raw`, and `dolphin-full-resaved.USA.raw`. Screenshots
+and `dolphin-raw-card-validation.json` sit alongside them in
+`Decomp/local/evidence/dw4-gamecube/`. This verifies the USA first-character
+raw-card edit, cold-load and in-game resave path. Japanese and European retail
+acceptance and a UI for the other character boxes remain unverified.

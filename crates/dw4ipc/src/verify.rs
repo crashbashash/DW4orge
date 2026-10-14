@@ -77,6 +77,8 @@ pub fn verify_path_with_region(
 
     let mut problems = Vec::new();
     let is_card = dw4core::memcard::is_memcard(&bytes);
+    let is_gci = dw4core::memcard::is_gamecube_gci(&bytes);
+    let is_gc_card = dw4core::memcard::is_gamecube_card(&bytes);
 
     let (save_bytes, card) = if is_card {
         let mut memcard = Ps2Memcard::from_image(bytes.clone())?;
@@ -115,6 +117,12 @@ pub fn verify_path_with_region(
                 ecc_mismatched: mismatched,
             }),
         )
+    } else if is_gc_card {
+        let card = dw4core::memcard::GameCubeMemcard::from_image(bytes)?;
+        let region = card.save_region(region)?;
+        (card.read_save(region)?, None)
+    } else if is_gci {
+        (dw4core::memcard::read_gci_save(&bytes)?, None)
     } else {
         (bytes, None)
     };
@@ -143,6 +151,10 @@ pub fn verify_path_with_region(
         path,
         source: if is_card {
             SourceKind::Memcard
+        } else if is_gc_card {
+            SourceKind::GamecubeCard
+        } else if is_gci {
+            SourceKind::Gamecube
         } else {
             SourceKind::Raw
         },

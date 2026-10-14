@@ -16,7 +16,7 @@ function renderApp() {
 describe('AppShell', () => {
   it('shows an empty state with a way to load the sample save', async () => {
     renderApp();
-    expect(screen.getByText(/open a ps2 memory card/i)).toBeTruthy();
+    expect(screen.getByText(/open a ps2 or gamecube memory card/i)).toBeTruthy();
     await userEvent.click(await screen.findByRole('button', { name: /load sample save/i }));
     expect((await screen.findAllByText('Dorumon')).length).toBeGreaterThan(0);
   });

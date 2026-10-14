@@ -1,18 +1,19 @@
-//! The PS2 memory-card filesystem, implemented natively.
+//! Save containers: PS2 cards, GameCube raw cards, GCI files and bare savedata.
 //!
 //! `ps2-memcard` 0.2.2 was evaluated and rejected (spec 6.1): it sizes a
 //! directory from the `.` entry's `length`, which is 0 on this card, where the
 //! working reference bounds by the *parent* entry's length. Its `CardBuilder`
 //! also rebuilds whole cards rather than writing in place.
 //!
-//! Everything here was validated against the real `Mcd001.ps2` before this
-//! module was written; the measured values are recorded in the implementation
-//! plan and asserted by `tests/memcard.rs`.
+//! Both card filesystems are implemented natively. GCI files use a wrapper
+//! that preserves the GameCube file header/banner around the serialized save.
 
 mod ecc;
 mod entry;
 mod fat;
 mod format;
+mod gamecube;
+mod gci;
 mod geometry;
 mod ps2;
 mod raw;
@@ -26,6 +27,9 @@ pub use entry::{
 };
 pub use fat::{ALLOCATED_BIT, CHAIN_END, FatTable, UNALLOCATED};
 pub use format::{format_card, format_card_for_region};
+pub use gamecube::{GC_CARD_BLOCK, GameCubeMemcard, is_gamecube_card};
+pub use gci::{GCI_BANNER_SIZE, GCI_HEADER_SIZE, GCI_MIN_SIZE, GCI_SAVE_OFFSET};
+pub use gci::{is_gci, read_save as read_gci_save, write_save as write_gci_save};
 pub use geometry::{CardKind, Geometry, SB_MAGIC, SB_SIZE, Superblock};
 pub use ps2::{LocatedFile, Ps2Memcard};
 pub use raw::RawFile;
@@ -38,7 +42,7 @@ pub const SAVE_FILE: &str = "BASLUS-20836savedata";
 
 /// A place a save can live: a card image or a bare file.
 ///
-/// The two implementations differ only in where the bytes go. Callers that do
+/// Backends differ in where the bytes go. Callers that do
 /// not care which they have use [`load_save`] and [`render_container`].
 pub trait CardBackend {
     /// Open the container at `path`.
@@ -77,6 +81,12 @@ pub fn is_raw_save(bytes: &[u8]) -> bool {
     bytes.len() == crate::SAVE_SIZE
 }
 
+/// Whether `bytes` are a GameCube DW4/DWX GCI save file.
+#[must_use]
+pub fn is_gamecube_gci(bytes: &[u8]) -> bool {
+    gci::is_gci(bytes)
+}
+
 /// Read a save from either container, deciding by the path's contents.
 ///
 /// # Errors
@@ -113,6 +123,12 @@ pub fn load_save_from_bytes_with_region(
             card.read_save(region.save_name(), region.save_name())?,
             Some(region),
         ))
+    } else if is_gamecube_card(bytes) {
+        let card = GameCubeMemcard::from_image(bytes.to_vec())?;
+        let region = card.save_region(requested)?;
+        Ok((card.read_save(region)?, Some(region)))
+    } else if is_gamecube_gci(bytes) {
+        Ok((gci::read_save(bytes)?, None))
     } else {
         Ok((
             RawFile::from_bytes(bytes.to_vec(), Path::new(""))?.into_bytes(),
@@ -149,21 +165,75 @@ pub fn render_container_for_region(
     data: &[u8],
     region: Option<crate::Region>,
 ) -> crate::Result<Vec<u8>> {
+    render_container_for_region_and_gci(path, source, None, data, region)
+}
+
+/// Render a save, retaining a loaded GCI as donor metadata for Save As.
+pub fn render_container_for_region_and_gci(
+    path: &Path,
+    source: Option<&Path>,
+    source_gci: Option<&Path>,
+    data: &[u8],
+    region: Option<crate::Region>,
+) -> crate::Result<Vec<u8>> {
+    render_container_with_sources(path, source, source_gci, None, data, region)
+}
+
+/// Render a destination with PS2, GCI or GameCube raw-card donor metadata.
+pub fn render_container_with_sources(
+    path: &Path,
+    source: Option<&Path>,
+    source_gci: Option<&Path>,
+    source_gc_card: Option<&Path>,
+    data: &[u8],
+    region: Option<crate::Region>,
+) -> crate::Result<Vec<u8>> {
     if path.exists() {
         let bytes = std::fs::read(path).map_err(|source_err| crate::Error::File {
             path: path.to_path_buf(),
             source: source_err,
         })?;
         if is_memcard(&bytes) {
+            require_ps2_data(data)?;
             let mut card = Ps2Memcard::from_image(bytes)?;
             let region = card.save_region(region)?;
             card.write_save(region.save_name(), region.save_name(), data)?;
             return Ok(card.image().to_vec());
         }
+        if is_gamecube_card(&bytes) {
+            let mut card = GameCubeMemcard::from_image(bytes)?;
+            let region = card.save_region(region)?;
+            card.write_save(region, data)?;
+            return Ok(card.image().to_vec());
+        }
+        if is_gamecube_gci(&bytes) {
+            return gci::write_save(&bytes, data);
+        }
+        if is_raw_save(&bytes) {
+            return Ok(data.to_vec());
+        }
+        if path
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("raw") || e.eq_ignore_ascii_case("gcp"))
+        {
+            return Err(crate::Error::NoSave(
+                "destination is not a supported GameCube card or raw save".into(),
+            ));
+        }
+        if path
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("gci"))
+        {
+            return Err(crate::Error::NoSave(format!(
+                "{} is not a Digimon World 4 GameCube GCI file",
+                path.display()
+            )));
+        }
     } else if path
         .extension()
         .is_some_and(|e| e.eq_ignore_ascii_case("ps2"))
     {
+        require_ps2_data(data)?;
         // No donor card: synthesise a standard one. A donor, when given, is
         // still copied so its icons and any other files survive.
         let Some(source) = source else {
@@ -184,7 +254,71 @@ pub fn render_container_for_region(
         let region = card.save_region(region)?;
         card.write_save(region.save_name(), region.save_name(), data)?;
         return Ok(card.image().to_vec());
+    } else if path
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case("gci"))
+    {
+        if let Some(donor) = source_gc_card {
+            let bytes = std::fs::read(donor).map_err(|source_err| crate::Error::File {
+                path: donor.to_path_buf(),
+                source: source_err,
+            })?;
+            let card = GameCubeMemcard::from_image(bytes)?;
+            let region = card.save_region(region)?;
+            return gci::write_save(&card.export_gci(region)?, data);
+        }
+        let donor = source_gci.or_else(|| {
+            source.filter(|candidate| {
+                candidate
+                    .extension()
+                    .is_some_and(|e| e.eq_ignore_ascii_case("gci"))
+            })
+        });
+        let donor = donor.ok_or_else(|| {
+            crate::Error::NoSave(
+                "creating a GameCube GCI requires an existing DW4/DWX GCI as its banner template"
+                    .into(),
+            )
+        })?;
+        let bytes = std::fs::read(donor).map_err(|source_err| crate::Error::File {
+            path: donor.to_path_buf(),
+            source: source_err,
+        })?;
+        return gci::write_save(&bytes, data);
+    }
+
+    if path
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case("raw") || e.eq_ignore_ascii_case("gcp"))
+    {
+        if let Some(donor) = source_gc_card {
+            let bytes = std::fs::read(donor).map_err(|source_err| crate::Error::File {
+                path: donor.to_path_buf(),
+                source: source_err,
+            })?;
+            let mut card = GameCubeMemcard::from_image(bytes)?;
+            let region = card.save_region(region)?;
+            card.write_save(region, data)?;
+            return Ok(card.image().to_vec());
+        }
+        if path
+            .extension()
+            .is_some_and(|e| e.eq_ignore_ascii_case("gcp"))
+        {
+            return Err(crate::Error::NoSave(
+                "creating a GameCube card requires an opened card as a template".into(),
+            ));
+        }
     }
 
     Ok(data.to_vec())
+}
+
+fn require_ps2_data(data: &[u8]) -> crate::Result<()> {
+    if crate::SaveData::parse(data)?.byte_order() == crate::ByteOrder::Big {
+        return Err(crate::Error::NoSave(
+            "GameCube savedata cannot be written to a PS2 card without conversion".into(),
+        ));
+    }
+    Ok(())
 }

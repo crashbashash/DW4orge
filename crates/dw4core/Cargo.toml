@@ -1,6 +1,6 @@
 [package]
 name = "dw4core"
-description = "Digimon World 4 / Digimon World X (PS2 USA, Europe, Japan) save-format engine"
+description = "Digimon World 4 / Digimon World X (PS2 and GameCube) save-format engine"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

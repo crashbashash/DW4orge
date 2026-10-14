@@ -18,6 +18,8 @@ pub fn info(result: &OpenResult) {
     let source = match result.source {
         dw4ipc::SourceKind::Raw => "raw save",
         dw4ipc::SourceKind::Memcard => "memory card",
+        dw4ipc::SourceKind::Gamecube => "GameCube GCI save",
+        dw4ipc::SourceKind::GamecubeCard => "GameCube memory card",
     };
     let occupied = view.device.iter().filter(|id| **id != EMPTY).count();
     let disks = view.disks.iter().filter(|n| **n != 0).count();
@@ -30,9 +32,16 @@ pub fn info(result: &OpenResult) {
     println!("container:  {source}");
     println!(
         "region:     {}",
-        result
-            .region
-            .map_or("unknown (raw save)", dw4core::Region::label)
+        result.region.map_or_else(
+            || {
+                if result.source == dw4ipc::SourceKind::Gamecube {
+                    "GameCube GCI"
+                } else {
+                    "unknown (raw save)"
+                }
+            },
+            dw4core::Region::label,
+        )
     );
     println!(
         "checksum:   {}",
@@ -75,6 +84,8 @@ pub fn verify(report: &VerifyReport) {
         match report.source {
             dw4ipc::SourceKind::Raw => "raw save",
             dw4ipc::SourceKind::Memcard => "memory card",
+            dw4ipc::SourceKind::Gamecube => "GameCube GCI save",
+            dw4ipc::SourceKind::GamecubeCard => "GameCube memory card",
         }
     );
     println!(

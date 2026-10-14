@@ -51,8 +51,10 @@ export interface Backend {
 
 /** The open dialog lists every container first, then each kind alone. */
 export const OPEN_FILTERS = [
-  { name: 'PS2 memory card / raw save', extensions: ['ps2', 'raw', 'bin'] },
+  { name: 'Memory cards / GCI / raw saves', extensions: ['gci', 'gcp', 'ps2', 'raw', 'bin'] },
+  { name: 'GameCube memory card', extensions: ['raw', 'gcp'] },
   { name: 'PS2 memory card', extensions: ['ps2'] },
+  { name: 'GameCube GCI save', extensions: ['gci'] },
   { name: 'Raw save', extensions: ['raw', 'bin'] },
 ];
 
@@ -63,5 +65,6 @@ export const OPEN_FILTERS = [
  */
 export const SAVE_FILTERS = [
   { name: 'PS2 memory card', extensions: ['ps2'] },
-  { name: 'Raw save', extensions: ['raw', 'bin'] },
+  { name: 'GameCube GCI save', extensions: ['gci'] },
+  { name: 'Raw save / GameCube card copy', extensions: ['raw', 'gcp', 'bin'] },
 ];

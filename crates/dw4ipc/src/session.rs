@@ -234,6 +234,10 @@ fn source_kind(path: &Path) -> Result<SourceKind, IpcError> {
     })?;
     Ok(if dw4core::memcard::is_memcard(&bytes) {
         SourceKind::Memcard
+    } else if dw4core::memcard::is_gamecube_card(&bytes) {
+        SourceKind::GamecubeCard
+    } else if dw4core::memcard::is_gamecube_gci(&bytes) {
+        SourceKind::Gamecube
     } else {
         SourceKind::Raw
     })

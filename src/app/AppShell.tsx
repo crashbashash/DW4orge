@@ -67,7 +67,7 @@ export function AppShell() {
           ) : (
             <div className="empty">
               <h2>DW4orge</h2>
-              <p>Open a PS2 memory card or a raw save to begin.</p>
+              <p>Open a PS2 or GameCube memory card, GCI save, or raw save to begin.</p>
               <div className="empty-actions">
                 <button type="button" onClick={() => requestOpen()}>
                   Open save

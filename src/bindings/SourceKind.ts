@@ -3,4 +3,4 @@
 /**
  * Where a save lives.
  */
-export type SourceKind = "raw" | "memcard";
+export type SourceKind = "raw" | "memcard" | "gamecube" | "gamecube_card";

@@ -15,6 +15,11 @@ pub enum SourceKind {
     Raw,
     /// A `.ps2` memory-card image.
     Memcard,
+    /// A GameCube `.gci` save file.
+    Gamecube,
+    /// A full GameCube `.raw`/`.gcp` memory-card image.
+    #[serde(rename = "gamecube_card")]
+    GamecubeCard,
 }
 
 /// Everything the New Save dialog supplies.

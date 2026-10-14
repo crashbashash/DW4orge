@@ -7,6 +7,7 @@
 //! editor.
 
 use crate::offsets;
+use crate::save::ByteOrder;
 use crate::save::SaveData;
 
 /// How many characters a player name can hold.
@@ -53,11 +54,17 @@ pub fn fullwidth_to_char(unit: u16) -> char {
 /// Encode a name into the field: marker, up to [`NAME_CHARS`] chars, NUL padding.
 #[must_use]
 pub fn encode_player_name(text: &str) -> [u8; NAME_FIELD_LEN] {
+    encode_player_name_with_order(text, ByteOrder::Little)
+}
+
+/// Encode a player name in the byte order used by a save from that platform.
+#[must_use]
+pub fn encode_player_name_with_order(text: &str, byte_order: ByteOrder) -> [u8; NAME_FIELD_LEN] {
     let mut out = [0u8; NAME_FIELD_LEN];
-    out[..2].copy_from_slice(&NAME_MARKER.to_le_bytes());
+    out[..2].copy_from_slice(&write_u16(NAME_MARKER, byte_order));
     for (i, ch) in text.chars().take(NAME_CHARS).enumerate() {
         let at = 2 + i * 2;
-        out[at..at + 2].copy_from_slice(&char_to_fullwidth(ch).to_le_bytes());
+        out[at..at + 2].copy_from_slice(&write_u16(char_to_fullwidth(ch), byte_order));
     }
     out
 }
@@ -65,13 +72,22 @@ pub fn encode_player_name(text: &str) -> [u8; NAME_FIELD_LEN] {
 /// Decode the 8-byte field, skipping the marker and any NUL slots.
 #[must_use]
 pub fn decode_player_name(field: &[u8]) -> String {
+    decode_player_name_with_order(field, ByteOrder::Little)
+}
+
+/// Decode a player name using the byte order stored by its platform.
+#[must_use]
+pub fn decode_player_name_with_order(field: &[u8], byte_order: ByteOrder) -> String {
     let mut out = String::new();
     for i in 0..NAME_CHARS {
         let at = 2 + i * 2;
         if at + 2 > field.len() {
             break;
         }
-        let unit = u16::from_le_bytes([field[at], field[at + 1]]);
+        let unit = match byte_order {
+            ByteOrder::Little => u16::from_le_bytes([field[at], field[at + 1]]),
+            ByteOrder::Big => u16::from_be_bytes([field[at], field[at + 1]]),
+        };
         if unit == 0 || unit == NAME_MARKER {
             continue;
         }
@@ -84,12 +100,25 @@ impl SaveData {
     /// The player name, decoded from its fullwidth encoding.
     #[must_use]
     pub fn player_name(&self) -> String {
-        decode_player_name(self.get_bytes(offsets::PLAYER_NAME, NAME_FIELD_LEN))
+        decode_player_name_with_order(
+            self.get_bytes(offsets::PLAYER_NAME, NAME_FIELD_LEN),
+            self.byte_order(),
+        )
     }
 
     /// Write the player name, truncating to 8 characters.
     pub fn set_player_name(&mut self, text: &str) {
-        self.set_bytes(offsets::PLAYER_NAME, &encode_player_name(text));
+        self.set_bytes(
+            offsets::PLAYER_NAME,
+            &encode_player_name_with_order(text, self.byte_order()),
+        );
+    }
+}
+
+fn write_u16(value: u16, byte_order: ByteOrder) -> [u8; 2] {
+    match byte_order {
+        ByteOrder::Little => value.to_le_bytes(),
+        ByteOrder::Big => value.to_be_bytes(),
     }
 }
 

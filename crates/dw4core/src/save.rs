@@ -4,6 +4,13 @@ use crate::offsets;
 use crate::species::Species;
 use crate::{BLOCK, SAVE_SIZE};
 
+/// Byte order used by the platform's savedata serializer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ByteOrder {
+    Little,
+    Big,
+}
+
 /// A parsed save file: two mirrored 0xA000-byte blocks.
 ///
 /// The invariant is `raw.len() == SAVE_SIZE`. Every `set_*` writes to **both**
@@ -11,6 +18,7 @@ use crate::{BLOCK, SAVE_SIZE};
 #[derive(Clone, PartialEq, Eq)]
 pub struct SaveData {
     raw: Vec<u8>,
+    byte_order: ByteOrder,
 }
 
 impl std::fmt::Debug for SaveData {
@@ -20,6 +28,7 @@ impl std::fmt::Debug for SaveData {
         f.debug_struct("SaveData")
             .field("len", &self.raw.len())
             .field("checksum", &self.get_u32(offsets::CHECKSUM))
+            .field("byte_order", &self.byte_order)
             .finish()
     }
 }
@@ -33,9 +42,19 @@ impl SaveData {
                 actual: bytes.len(),
             });
         }
+        let byte_order = if bytes[4..8] == 4u32.to_be_bytes() {
+            ByteOrder::Big
+        } else {
+            ByteOrder::Little
+        };
         Ok(Self {
             raw: bytes.to_vec(),
+            byte_order,
         })
+    }
+
+    pub(crate) fn byte_order(&self) -> ByteOrder {
+        self.byte_order
     }
 
     /// The raw bytes as loaded — checksums **not** recomputed.
@@ -51,14 +70,17 @@ impl SaveData {
     #[must_use]
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut out = self.raw.clone();
-        fix_checksums(&mut out);
+        fix_checksums_with_order(&mut out, self.byte_order);
         out
     }
 
     /// Whether both stored checksums match their blocks' contents.
     #[must_use]
     pub fn verify(&self) -> bool {
-        (0..2).all(|b| block_checksum(&self.raw, b) == self.get_u32_block(offsets::CHECKSUM, b))
+        (0..2).all(|b| {
+            block_checksum_with_order(&self.raw, b, self.byte_order)
+                == self.get_u32_block(offsets::CHECKSUM, b)
+        })
     }
 
     // ---- raw access ------------------------------------------------------
@@ -72,13 +94,18 @@ impl SaveData {
     /// A u32 at `offset` in `block` (0 or 1).
     #[must_use]
     pub fn get_u32_block(&self, offset: usize, block: usize) -> u32 {
-        read_u32(&self.raw, block * BLOCK + offset)
+        read_u32(&self.raw, block * BLOCK + offset, self.byte_order)
     }
 
     /// Write a u32 to `offset` in **both** blocks.
     pub fn set_u32(&mut self, offset: usize, value: u32) {
         for block in 0..2 {
-            write_u32(&mut self.raw, block * BLOCK + offset, value);
+            write_u32(
+                &mut self.raw,
+                block * BLOCK + offset,
+                value,
+                self.byte_order,
+            );
         }
     }
 
@@ -510,28 +537,46 @@ impl SaveData {
 /// `Σ u32le(block+4 .. block+0xA000) mod 2³²`.
 #[must_use]
 pub fn block_checksum(raw: &[u8], block: usize) -> u32 {
+    block_checksum_with_order(raw, block, ByteOrder::Little)
+}
+
+/// Checksum for one block using the platform's u32 byte order.
+#[must_use]
+pub fn block_checksum_with_order(raw: &[u8], block: usize, byte_order: ByteOrder) -> u32 {
     let base = block * BLOCK;
-    (base + 4..base + BLOCK)
-        .step_by(4)
-        .fold(0u32, |acc, i| acc.wrapping_add(read_u32(raw, i)))
+    (base + 4..base + BLOCK).step_by(4).fold(0u32, |acc, i| {
+        acc.wrapping_add(read_u32(raw, i, byte_order))
+    })
 }
 
 /// Recompute and store both blocks' checksums in place.
 pub fn fix_checksums(raw: &mut [u8]) {
+    fix_checksums_with_order(raw, ByteOrder::Little);
+}
+
+/// Recompute both block checksums using `byte_order`.
+pub fn fix_checksums_with_order(raw: &mut [u8], byte_order: ByteOrder) {
     for block in 0..2 {
-        let sum = block_checksum(raw, block);
-        write_u32(raw, block * BLOCK + offsets::CHECKSUM, sum);
+        let sum = block_checksum_with_order(raw, block, byte_order);
+        write_u32(raw, block * BLOCK + offsets::CHECKSUM, sum, byte_order);
     }
 }
 
-fn read_u32(raw: &[u8], offset: usize) -> u32 {
+fn read_u32(raw: &[u8], offset: usize, byte_order: ByteOrder) -> u32 {
     let mut bytes = [0u8; 4];
     bytes.copy_from_slice(&raw[offset..offset + 4]);
-    u32::from_le_bytes(bytes)
+    match byte_order {
+        ByteOrder::Little => u32::from_le_bytes(bytes),
+        ByteOrder::Big => u32::from_be_bytes(bytes),
+    }
 }
 
-fn write_u32(raw: &mut [u8], offset: usize, value: u32) {
-    raw[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+fn write_u32(raw: &mut [u8], offset: usize, value: u32, byte_order: ByteOrder) {
+    let bytes = match byte_order {
+        ByteOrder::Little => value.to_le_bytes(),
+        ByteOrder::Big => value.to_be_bytes(),
+    };
+    raw[offset..offset + 4].copy_from_slice(&bytes);
 }
 
 #[cfg(test)]

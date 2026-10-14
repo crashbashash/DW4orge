@@ -1,11 +1,11 @@
-//! Digimon World 4 / Digimon World X (PS2, USA/Europe/Japan) save-format engine.
+//! Digimon World 4 / Digimon World X save-format engine (PS2 and GameCube).
 //!
 //! Each region uses its own card filename (see [`Region`]), with 81,920 bytes: two byte-identical
 //! 0xA000-byte blocks (a mirror/backup). Every write here updates both, so the
 //! mirror cannot drift.
 //!
 //! Offsets in this crate are **block-relative** unless a function says
-//! otherwise. All multi-byte values are little-endian.
+//! otherwise. PS2 values are little-endian; GameCube GCI values are big-endian.
 //!
 //! ```
 //! # use dw4core::SaveData;
@@ -52,7 +52,10 @@ pub use flags::{
 };
 pub use item::{Category, build_item_id, category_of, is_empty, split_item_id};
 pub use name::{NAME_CHARS, decode_player_name, encode_player_name};
-pub use save::{SaveData, block_checksum, fix_checksums};
+pub use save::{
+    ByteOrder, SaveData, block_checksum, block_checksum_with_order, fix_checksums,
+    fix_checksums_with_order,
+};
 pub use species::Species;
 
 /// The crate version, surfaced through the IPC `AppInfo` payload.

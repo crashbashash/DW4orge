@@ -362,9 +362,12 @@ fn socket_base_id(device: &[u32; DEVICE_SLOTS], index: u32) -> Option<u32> {
 pub struct Document {
     data: SaveData,
     path: Option<PathBuf>,
-    /// The card this was loaded from, if it was one. A new `.ps2` is created by
-    /// copying this, which is the Python `save_memcard` semantics.
+    /// PS2 card donor used when creating a `.ps2` destination.
     source_card: Option<PathBuf>,
+    /// The GCI this was loaded from, used as a banner/header donor for Save As.
+    source_gci: Option<PathBuf>,
+    /// Full GameCube card donor retained for Save As and GCI export.
+    source_gc_card: Option<PathBuf>,
     /// Whether the bytes as loaded had valid checksums.
     loaded_checksums_ok: bool,
     region: Option<crate::Region>,
@@ -382,6 +385,8 @@ impl Document {
             data,
             path: None,
             source_card: None,
+            source_gci: None,
+            source_gc_card: None,
             loaded_checksums_ok,
             region: None,
         })
@@ -389,8 +394,8 @@ impl Document {
 
     /// Load a save from a card image or a bare file, deciding by content.
     ///
-    /// A `.ps2` memory card and an 81,920-byte raw save go through the same
-    /// entry point; the file's own bytes decide which it is.
+    /// PS2 cards, GameCube GCI saves, and raw saves share this entry point; the
+    /// file's own bytes decide which it is.
     ///
     /// # Errors
     /// [`crate::Error::File`] if unreadable, or whatever the container reports.
@@ -403,12 +408,17 @@ impl Document {
         let mut doc = Self::from_bytes(&bytes)?;
         doc.path = Some(path.to_path_buf());
         doc.region = region;
-        // Remember the card, so Save As to a new .ps2 can copy it.
-        if crate::memcard::is_memcard(&fs::read(path).map_err(|source| crate::Error::File {
+        // Retain the source container for Save As metadata.
+        let container_bytes = fs::read(path).map_err(|source| crate::Error::File {
             path: path.to_path_buf(),
             source,
-        })?) {
+        })?;
+        if crate::memcard::is_memcard(&container_bytes) {
             doc.source_card = Some(path.to_path_buf());
+        } else if crate::memcard::is_gamecube_gci(&container_bytes) {
+            doc.source_gci = Some(path.to_path_buf());
+        } else if crate::memcard::is_gamecube_card(&container_bytes) {
+            doc.source_gc_card = Some(path.to_path_buf());
         }
         Ok(doc)
     }
@@ -420,7 +430,9 @@ impl Document {
 
     /// Select a card region for raw or newly synthesized data. Existing cards keep theirs.
     pub fn set_region(&mut self, region: crate::Region) -> crate::Result<()> {
-        if self.source_card.is_some() && self.region != Some(region) {
+        if (self.source_card.is_some() || self.source_gc_card.is_some())
+            && self.region != Some(region)
+        {
             return Err(crate::Error::NoSave(
                 "an existing card keeps its original region".into(),
             ));
@@ -866,9 +878,9 @@ impl Document {
     /// Write to `path`, atomically, keeping a `.bak` of the previous contents.
     ///
     /// The container is chosen from `path`, as [`crate::memcard::render_container`]
-    /// describes: an existing card is rewritten in place, a new `.ps2` is created
-    /// by copying the card this document was loaded from, and anything else is a
-    /// bare 81,920-byte save.
+    /// describes: existing cards/GCI files are updated in place, new `.ps2`
+    /// cards and `.gci` files use the corresponding opened container as a donor,
+    /// and anything else is a bare 81,920-byte save.
     ///
     /// The `.bak` is written once - before the first overwrite of an existing
     /// file - and is never replaced by a later save in the same session, so it
@@ -876,13 +888,15 @@ impl Document {
     ///
     /// # Errors
     /// [`crate::Error::File`] if the file cannot be written,
-    /// [`crate::Error::NoSave`] if a new `.ps2` has no source card or the
+    /// [`crate::Error::NoSave`] if a new container lacks a suitable donor or
     /// post-write verification fails.
     pub fn save(&mut self, path: &Path) -> crate::Result<()> {
         let save = self.data.to_bytes();
-        let bytes = crate::memcard::render_container_for_region(
+        let bytes = crate::memcard::render_container_with_sources(
             path,
             self.source_card.as_deref(),
+            self.source_gci.as_deref(),
+            self.source_gc_card.as_deref(),
             &save,
             self.region,
         )?;
@@ -902,7 +916,7 @@ impl Document {
         // Re-read through the same content dispatch, so a card is verified as a
         // card and a raw file as a raw file.
         let (written, region) = crate::memcard::load_save_with_region(path, self.region)?;
-        self.region = region;
+        self.region = region.or(self.region);
         let check = SaveData::parse(&written).map_err(|e| crate::Error::NoSave(e.to_string()))?;
         if !check.verify() {
             return Err(crate::Error::NoSave(format!(
@@ -914,6 +928,10 @@ impl Document {
         self.path = Some(path.to_path_buf());
         if crate::memcard::is_memcard(&bytes) {
             self.source_card = Some(path.to_path_buf());
+        } else if crate::memcard::is_gamecube_gci(&bytes) {
+            self.source_gci = Some(path.to_path_buf());
+        } else if crate::memcard::is_gamecube_card(&bytes) {
+            self.source_gc_card = Some(path.to_path_buf());
         }
         self.loaded_checksums_ok = true;
         Ok(())

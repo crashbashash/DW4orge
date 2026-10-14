@@ -38,3 +38,15 @@ Regional PS2 support (0.2.0) was additionally verified against the European
 SLES_534.05 and Japanese SLPS_254.53 releases. The vendored catalogue and original
 format fixtures retain their USA provenance; regional support does not imply
 localized catalogue labels or complete campaign testing in every release.
+
+GameCube filesystem references (0.3.0)
+
+    The raw memory-card layout, checksum algorithm, and mirrored directory/BAT
+    selection rules were checked against Dolphin Emulator's public
+    Source/Core/Core/HW/GCMemcard/GCMemcard.h and GCMemcard.cpp.
+    Dolphin Emulator Project, GPL-2.0-or-later:
+    https://github.com/dolphin-emu/dolphin
+
+    GameCube editing was verified against the USA GDJEB2 retail release using
+    privately held GCI and raw-card samples generated in Dolphin. The samples,
+    game banners and private emulator control patch are not shipped here.

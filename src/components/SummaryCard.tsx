@@ -30,7 +30,10 @@ export function SummaryCard() {
 
   return (
     <section className="summary" aria-label="Save summary">
-      <Field label="Region" value={session.region ? REGION_LABELS[session.region] : 'Unknown (raw save)'} />
+      <Field
+        label="Region"
+        value={session.region ? REGION_LABELS[session.region] : session.source === 'gamecube' ? 'GameCube GCI' : 'Unknown (raw save)'}
+      />
       <Field label="Species" value={view.species} />
       <Field label="Name" value={view.name} />
       <Field label="Level" value={String(view.level)} />

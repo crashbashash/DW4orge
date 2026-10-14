@@ -11,9 +11,8 @@
 
 use crate::codes::{MAX_LEVEL, level_threshold, upcnt_safe_cap};
 use crate::flags::{apply_story, preset_by_name};
-use crate::name::{NAME_FIELD_LEN, encode_player_name};
+use crate::name::NAME_FIELD_LEN;
 use crate::offsets;
-use crate::save::fix_checksums;
 use crate::species::Species;
 use crate::{BLOCK, Difficulty, EMPTY, SAVE_SIZE};
 
@@ -166,11 +165,18 @@ impl SaveSpec {
 }
 
 /// Write `count` u32s, using `values` where present and `empty` beyond.
-fn fill_list(buf: &mut [u8], offset: usize, values: &[u32], count: usize, empty: u32) {
+fn fill_list(
+    order: crate::ByteOrder,
+    buf: &mut [u8],
+    offset: usize,
+    values: &[u32],
+    count: usize,
+    empty: u32,
+) {
     for i in 0..count {
         let value = values.get(i).copied().unwrap_or(empty);
         let at = offset + i * 4;
-        buf[at..at + 4].copy_from_slice(&value.to_le_bytes());
+        buf[at..at + 4].copy_from_slice(&word_bytes(value, order));
     }
 }
 
@@ -184,11 +190,27 @@ fn fill_bytes(buf: &mut [u8], offset: usize, data: &[u8], count: usize) {
 /// Build one 0xA000-byte block from a spec.
 #[must_use]
 pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
+    build_block_with_order(spec, crate::ByteOrder::Little)
+}
+
+/// Build a block using the target platform's integer and name encoding.
+#[must_use]
+pub fn build_block_with_order(spec: &SaveSpec, order: crate::ByteOrder) -> Vec<u8> {
     let mut buf = vec![0u8; BLOCK];
 
-    fill_bytes(&mut buf, offsets::VERSION, &spec.version.to_le_bytes(), 4);
+    fill_bytes(
+        &mut buf,
+        offsets::VERSION,
+        &word_bytes(spec.version, order),
+        4,
+    );
     buf[offsets::ISUSE] = spec.isuse;
-    fill_bytes(&mut buf, offsets::UNIQUE, &spec.unique.to_le_bytes(), 4);
+    fill_bytes(
+        &mut buf,
+        offsets::UNIQUE,
+        &word_bytes(spec.unique, order),
+        4,
+    );
 
     fill_bytes(
         &mut buf,
@@ -199,7 +221,7 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
     fill_bytes(
         &mut buf,
         offsets::PLAYER_NAME,
-        &encode_player_name(&spec.player_name),
+        &crate::name::encode_player_name_with_order(&spec.player_name, order),
         NAME_FIELD_LEN,
     );
 
@@ -212,10 +234,11 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
         (offsets::XDATA, spec.xdata),
         (offsets::BIT, spec.bit),
     ] {
-        fill_bytes(&mut buf, offset, &value.to_le_bytes(), 4);
+        fill_bytes(&mut buf, offset, &word_bytes(value, order), 4);
     }
 
     fill_list(
+        order,
         &mut buf,
         offsets::DEVICE,
         &spec.device,
@@ -230,9 +253,17 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
         let disks: Vec<u32> = (0..offsets::DISK_SLOTS as u32)
             .map(|i| 0x4000 + i)
             .collect();
-        fill_list(&mut buf, offsets::DISK, &disks, offsets::DISK_SLOTS, EMPTY);
+        fill_list(
+            order,
+            &mut buf,
+            offsets::DISK,
+            &disks,
+            offsets::DISK_SLOTS,
+            EMPTY,
+        );
     } else {
         fill_list(
+            order,
             &mut buf,
             offsets::DISK,
             &spec.disk,
@@ -243,15 +274,22 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
 
     fill_bytes(&mut buf, offsets::CARD_LIST, &spec.card_list, 52);
     fill_list(
+        order,
         &mut buf,
         offsets::BANK_DEVICE,
         &spec.bank,
         offsets::BANK_SLOTS,
         EMPTY,
     );
-    fill_bytes(&mut buf, offsets::BANK_BIT, &spec.bank_bit.to_le_bytes(), 4);
+    fill_bytes(
+        &mut buf,
+        offsets::BANK_BIT,
+        &word_bytes(spec.bank_bit, order),
+        4,
+    );
 
     fill_list(
+        order,
         &mut buf,
         offsets::WEAPON,
         &spec.weapons,
@@ -259,21 +297,23 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
         EMPTY,
     );
     fill_list(
+        order,
         &mut buf,
         offsets::WEAPON_MOD,
         &spec.weapon_mods,
         offsets::MOD_SOCKETS,
         EMPTY,
     );
-    fill_bytes(&mut buf, offsets::ARMOR, &spec.armor.to_le_bytes(), 4);
+    fill_bytes(&mut buf, offsets::ARMOR, &word_bytes(spec.armor, order), 4);
     fill_list(
+        order,
         &mut buf,
         offsets::ARMOR_MOD,
         &spec.armor_mods,
         offsets::MOD_SOCKETS,
         EMPTY,
     );
-    fill_bytes(&mut buf, offsets::SUB, &spec.sub.to_le_bytes(), 4);
+    fill_bytes(&mut buf, offsets::SUB, &word_bytes(spec.sub, order), 4);
 
     fill_bytes(
         &mut buf,
@@ -288,6 +328,7 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
         offsets::FOLDER_COUNT,
     );
     fill_list(
+        order,
         &mut buf,
         offsets::BASE_COUNTER,
         &spec.counters,
@@ -319,6 +360,7 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
     if spec.base_level.is_empty() {
         let levels = vec![spec.level; offsets::SPECIES_COUNT];
         fill_list(
+            order,
             &mut buf,
             offsets::BASE_LEVEL,
             &levels,
@@ -327,6 +369,7 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
         );
     } else {
         fill_list(
+            order,
             &mut buf,
             offsets::BASE_LEVEL,
             &spec.base_level,
@@ -337,6 +380,7 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
     if spec.base_exp.is_empty() {
         let exps = vec![spec.exp; offsets::SPECIES_COUNT];
         fill_list(
+            order,
             &mut buf,
             offsets::BASE_EXP,
             &exps,
@@ -345,6 +389,7 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
         );
     } else {
         fill_list(
+            order,
             &mut buf,
             offsets::BASE_EXP,
             &spec.base_exp,
@@ -356,18 +401,40 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
     let skill_slots = offsets::SPECIES_COUNT * offsets::TECHNIQUE_SLOTS;
     if spec.base_skill.is_empty() {
         let skills = vec![spec.skill as u32; skill_slots];
-        fill_list(&mut buf, offsets::BASE_SKILL, &skills, skill_slots, 0);
+        fill_list(
+            order,
+            &mut buf,
+            offsets::BASE_SKILL,
+            &skills,
+            skill_slots,
+            0,
+        );
     } else {
         let skills: Vec<u32> = spec.base_skill.iter().map(|&v| v as u32).collect();
-        fill_list(&mut buf, offsets::BASE_SKILL, &skills, skill_slots, 0);
+        fill_list(
+            order,
+            &mut buf,
+            offsets::BASE_SKILL,
+            &skills,
+            skill_slots,
+            0,
+        );
     }
 
     let powerup_slots = offsets::SPECIES_COUNT * offsets::POWERUP_SLOTS;
     if spec.base_upcnt.is_empty() {
         let powerups = vec![spec.upcnt; powerup_slots];
-        fill_list(&mut buf, offsets::BASE_UPCNT, &powerups, powerup_slots, 0);
+        fill_list(
+            order,
+            &mut buf,
+            offsets::BASE_UPCNT,
+            &powerups,
+            powerup_slots,
+            0,
+        );
     } else {
         fill_list(
+            order,
             &mut buf,
             offsets::BASE_UPCNT,
             &spec.base_upcnt,
@@ -382,11 +449,17 @@ pub fn build_block(spec: &SaveSpec) -> Vec<u8> {
 /// Build a complete 81920-byte save: one block, duplicated, both checksums fixed.
 #[must_use]
 pub fn build_save(spec: &SaveSpec) -> Vec<u8> {
-    let block = build_block(spec);
+    build_save_with_order(spec, crate::ByteOrder::Little)
+}
+
+/// Build both mirrored blocks in the target platform's byte order.
+#[must_use]
+pub fn build_save_with_order(spec: &SaveSpec, order: crate::ByteOrder) -> Vec<u8> {
+    let block = build_block_with_order(spec, order);
     let mut out = Vec::with_capacity(SAVE_SIZE);
     out.extend_from_slice(&block);
     out.extend_from_slice(&block);
-    fix_checksums(&mut out);
+    crate::fix_checksums_with_order(&mut out, order);
     out
 }
 
@@ -437,6 +510,13 @@ pub fn spec_maxed(preset_name: &str, difficulty: Difficulty, level: u32) -> Opti
             .collect(),
         ..base
     })
+}
+
+fn word_bytes(value: u32, order: crate::ByteOrder) -> [u8; 4] {
+    match order {
+        crate::ByteOrder::Little => value.to_le_bytes(),
+        crate::ByteOrder::Big => value.to_be_bytes(),
+    }
 }
 
 #[cfg(test)]

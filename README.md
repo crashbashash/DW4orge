@@ -14,30 +14,35 @@ scriptable CLI.
 
 ## Using it
 
-Open a `.ps2` memory card, a GameCube `.raw`/`.gcp` memory card or `.gci` save,
-or a bare 81,920-byte save —
-the file's own bytes decide which, not the extension. GCI edits preserve the
-original header and banner. A new PS2 save can be created from nothing:
-DW4orge synthesises a complete memory card that PCSX2 mounts and the game loads.
-Choose **Region** in New Save: USA, Europe or Japan. Existing cards are detected
-automatically and keep their region, icons and other files when edited or copied.
-If a card contains saves from multiple regions, choose which one to edit.
+### Open and edit a save
 
-GameCube card edits preserve the complete card filesystem and unrelated saves.
-Save As to `.raw`/`.gcp` copies the opened card; `.gci` exports its DW4 save, and
-`.bin` exports only the game-data blocks. Dolphin can create a blank GameCube
-card by setting Slot A to Memory Card and choosing a new `.raw` path.
+Choose **Open** and select a PS2 `.ps2` memory card, a GameCube `.raw`/`.gcp`
+memory card or `.gci` save, or a bare 81,920-byte save. The editor detects the
+format automatically. Choose the regional save when a card contains more than
+one region, then edit the character, inventory, equipment or progress.
 
-| Release | Executable | Save directory and file |
-| --- | --- | --- |
-| USA | `SLUS_208.36` | `BASLUS-20836savedata` |
-| Europe | `SLES_534.05` | `BESLES-53405savedata` |
-| Japan (Digimon World X) | `SLPS_254.53` | `BISLPS-25453savedata` |
+**Save** updates the opened file. **Save As** writes a separate copy. Existing
+memory cards keep their icons, filesystem and unrelated saves. GameCube cards
+can also be exported to `.gci`; `.bin` exports only the game-data blocks.
 
-Raw saves share the same layout and do not identify their region. When exporting
-an opened raw save to a `.ps2` card, the app asks which regional game will use it.
-New Japanese cards use the Japanese memory-card title; player names retain their
-stored UTF-16 characters. This does not change the editor's English item labels.
+### Create a save
+
+Choose **New Save**, then select the save format, region, species, player name,
+story preset and difficulty:
+
+- **PS2 memory card (.ps2)** creates a complete card for PCSX2.
+- **GameCube save (.gci)** creates a standalone save for import through
+  Dolphin's Memory Card Manager or use in a GCI folder.
+- **GameCube memory card (.raw)** creates a complete 251-block (2 MiB) card
+  containing the save. Select it as Dolphin's Slot A memory card.
+
+Click **Create**, make any further edits, then **Save As** to write the file.
+No existing save or memory card is needed. New GameCube saves start with a
+blank banner and icon; the game replaces them when it saves.
+
+USA, Europe and Japan (Digimon World X) are available. Existing cards retain
+their region. Player names use the game's fullwidth character encoding; the
+editor's item labels are in English.
 
 Edits go through six sections (below), with validation on every change that
 points at the exact field and says how to fix it. Undo/redo spans the whole
@@ -91,7 +96,7 @@ Every verb takes `--json` for scripting.
 
 ### From a release
 
-Download the bundle for your OS from the Releases page:
+Download the bundle for your OS from the [Releases page](https://github.com/crashbashash/DW4orge/releases):
 
 | OS | Bundle |
 | --- | --- |
@@ -175,16 +180,10 @@ editor does not rename or convert another region's save silently.
 
 ## Roadmap
 
-Known gaps, roughly in priority order:
-
-- [ ] **Launch the Windows `.msi` and macOS `.dmg`.** CI builds them, but no one
-  has ever run them.
-- [x] **GameCube card and GCI editing.** Existing `.raw`/`.gcp` cards and `.gci`
-  saves support big-endian fields and checksums. New-save GameCube synthesis
-  and selection of the other character save boxes remain future work.
-- [ ] **Native Wayland Support**, currently uses a compatibility hook (sorta jank).
+- [ ] **Xbox save support.**
+- [ ] **Select additional character save boxes on GameCube.**
+- [ ] **Native Wayland support.**
 - [ ] **Packaging for Arch and Flatpak.**
-- [ ] **Complete campaign playthroughs after preset loading.** Automated retail tests cover loading, restoration and player control; subsequent boss and quest playthroughs remain separate.
 
 ## Documentation
 

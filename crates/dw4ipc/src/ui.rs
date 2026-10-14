@@ -73,7 +73,8 @@ pub fn ui_data() -> UiData {
 /// built against older bindings can refuse rather than mis-render. Version 2
 /// adds the `species_stats` command's payload; version 3 moves the mirror
 /// target onto each `StoryEdit` and drops `EditSet::difficulty`, so one save
-/// can carry edits made on several difficulties.
+/// can carry edits made on several difficulties. Version 4 adds New Save
+/// output format selection.
 #[must_use]
 pub fn app_info() -> AppInfo {
     AppInfo {
@@ -82,7 +83,7 @@ pub fn app_info() -> AppInfo {
         core_version: dw4core::VERSION.to_string(),
         save_size: dw4core::SAVE_SIZE,
         block_size: dw4core::BLOCK,
-        schema_version: 3,
+        schema_version: 4,
         ui: ui_data(),
     }
 }

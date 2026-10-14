@@ -229,6 +229,124 @@ impl GameCubeMemcard {
     }
 }
 
+pub(crate) fn format_time() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
+        .saturating_sub(946_684_800)
+}
+
+fn put16(bytes: &mut [u8], at: usize, value: u16) {
+    bytes[at..at + 2].copy_from_slice(&value.to_be_bytes());
+}
+
+fn fix_metadata(bytes: &mut [u8], start: usize, end: usize, stored: usize) {
+    let (sum, inverse) = checksums(&bytes[start..end]);
+    put16(bytes, stored, sum);
+    put16(bytes, stored + 2, inverse);
+}
+
+/// Format a blank GameCube card, optionally containing one DW4 GCI.
+/// `size_mbits` supports the six standard capacities (4 through 128 Mbit).
+/// Header identity is generated from the current clock and a process counter;
+/// no template memory card or console identity is required.
+///
+/// # Errors
+/// Rejects unsupported sizes, malformed GCI data, or insufficient capacity.
+pub fn format_card(gci_bytes: Option<&[u8]>, size_mbits: u16, region: Region) -> Result<Vec<u8>> {
+    if !matches!(size_mbits, 4 | 8 | 16 | 32 | 64 | 128) {
+        return Err(bad("unsupported card capacity"));
+    }
+    let blocks = usize::from(size_mbits) * 16;
+    let count = if let Some(file) = gci_bytes {
+        if !gci::is_gci(file) || file.len() != gci::GCI_MIN_SIZE || u16_at(file, 0x38) != 11 {
+            return Err(bad("invalid DW4 GCI for new card"));
+        }
+        let code = match region {
+            Region::Usa => b'E',
+            Region::Europe => b'P',
+            Region::Japan => b'J',
+        };
+        if file[3] != code {
+            return Err(bad("GCI and card regions differ"));
+        }
+        11
+    } else {
+        0
+    };
+    if count > blocks - FIRST_DATA_BLOCK {
+        return Err(bad("card is too small"));
+    }
+    let mut image = vec![0xff; blocks * GC_CARD_BLOCK];
+    let time = format_time();
+    // The card serial is an identity, not a security token. Include subsecond
+    // time and a counter to distinguish cards created in the same second.
+    static SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let mut identity = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos() as u64
+        ^ SEQUENCE
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+            .rotate_left(32);
+    let mut rand = time;
+    for byte in &mut image[..12] {
+        identity ^= identity << 13;
+        identity ^= identity >> 7;
+        identity ^= identity << 17;
+        rand = rand.wrapping_mul(0x41c6_4e6d).wrapping_add(0x3039) >> 16;
+        *byte = (identity as u8).wrapping_add(rand as u8);
+        rand = (rand.wrapping_mul(0x41c6_4e6d).wrapping_add(0x3039) >> 16) & 0x7fff;
+    }
+    image[0x0c..0x14].copy_from_slice(&time.to_be_bytes());
+    image[0x14..0x22].fill(0);
+    put16(&mut image, 0x22, size_mbits);
+    put16(&mut image, 0x24, u16::from(region == Region::Japan));
+    fix_metadata(&mut image, 0, 0x1fc, 0x1fc);
+    for (copy, block) in [1, 2].into_iter().enumerate() {
+        let base = block * GC_CARD_BLOCK;
+        if let Some(file) = gci_bytes {
+            image[base..base + 0x40].copy_from_slice(&file[..0x40]);
+            put16(&mut image, base + 0x36, 5);
+        }
+        put16(
+            &mut image,
+            base + 0x1ffa,
+            u16::from(count != 0 && copy == 0),
+        );
+        fix_metadata(&mut image, base, base + 0x1ffc, base + 0x1ffc);
+    }
+    for (copy, block) in [3, 4].into_iter().enumerate() {
+        let base = block * GC_CARD_BLOCK;
+        image[base..base + GC_CARD_BLOCK].fill(0);
+        put16(&mut image, base + 4, u16::from(count != 0 && copy == 0));
+        put16(
+            &mut image,
+            base + 6,
+            (blocks - FIRST_DATA_BLOCK - count) as u16,
+        );
+        put16(&mut image, base + 8, (4 + count) as u16);
+        for i in 0..count {
+            put16(
+                &mut image,
+                base + 0xa + i * 2,
+                if i + 1 == count {
+                    0xffff
+                } else {
+                    (6 + i) as u16
+                },
+            );
+        }
+        fix_metadata(&mut image, base + 4, base + GC_CARD_BLOCK, base);
+    }
+    if let Some(file) = gci_bytes {
+        image[5 * GC_CARD_BLOCK..(5 + count) * GC_CARD_BLOCK].copy_from_slice(&file[0x40..]);
+    }
+    GameCubeMemcard::from_image(image.clone())?;
+    Ok(image)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

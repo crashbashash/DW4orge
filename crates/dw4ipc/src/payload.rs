@@ -25,6 +25,10 @@ pub enum SourceKind {
 /// Everything the New Save dialog supplies.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 pub struct NewSaveRequest {
+    /// New-save output: PS2 card (default), GameCube GCI, or full GameCube card.
+    #[serde(default)]
+    #[ts(optional)]
+    pub format: Option<SourceKind>,
     /// Card region. Omitted requests default to USA, or inherit a donor card.
     #[serde(default)]
     pub region: Option<dw4core::Region>,

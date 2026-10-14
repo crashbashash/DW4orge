@@ -127,6 +127,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
                 });
             }
             let req = NewSaveRequest {
+                format: None,
                 region: cli.region,
                 species: species.unwrap_or(Species::DEFAULT),
                 name: name.clone().unwrap_or_else(|| "TST".to_string()),

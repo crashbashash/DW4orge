@@ -180,7 +180,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const saveAs = useCallback(async () => {
     if (!edits) return;
-    const path = await backend.pickSavePath(defaultSaveName(state.session?.path ?? null));
+    const path = await backend.pickSavePath(defaultSaveName(state.session?.path ?? null, state.session?.source));
     if (!path) return;
     let region: Region | undefined;
     if (/\.ps2$/i.test(path) && state.session?.region == null) {

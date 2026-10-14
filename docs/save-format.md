@@ -1002,8 +1002,8 @@ stored and calculated checksum both equal `0xFD2BC397` in each mirror.
 
 The GCI writer replaces only those two game-data blocks. It preserves the
 original GCI header and banner/icon bytes. Save As to a new `.gci` uses the
-opened GCI as a metadata donor; a pathless synthesized save has no banner donor
-yet, so it cannot create a new GCI by itself. Opening a GCI is content-detected,
+opened GCI as a metadata donor. With no donor, it generates a new directory
+entry and original blank native CI8 banner/icon. Opening a GCI is content-detected,
 and the editor reports its container as “GameCube GCI save”. Raw GameCube save
 data can also be edited as a standalone 81,920-byte file; the version bytes
 select big-endian access automatically.
@@ -1025,7 +1025,7 @@ blocks remained identical, and both stored checksums matched their big-endian
 sums. Private samples, screenshots, and the validation record are under
 `Decomp/local/evidence/dw4-gamecube/` (`dolphin-validation.json`). This verifies
 the USA first-character GCI edit/load path; other save boxes, Japanese saves,
-and GCI synthesis still require separate work. Full memory-card validation is
+still require separate work. Synthesis validation and full memory-card validation are
 recorded below.
 
 ## GameCube raw memory-card support
@@ -1062,9 +1062,9 @@ Save As to `.raw` or `.gcp` uses the opened card as a donor. GCI export uses the
 file's existing directory entry and banner; `.bin` exports only the savedata.
 The existing atomic-write, backup and post-write verification rules apply.
 Cross-platform writes that would put GameCube data in a PS2 card, or PS2 data
-in a GameCube container, are rejected. This implements editing existing cards;
-blank-card/new-save synthesis and a selector for the other three character
-save boxes are separate work.
+in a GameCube container, are rejected. New big-endian saves can also generate
+a GCI or a full 251-block card without a donor. A selector for the other three
+character save boxes remains separate work.
 
 The filesystem contract was checked against the local Dolphin implementation
 in `Core/HW/GCMemcard/GCMemcard.{h,cpp}`. Synthetic tests cover fragmentation,
@@ -1088,3 +1088,35 @@ and `dolphin-raw-card-validation.json` sit alongside them in
 `Decomp/local/evidence/dw4-gamecube/`. This verifies the USA first-character
 raw-card edit, cold-load and in-game resave path. Japanese and European retail
 acceptance and a UI for the other character boxes remain unverified.
+
+
+## GameCube creation (0.3.1)
+
+New Save selects PS2 card, GameCube GCI, or GameCube full card output. The
+builder writes all integer fields and UTF-16 name units in the selected byte
+order; byte arrays, flags and model names remain byte arrays. Both mirrored
+blocks receive the corresponding checksum. Existing PS2 builder output remains
+little-endian.
+
+The generated GCI is 0x16040 bytes with regional disc code GDJE/GDJP/GDJJ,
+maker B2, filename NDMWSaveData, 11 data blocks, public permissions, and a
+current timestamp. Original opaque black CI8 banner/icon palettes supply valid
+native image metadata without retail artwork. A full card is formatted from
+erased bytes with a fresh header identity, both directory copies, both BAT
+copies, and all filesystem checksums. Its contiguous 11-block file starts at
+block 5. The core formatter also supports blank cards and all six standard
+capacities; the UI creates the common 251-block capacity.
+
+Private synthesis prototypes were cold-loaded in the USA retail game in
+Dolphin on 2026-10-15. The generated character SYNTHGC, BIT 777777 and X-Data
+3213 appeared in gameplay for both standalone GCI and complete RAW card input.
+The Save Keeper resaved both; the files remained readable with valid checksums,
+and the game replaced the blank banner. Evidence is kept in
+Decomp/local/evidence/dw4-gamecube/dolphin-synthesis-validation.json and
+dolphin-card-synthesis-validation.json. Japan and Europe have regional metadata
+support but have not received the same retail-game validation.
+
+For a new GameCube save, Save As to .gci creates the standalone file; .raw or
+.gcp creates a complete card. .bin remains the bare savedata export. Existing
+cards are copied and retain their unrelated data. A bare GameCube .raw file
+that already exists remains bare when overwritten.

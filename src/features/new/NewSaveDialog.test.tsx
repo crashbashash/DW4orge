@@ -42,6 +42,7 @@ describe('NewSaveDialog', () => {
 
     await waitFor(() =>
       expect(spy).toHaveBeenCalledWith({
+        format: 'memcard',
         region: 'japan',
         species: 'Agumon',
         name: 'abc',

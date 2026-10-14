@@ -42,12 +42,11 @@ export type Session = {
 /**
  * The filename the Save As dialog should offer.
  *
- * A pathless session is a brand-new save, so it defaults to a `.ps2` memory
- * card — the form PCSX2 mounts. An already-open file keeps its own name, so a
- * raw save stays raw on Save As.
+ * A pathless session uses the chosen new-save format (PS2 by default).
+ * An already-open file keeps its own name.
  */
-export function defaultSaveName(path: string | null): string {
-  if (!path) return 'save.ps2';
+export function defaultSaveName(path: string | null, source?: SourceKind): string {
+  if (!path) return source === 'gamecube' ? 'save.gci' : source === 'gamecube_card' ? 'MemoryCard.raw' : 'save.ps2';
   return path.split(/[\\/]/).pop() || 'save.ps2';
 }
 

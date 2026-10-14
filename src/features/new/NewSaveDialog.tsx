@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Difficulty, DifficultyChoice, Region, Species } from '../../bindings';
+import type { Difficulty, DifficultyChoice, Region, SourceKind, Species } from '../../bindings';
 import { Modal } from '../../components/Modal';
 import { SelectField } from '../../components/SelectField';
 import { TextField } from '../../components/TextField';
@@ -17,6 +17,7 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 
 export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { state, newSave } = useEditor();
+  const [format, setFormat] = useState<SourceKind>('memcard');
   const [region, setRegion] = useState<Region>('usa');
   const [species, setSpecies] = useState<Species>('Dorumon');
   const [name, setName] = useState('TST');
@@ -26,7 +27,7 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
   if (!state.appInfo) return null;
 
   const submit = async () => {
-    await newSave({ region, species, name, story, difficulty });
+    await newSave({ format, region, species, name, story, difficulty });
     onClose();
   };
 
@@ -47,6 +48,11 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
       }
     >
       <div className="grid">
+        <SelectField label="Save format" value={format} options={[
+          { value: 'memcard', label: 'PS2 memory card (.ps2)' },
+          { value: 'gamecube', label: 'GameCube save (.gci)' },
+          { value: 'gamecube_card', label: 'GameCube memory card (.raw, 251 blocks)' },
+        ]} onChange={setFormat} />
         <SelectField label="Region" value={region} options={[
           { value: 'usa', label: 'USA' }, { value: 'europe', label: 'Europe' }, { value: 'japan', label: 'Japan (Digimon World X)' },
         ]} onChange={setRegion} />
@@ -87,6 +93,10 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
         />
       </div>
 
+      {format !== 'memcard' && <p className="muted">
+        Creates a new GameCube save with a blank banner and icon. The game replaces them
+        when it saves. GCI files can be imported into Dolphin; full cards can be mounted directly.
+      </p>}
       <p className="muted">
         Story flags are written to the selected difficulty and the easier ones.
         The game still checks completion to decide which modes are available

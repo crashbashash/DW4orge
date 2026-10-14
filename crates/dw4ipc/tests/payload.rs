@@ -70,6 +70,7 @@ fn core_errors_map_to_named_variants() {
 #[test]
 fn new_save_request_uses_core_enums() {
     let req = dw4ipc::NewSaveRequest {
+        format: None,
         region: None,
         species: Species::Dorumon,
         name: "abc".to_string(),

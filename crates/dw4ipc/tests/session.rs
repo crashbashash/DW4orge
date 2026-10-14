@@ -43,6 +43,7 @@ fn view_needs_an_open_document() {
 fn new_save_builds_the_requested_character() {
     let mut session = EditorSession::new_session();
     let req = NewSaveRequest {
+        format: None,
         region: None,
         species: Species::Agumon,
         name: "abc".to_string(),
@@ -60,6 +61,7 @@ fn new_save_builds_the_requested_character() {
 fn new_save_applies_a_story_preset() {
     let mut session = EditorSession::new_session();
     let req = NewSaveRequest {
+        format: None,
         region: None,
         species: Species::Dorumon,
         name: "TST".to_string(),
@@ -74,6 +76,7 @@ fn new_save_applies_a_story_preset() {
 fn new_save_rejects_an_unknown_story() {
     let mut session = EditorSession::new_session();
     let req = NewSaveRequest {
+        format: None,
         region: None,
         species: Species::Dorumon,
         name: "TST".to_string(),
@@ -153,6 +156,7 @@ fn save_without_a_path_asks_for_save_as() {
     let mut session = EditorSession::new_session();
     let opened = session
         .new_save(&NewSaveRequest {
+            format: None,
             region: None,
             species: Species::Dorumon,
             name: "TST".to_string(),
@@ -176,6 +180,7 @@ fn save_as_creates_a_ps2_with_or_without_a_source_card() {
     let mut session = EditorSession::new_session();
     let opened = session
         .new_save(&NewSaveRequest {
+            format: None,
             region: None,
             species: Species::Dorumon,
             name: "TST".to_string(),
@@ -197,6 +202,7 @@ fn save_as_creates_a_ps2_with_or_without_a_source_card() {
     let opened = session
         .new_save_on_card(
             &NewSaveRequest {
+                format: None,
                 region: None,
                 species: Species::Agumon,
                 name: "abc".to_string(),

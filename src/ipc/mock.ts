@@ -68,7 +68,7 @@ export function createMockBackend(options: MockOptions = {}): Backend {
       current = {
         region: request.region ?? 'usa',
         path: null,
-        source: 'raw',
+        source: request.format === 'memcard' ? 'raw' : request.format ?? 'raw',
         view: { ...base.view, species: request.species, name: request.name },
       };
       return structuredClone(current);

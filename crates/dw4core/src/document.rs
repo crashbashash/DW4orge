@@ -879,8 +879,9 @@ impl Document {
     ///
     /// The container is chosen from `path`, as [`crate::memcard::render_container`]
     /// describes: existing cards/GCI files are updated in place, new `.ps2`
-    /// cards and `.gci` files use the corresponding opened container as a donor,
-    /// and anything else is a bare 81,920-byte save.
+    /// cards are generated when no donor exists. New GameCube `.gci` files and
+    /// `.raw`/`.gcp` cards are generated from big-endian savedata; `.bin`
+    /// exports a bare 81,920-byte save. Existing donors preserve metadata.
     ///
     /// The `.bak` is written once - before the first overwrite of an existing
     /// file - and is never replaced by a later save in the same session, so it

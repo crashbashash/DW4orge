@@ -274,12 +274,9 @@ pub fn render_container_with_sources(
                     .is_some_and(|e| e.eq_ignore_ascii_case("gci"))
             })
         });
-        let donor = donor.ok_or_else(|| {
-            crate::Error::NoSave(
-                "creating a GameCube GCI requires an existing DW4/DWX GCI as its banner template"
-                    .into(),
-            )
-        })?;
+        let Some(donor) = donor else {
+            return gci::create_save(data, region.unwrap_or_default());
+        };
         let bytes = std::fs::read(donor).map_err(|source_err| crate::Error::File {
             path: donor.to_path_buf(),
             source: source_err,
@@ -301,12 +298,17 @@ pub fn render_container_with_sources(
             card.write_save(region, data)?;
             return Ok(card.image().to_vec());
         }
+        if crate::SaveData::parse(data)?.byte_order() == crate::ByteOrder::Big {
+            let region = region.unwrap_or_default();
+            let file = gci::create_save(data, region)?;
+            return gamecube::format_card(Some(&file), 16, region);
+        }
         if path
             .extension()
             .is_some_and(|e| e.eq_ignore_ascii_case("gcp"))
         {
             return Err(crate::Error::NoSave(
-                "creating a GameCube card requires an opened card as a template".into(),
+                "GameCube cards require big-endian savedata".into(),
             ));
         }
     }

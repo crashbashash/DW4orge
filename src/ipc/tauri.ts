@@ -34,7 +34,10 @@ export const tauriBackend: Backend = {
   },
   pickSavePath: (defaultName) => agentControlsEnabled()
     ? invoke<string | null>('agent_pick_path', { kind: 'save' })
-    : save({ defaultPath: defaultName, filters: SAVE_FILTERS }),
+    : save({ defaultPath: defaultName, filters: [...SAVE_FILTERS].sort((a, b) => {
+      const extension = defaultName?.split('.').pop()?.toLowerCase() ?? 'ps2';
+      return Number(b.extensions.includes(extension)) - Number(a.extensions.includes(extension));
+    }) }),
   async onCloseRequested(handler) {
     // Imported lazily, like `theme.ts`, so the window module stays out of the
     // initial bundle.

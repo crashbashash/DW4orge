@@ -5,7 +5,7 @@ use std::path::Path;
 use dw4core::document::Document;
 use dw4core::{
     Difficulty, DifficultyChoice, EditSet, Mode, SaveData, SaveSpec, SaveView, Species, Warning,
-    build_save, level_threshold, spec_with_story,
+    build_save_with_order, level_threshold, spec_with_story,
 };
 
 use crate::error::IpcError;
@@ -84,7 +84,17 @@ impl EditorSession {
         card: Option<&Path>,
     ) -> Result<OpenResult, IpcError> {
         let spec = save_spec(req)?;
-        let data = build_save(&spec);
+        let format = req.format.unwrap_or(SourceKind::Memcard);
+        let order = match format {
+            SourceKind::Gamecube | SourceKind::GamecubeCard => dw4core::ByteOrder::Big,
+            SourceKind::Memcard | SourceKind::Raw => dw4core::ByteOrder::Little,
+        };
+        if card.is_some() && order == dw4core::ByteOrder::Big {
+            return Err(IpcError::Unsupported {
+                message: "GameCube creation cannot use a PS2 donor card".into(),
+            });
+        }
+        let data = build_save_with_order(&spec, order);
 
         let mut doc = match card {
             Some(path) => Document::load_with_region(path, req.region)?,
@@ -103,7 +113,10 @@ impl EditorSession {
         let source = if card.is_some() {
             SourceKind::Memcard
         } else {
-            SourceKind::Raw
+            match format {
+                SourceKind::Memcard => SourceKind::Raw,
+                other => other,
+            }
         };
         let region = doc.region();
         self.doc = Some(doc);
@@ -264,8 +277,24 @@ fn save_spec(req: &NewSaveRequest) -> Result<SaveSpec, IpcError> {
         Some(name) => spec_with_story(name, difficulty).ok_or_else(|| IpcError::Unsupported {
             message: format!("no story preset named {name:?}"),
         })?,
+        None if matches!(
+            req.format,
+            Some(SourceKind::Gamecube | SourceKind::GamecubeCard)
+        ) =>
+        {
+            spec_with_story("Fresh (tutorial)", difficulty).expect("built-in fresh preset")
+        }
         None => SaveSpec::default(),
     };
+    if matches!(
+        req.format,
+        Some(SourceKind::Gamecube | SourceKind::GamecubeCard)
+    ) {
+        // A generated character needs a usable starter inventory. Equipment
+        // fields reference device-folder indices, rather than item IDs.
+        spec.device = vec![0x050d, 0x0513, 0x0512];
+        spec.weapons = vec![0, 1, 2];
+    }
     spec.set_species(req.species);
     spec.player_name.clone_from(&req.name);
     Ok(spec)

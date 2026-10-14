@@ -55,3 +55,48 @@ pub fn write_save(bytes: &[u8], save: &[u8]) -> Result<Vec<u8>> {
     out[GCI_SAVE_OFFSET..GCI_SAVE_OFFSET + SAVE_SIZE].copy_from_slice(save);
     Ok(out)
 }
+/// Create an original DW4 GCI without a donor save or retail artwork.
+///
+/// The native CI8 banner and icon are opaque black. The game replaces them
+/// when the player saves. The directory entry uses the selected disc region.
+///
+/// # Errors
+/// Returns an error if savedata has the wrong size or byte order.
+pub fn create_save(save: &[u8], region: crate::Region) -> Result<Vec<u8>> {
+    if save.len() != SAVE_SIZE {
+        return Err(Error::BadSaveSize {
+            expected: SAVE_SIZE,
+            actual: save.len(),
+        });
+    }
+    if crate::SaveData::parse(save)?.byte_order() != crate::ByteOrder::Big {
+        return Err(Error::NoSave(
+            "GameCube containers require big-endian savedata".into(),
+        ));
+    }
+    let mut out = vec![0; GCI_MIN_SIZE];
+    out[..6].copy_from_slice(match region {
+        crate::Region::Usa => b"GDJEB2",
+        crate::Region::Europe => b"GDJPB2",
+        crate::Region::Japan => b"GDJJB2",
+    });
+    out[6] = 0xff;
+    out[7] = 1;
+    out[8..20].copy_from_slice(b"NDMWSaveData");
+    out[0x28..0x2c].copy_from_slice(&(super::gamecube::format_time() as u32).to_be_bytes());
+    out[0x2c..0x30].copy_from_slice(&0x40u32.to_be_bytes());
+    out[0x30..0x32].copy_from_slice(&1u16.to_be_bytes());
+    out[0x32..0x34].copy_from_slice(&2u16.to_be_bytes());
+    out[0x34] = 4;
+    out[0x38..0x3a].copy_from_slice(&11u16.to_be_bytes());
+    out[0x3a..0x3c].fill(0xff);
+    out[0x40..0x4d].copy_from_slice(b"DigimonWorld4");
+    out[0x60..0x68].copy_from_slice(b"SaveData");
+    for palette in [0xc40, 0x1240] {
+        for pixel in (GCI_HEADER_SIZE + palette..GCI_HEADER_SIZE + palette + 0x200).step_by(2) {
+            out[pixel..pixel + 2].copy_from_slice(&0x8000u16.to_be_bytes());
+        }
+    }
+    out[GCI_SAVE_OFFSET..].copy_from_slice(save);
+    Ok(out)
+}

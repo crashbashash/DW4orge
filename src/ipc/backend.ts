@@ -58,13 +58,10 @@ export const OPEN_FILTERS = [
   { name: 'Raw save', extensions: ['raw', 'bin'] },
 ];
 
-/**
- * The save dialog offers a memory card first, because that is what a new save
- * should be: `render_container` builds a card for a fresh `.ps2`, and a card is
- * what PCSX2 can mount. Raw remains selectable for a bare 81,920-byte block.
- */
+/** Container choices; the native dialog puts the suggested extension first. */
 export const SAVE_FILTERS = [
   { name: 'PS2 memory card', extensions: ['ps2'] },
   { name: 'GameCube GCI save', extensions: ['gci'] },
-  { name: 'Raw save / GameCube card copy', extensions: ['raw', 'gcp', 'bin'] },
+  { name: 'GameCube memory card', extensions: ['raw', 'gcp'] },
+  { name: 'Bare save data', extensions: ['bin'] },
 ];

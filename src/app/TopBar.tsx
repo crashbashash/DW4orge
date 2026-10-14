@@ -4,31 +4,27 @@ import { NewSaveDialog } from '../features/new/NewSaveDialog';
 import { useEditor } from './EditorProvider';
 import { dirty } from './selectors';
 
-export function TopBar() {
-  const { state, open, openSample, canLoadSample, save, saveAs, setMode, toggleTheme } = useEditor();
-  const [confirm, setConfirm] = useState<null | 'open' | 'new'>(null);
+export function TopBar({ onOpen, onSample }: { onOpen: () => void; onSample: () => void }) {
+  const { state, canLoadSample, save, saveAs, setMode, toggleTheme } = useEditor();
+  const [confirm, setConfirm] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const isDirty = dirty(state);
   const busy = state.status === 'busy';
 
   // A dirty draft is only discarded after an explicit confirmation.
-  const requestOpen = () => {
-    if (isDirty) setConfirm('open');
-    else void open();
-  };
   const requestNew = () => {
-    if (isDirty) setConfirm('new');
+    if (isDirty) setConfirm(true);
     else setNewOpen(true);
   };
 
   return (
     <header className="topbar">
       <h1 className="brand">DW4orge</h1>
-      <button type="button" onClick={requestOpen} disabled={busy}>
+      <button type="button" onClick={onOpen} disabled={busy}>
         Open
       </button>
       {canLoadSample ? (
-        <button type="button" onClick={() => void openSample()} disabled={busy}>
+        <button type="button" onClick={onSample} disabled={busy}>
           Load sample save
         </button>
       ) : null}
@@ -59,16 +55,14 @@ export function TopBar() {
       </button>
 
       <ConfirmDialog
-        isOpen={confirm !== null}
+        isOpen={confirm}
         title="Discard unsaved changes?"
-        message="This save has unsaved changes. Opening or creating another save will discard them."
+        message="This save has unsaved changes. Creating another save will discard them."
         confirmLabel="Discard"
-        onCancel={() => setConfirm(null)}
+        onCancel={() => setConfirm(false)}
         onConfirm={() => {
-          const what = confirm;
-          setConfirm(null);
-          if (what === 'open') void open();
-          else if (what === 'new') setNewOpen(true);
+          setConfirm(false);
+          setNewOpen(true);
         }}
       />
       <NewSaveDialog isOpen={newOpen} onClose={() => setNewOpen(false)} />

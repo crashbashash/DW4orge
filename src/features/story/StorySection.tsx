@@ -29,7 +29,10 @@ export function StorySection() {
   if (!draft || !appInfo || !session) return null;
 
   const groups = storyGroups(appInfo.ui.flag_labels);
-  const governed = groups.flatMap((group) => group.flags.map((flag) => flag.flag));
+  const governed = [...new Set([
+    ...groups.flatMap((group) => group.flags.map((flag) => flag.flag)),
+    ...appInfo.ui.story_presets.flatMap((preset) => preset.flags),
+  ])];
 
   // Each difficulty keeps its own draft, so this is only the one on screen;
   // the others stay in the store untouched until their turn comes.
@@ -72,7 +75,7 @@ export function StorySection() {
       <p className="muted">
         Story is stored per difficulty, so these checkboxes show{' '}
         {DIFFICULTY_LABELS[activeDifficulty]}&apos;s flags. Saving a difficulty also
-        fills in the easier ones, so a harder mode stays usable.
+        fills in the easier ones. The game still controls which difficulties are unlocked.
       </p>
 
       {groups.map((group) => (

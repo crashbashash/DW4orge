@@ -1,0 +1,435 @@
+{
+  "source": [
+    "entry_0806/chunk_0006",
+    "entry_0810/chunk_0004",
+    "entry_0603/chunks_0071-0075"
+  ],
+  "mirrors": [
+    {
+      "active": 1,
+      "normal": 700,
+      "hard": 7,
+      "very_hard": 13
+    },
+    {
+      "active": 2,
+      "normal": 701,
+      "hard": 8,
+      "very_hard": 14
+    },
+    {
+      "active": 3,
+      "normal": 702,
+      "hard": 9,
+      "very_hard": 15
+    },
+    {
+      "active": 4,
+      "normal": 703,
+      "hard": 10,
+      "very_hard": 16
+    },
+    {
+      "active": 5,
+      "normal": 704,
+      "hard": 11,
+      "very_hard": 17
+    },
+    {
+      "active": 6,
+      "normal": 705,
+      "hard": 12,
+      "very_hard": 18
+    },
+    {
+      "active": 19,
+      "normal": 706,
+      "hard": 741,
+      "very_hard": 771
+    },
+    {
+      "active": 20,
+      "normal": 707,
+      "hard": 742,
+      "very_hard": 772
+    },
+    {
+      "active": 49,
+      "normal": 801,
+      "hard": 802,
+      "very_hard": 803
+    },
+    {
+      "active": 67,
+      "normal": 708,
+      "hard": 74,
+      "very_hard": 78
+    },
+    {
+      "active": 68,
+      "normal": 709,
+      "hard": 75,
+      "very_hard": 79
+    },
+    {
+      "active": 69,
+      "normal": 710,
+      "hard": 76,
+      "very_hard": 80
+    },
+    {
+      "active": 70,
+      "normal": 711,
+      "hard": 77,
+      "very_hard": 81
+    },
+    {
+      "active": 82,
+      "normal": 807,
+      "hard": 808,
+      "very_hard": 809
+    },
+    {
+      "active": 83,
+      "normal": 712,
+      "hard": 743,
+      "very_hard": 773
+    },
+    {
+      "active": 86,
+      "normal": 713,
+      "hard": 87,
+      "very_hard": 88
+    },
+    {
+      "active": 89,
+      "normal": 714,
+      "hard": 744,
+      "very_hard": 774
+    },
+    {
+      "active": 90,
+      "normal": 715,
+      "hard": 745,
+      "very_hard": 775
+    },
+    {
+      "active": 91,
+      "normal": 716,
+      "hard": 746,
+      "very_hard": 776
+    },
+    {
+      "active": 92,
+      "normal": 717,
+      "hard": 747,
+      "very_hard": 777
+    },
+    {
+      "active": 93,
+      "normal": 718,
+      "hard": 748,
+      "very_hard": 778
+    },
+    {
+      "active": 94,
+      "normal": 719,
+      "hard": 749,
+      "very_hard": 779
+    },
+    {
+      "active": 95,
+      "normal": 720,
+      "hard": 750,
+      "very_hard": 780
+    },
+    {
+      "active": 96,
+      "normal": 721,
+      "hard": 751,
+      "very_hard": 781
+    },
+    {
+      "active": 97,
+      "normal": 722,
+      "hard": 752,
+      "very_hard": 782
+    },
+    {
+      "active": 98,
+      "normal": 723,
+      "hard": 753,
+      "very_hard": 783
+    },
+    {
+      "active": 99,
+      "normal": 724,
+      "hard": 754,
+      "very_hard": 784
+    },
+    {
+      "active": 320,
+      "normal": 725,
+      "hard": 755,
+      "very_hard": 785
+    },
+    {
+      "active": 321,
+      "normal": 726,
+      "hard": 756,
+      "very_hard": 786
+    },
+    {
+      "active": 322,
+      "normal": 727,
+      "hard": 757,
+      "very_hard": 787
+    },
+    {
+      "active": 323,
+      "normal": 728,
+      "hard": 758,
+      "very_hard": 788
+    },
+    {
+      "active": 324,
+      "normal": 729,
+      "hard": 759,
+      "very_hard": 789
+    },
+    {
+      "active": 325,
+      "normal": 730,
+      "hard": 760,
+      "very_hard": 790
+    },
+    {
+      "active": 326,
+      "normal": 731,
+      "hard": 761,
+      "very_hard": 791
+    },
+    {
+      "active": 327,
+      "normal": 732,
+      "hard": 762,
+      "very_hard": 792
+    },
+    {
+      "active": 329,
+      "normal": 733,
+      "hard": 763,
+      "very_hard": 793
+    },
+    {
+      "active": 330,
+      "normal": 734,
+      "hard": 764,
+      "very_hard": 794
+    },
+    {
+      "active": 331,
+      "normal": 735,
+      "hard": 765,
+      "very_hard": 795
+    },
+    {
+      "active": 332,
+      "normal": 736,
+      "hard": 766,
+      "very_hard": 796
+    },
+    {
+      "active": 333,
+      "normal": 737,
+      "hard": 767,
+      "very_hard": 797
+    },
+    {
+      "active": 334,
+      "normal": 810,
+      "hard": 811,
+      "very_hard": 812
+    },
+    {
+      "active": 335,
+      "normal": 738,
+      "hard": 768,
+      "very_hard": 798
+    },
+    {
+      "active": 383,
+      "normal": 804,
+      "hard": 805,
+      "very_hard": 806
+    }
+  ],
+  "folder_mirror_base": [
+    518,
+    530,
+    542
+  ],
+  "restored_folders": 11,
+  "checkpoints": {
+    "After World 1": {
+      "flags": [
+        3,
+        20,
+        67,
+        320,
+        322,
+        383,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507
+      ],
+      "folders": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "After World 2": {
+      "flags": [
+        5,
+        20,
+        50,
+        67,
+        68,
+        82,
+        320,
+        321,
+        322,
+        323,
+        324,
+        325,
+        326,
+        329,
+        330,
+        331,
+        332,
+        335,
+        383,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507
+      ],
+      "folders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    "After World 3": {
+      "flags": [
+        6,
+        20,
+        50,
+        56,
+        57,
+        67,
+        68,
+        69,
+        82,
+        320,
+        321,
+        322,
+        323,
+        324,
+        325,
+        326,
+        327,
+        329,
+        330,
+        331,
+        332,
+        333,
+        335,
+        383,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507,
+        904
+      ],
+      "folders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "Story cleared (post-game)": {
+      "flags": [
+        20,
+        50,
+        56,
+        57,
+        67,
+        68,
+        69,
+        70,
+        82,
+        83,
+        86,
+        320,
+        321,
+        322,
+        323,
+        324,
+        325,
+        326,
+        327,
+        328,
+        329,
+        330,
+        331,
+        332,
+        333,
+        335,
+        383,
+        501,
+        502,
+        503,
+        504,
+        505,
+        506,
+        507,
+        904
+      ],
+      "folders": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    }
+  }
+}

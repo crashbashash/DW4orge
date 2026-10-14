@@ -4,7 +4,7 @@
 fn ui_data_carries_every_table() {
     let ui = dw4ipc::ui_data();
     assert_eq!(ui.catalogue.len(), 539);
-    assert_eq!(ui.mirrors.len(), 38);
+    assert_eq!(ui.mirrors.len(), 43);
     assert_eq!(ui.folder_labels.len(), 12);
     assert_eq!(ui.powerups.len(), 11);
     assert_eq!(ui.story_presets.len(), 6);

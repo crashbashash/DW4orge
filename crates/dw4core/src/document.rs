@@ -1503,15 +1503,15 @@ mod tests {
 
     #[test]
     fn a_story_edit_writes_the_active_byte_and_its_mirror() {
-        // Flag 0 is in every difficulty's mirror set. Normal mirrors it to 699.
+        // Flag 1 is in every difficulty's mirror set. Normal mirrors it to 700.
         let mut doc = fresh_document();
         let edits = EditSet {
-            story: vec![StoryEdit::flag(Difficulty::Normal, 0, true)],
+            story: vec![StoryEdit::flag(Difficulty::Normal, 1, true)],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());
-        assert_eq!(doc.data().raw_flags()[0], 1);
-        assert_eq!(doc.data().raw_flags()[699], 1);
+        assert_eq!(doc.data().raw_flags()[1], 1);
+        assert_eq!(doc.data().raw_flags()[700], 1);
     }
 
     #[test]
@@ -1520,45 +1520,45 @@ mod tests {
         // the edit is copied down the whole column stack.
         let mut doc = fresh_document();
         let edits = EditSet {
-            story: vec![StoryEdit::flag(Difficulty::VeryHard, 0, true)],
+            story: vec![StoryEdit::flag(Difficulty::VeryHard, 1, true)],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());
-        assert_eq!(doc.data().raw_flags()[0], 1);
-        assert_eq!(doc.data().raw_flags()[12], 1, "Very Hard mirror of flag 0");
-        assert_eq!(doc.data().raw_flags()[6], 1, "Hard mirror of flag 0");
-        assert_eq!(doc.data().raw_flags()[699], 1, "Normal mirror of flag 0");
+        assert_eq!(doc.data().raw_flags()[1], 1);
+        assert_eq!(doc.data().raw_flags()[13], 1, "Very Hard mirror of flag 1");
+        assert_eq!(doc.data().raw_flags()[7], 1, "Hard mirror of flag 1");
+        assert_eq!(doc.data().raw_flags()[700], 1, "Normal mirror of flag 1");
     }
 
     #[test]
     fn a_hard_edit_leaves_very_hard_alone() {
         let mut doc = fresh_document();
         let edits = EditSet {
-            story: vec![StoryEdit::flag(Difficulty::Hard, 0, true)],
+            story: vec![StoryEdit::flag(Difficulty::Hard, 1, true)],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());
-        assert_eq!(doc.data().raw_flags()[6], 1, "Hard mirror of flag 0");
-        assert_eq!(doc.data().raw_flags()[699], 1, "Normal mirror of flag 0");
-        assert_eq!(doc.data().raw_flags()[12], 0, "Very Hard mirror untouched");
+        assert_eq!(doc.data().raw_flags()[7], 1, "Hard mirror of flag 1");
+        assert_eq!(doc.data().raw_flags()[700], 1, "Normal mirror of flag 1");
+        assert_eq!(doc.data().raw_flags()[13], 0, "Very Hard mirror untouched");
     }
 
     #[test]
     fn a_clear_copies_down_as_well() {
         let mut doc = fresh_document();
         let seed = EditSet {
-            story: vec![StoryEdit::flag(Difficulty::VeryHard, 0, true)],
+            story: vec![StoryEdit::flag(Difficulty::VeryHard, 1, true)],
             ..Default::default()
         };
         assert!(doc.apply(&seed, Mode::Normal).is_ok());
 
         let clear = EditSet {
-            story: vec![StoryEdit::flag(Difficulty::VeryHard, 0, false)],
+            story: vec![StoryEdit::flag(Difficulty::VeryHard, 1, false)],
             ..Default::default()
         };
         assert!(doc.apply(&clear, Mode::Normal).is_ok());
-        assert_eq!(doc.data().raw_flags()[0], 0);
-        for mirror in [699usize, 6, 12] {
+        assert_eq!(doc.data().raw_flags()[1], 0);
+        for mirror in [700usize, 7, 13] {
             assert_eq!(doc.data().raw_flags()[mirror], 0, "mirror {mirror}");
         }
     }
@@ -1634,20 +1634,20 @@ mod tests {
         let mut doc = fresh_document();
         let edits = EditSet {
             story: vec![
-                StoryEdit::flag(Difficulty::Normal, 0, true),
-                StoryEdit::flag(Difficulty::Hard, 66, true),
-                StoryEdit::flag(Difficulty::VeryHard, 88, true),
+                StoryEdit::flag(Difficulty::Normal, 1, true),
+                StoryEdit::flag(Difficulty::Hard, 67, true),
+                StoryEdit::flag(Difficulty::VeryHard, 89, true),
             ],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());
         let flags = doc.data().raw_flags();
-        // Flag 0 was edited on Normal, so it stays out of the harder columns.
-        assert_eq!((flags[699], flags[6], flags[12]), (1, 0, 0));
-        // Flag 66 was edited on Hard, so Normal and Hard get it, Very Hard not.
-        assert_eq!((flags[707], flags[73], flags[77]), (1, 1, 0));
-        // Flag 88 was edited on Very Hard, so all three columns get it.
-        assert_eq!((flags[713], flags[743], flags[773]), (1, 1, 1));
+        // Flag 1 was edited on Normal, so it stays out of the harder columns.
+        assert_eq!((flags[700], flags[7], flags[13]), (1, 0, 0));
+        // Flag 67 was edited on Hard, so Normal and Hard get it, Very Hard not.
+        assert_eq!((flags[708], flags[74], flags[78]), (1, 1, 0));
+        // Flag 89 was edited on Very Hard, so all three columns get it.
+        assert_eq!((flags[714], flags[744], flags[774]), (1, 1, 1));
     }
 
     #[test]
@@ -1655,15 +1655,15 @@ mod tests {
         let mut doc = fresh_document();
         let edits = EditSet {
             story: vec![
-                StoryEdit::flag(Difficulty::Normal, 0, true),
-                StoryEdit::flag(Difficulty::VeryHard, 0, false),
+                StoryEdit::flag(Difficulty::Normal, 1, true),
+                StoryEdit::flag(Difficulty::VeryHard, 1, false),
             ],
             ..Default::default()
         };
         assert!(doc.apply(&edits, Mode::Normal).is_ok());
         let flags = doc.data().raw_flags();
-        assert_eq!(flags[0], 0, "the harder edit wins the live byte");
-        assert_eq!((flags[699], flags[6], flags[12]), (0, 0, 0));
+        assert_eq!(flags[1], 0, "the harder edit wins the live byte");
+        assert_eq!((flags[700], flags[7], flags[13]), (0, 0, 0));
     }
 
     #[test]

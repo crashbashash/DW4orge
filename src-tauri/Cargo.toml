@@ -11,6 +11,9 @@ repository = "https://github.com/crashbashash/DW4orge"
 # deliberately does not require.
 [workspace]
 
+[features]
+agent-control = []
+
 [lib]
 name = "dw4orge_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]

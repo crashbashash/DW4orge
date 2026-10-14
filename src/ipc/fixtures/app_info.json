@@ -3922,12 +3922,6 @@
     ],
     "mirrors": [
       {
-        "active": 0,
-        "normal": 699,
-        "hard": 6,
-        "very_hard": 12
-      },
-      {
         "active": 1,
         "normal": 700,
         "hard": 7,
@@ -3952,10 +3946,16 @@
         "very_hard": 16
       },
       {
-        "active": 18,
+        "active": 5,
+        "normal": 704,
+        "hard": 11,
+        "very_hard": 17
+      },
+      {
+        "active": 6,
         "normal": 705,
-        "hard": 740,
-        "very_hard": 770
+        "hard": 12,
+        "very_hard": 18
       },
       {
         "active": 19,
@@ -3964,10 +3964,16 @@
         "very_hard": 771
       },
       {
-        "active": 66,
+        "active": 20,
         "normal": 707,
-        "hard": 73,
-        "very_hard": 77
+        "hard": 742,
+        "very_hard": 772
+      },
+      {
+        "active": 49,
+        "normal": 801,
+        "hard": 802,
+        "very_hard": 803
       },
       {
         "active": 67,
@@ -3982,22 +3988,34 @@
         "very_hard": 79
       },
       {
-        "active": 82,
+        "active": 69,
+        "normal": 710,
+        "hard": 76,
+        "very_hard": 80
+      },
+      {
+        "active": 70,
         "normal": 711,
-        "hard": 742,
-        "very_hard": 772
+        "hard": 77,
+        "very_hard": 81
       },
       {
-        "active": 85,
+        "active": 82,
+        "normal": 807,
+        "hard": 808,
+        "very_hard": 809
+      },
+      {
+        "active": 83,
         "normal": 712,
-        "hard": 86,
-        "very_hard": 87
-      },
-      {
-        "active": 88,
-        "normal": 713,
         "hard": 743,
         "very_hard": 773
+      },
+      {
+        "active": 86,
+        "normal": 713,
+        "hard": 87,
+        "very_hard": 88
       },
       {
         "active": 89,
@@ -4054,7 +4072,13 @@
         "very_hard": 782
       },
       {
-        "active": 319,
+        "active": 98,
+        "normal": 723,
+        "hard": 753,
+        "very_hard": 783
+      },
+      {
+        "active": 99,
         "normal": 724,
         "hard": 754,
         "very_hard": 784
@@ -4096,7 +4120,13 @@
         "very_hard": 790
       },
       {
-        "active": 328,
+        "active": 326,
+        "normal": 731,
+        "hard": 761,
+        "very_hard": 791
+      },
+      {
+        "active": 327,
         "normal": 732,
         "hard": 762,
         "very_hard": 792
@@ -4120,34 +4150,34 @@
         "very_hard": 795
       },
       {
-        "active": 334,
+        "active": 332,
+        "normal": 736,
+        "hard": 766,
+        "very_hard": 796
+      },
+      {
+        "active": 333,
         "normal": 737,
         "hard": 767,
         "very_hard": 797
       },
       {
-        "active": 48,
-        "normal": 800,
-        "hard": 801,
-        "very_hard": 802
+        "active": 334,
+        "normal": 810,
+        "hard": 811,
+        "very_hard": 812
       },
       {
-        "active": 382,
-        "normal": 803,
-        "hard": 804,
-        "very_hard": 805
+        "active": 335,
+        "normal": 738,
+        "hard": 768,
+        "very_hard": 798
       },
       {
-        "active": 81,
-        "normal": 806,
-        "hard": 807,
-        "very_hard": 808
-      },
-      {
-        "active": 333,
-        "normal": 809,
-        "hard": 810,
-        "very_hard": 811
+        "active": 383,
+        "normal": 804,
+        "hard": 805,
+        "very_hard": 806
       }
     ],
     "folder_labels": [
@@ -4162,12 +4192,12 @@
       "Vein (W3, Diaboro ID)",
       "Mecha Nest (W4, MRE05 ID)",
       "Electro Mine (W4, LordKnight ID)",
-      "(unused)"
+      "Sidequest completion (not restored on load)"
     ],
     "flag_labels": [
       {
         "flag": 0,
-        "label": "Idle (no active chapter - locked if 1-6 are all off)"
+        "label": "Conversation state (transient)"
       },
       {
         "flag": 1,
@@ -4194,108 +4224,108 @@
         "label": "Chapter: World 4"
       },
       {
-        "flag": 701,
-        "label": "World 1 era"
+        "flag": 19,
+        "label": "Story milestone 19"
       },
       {
-        "flag": 702,
-        "label": "Post-W1 (Ophanimon key)"
+        "flag": 20,
+        "label": "Leomon rescue completed"
       },
       {
-        "flag": 703,
-        "label": "World 2 era"
+        "flag": 320,
+        "label": "Tutorial completed"
       },
       {
-        "flag": 704,
-        "label": "World 3 era"
+        "flag": 322,
+        "label": "Leomon rescue briefing completed"
       },
       {
-        "flag": 705,
-        "label": "World 4 era"
+        "flag": 326,
+        "label": "World 3 briefing completed"
       },
       {
-        "flag": 706,
-        "label": "Post-W4"
-      },
-      {
-        "flag": 66,
-        "label": "Apocalymon (W1)"
+        "flag": 327,
+        "label": "World 4 briefing completed"
       },
       {
         "flag": 67,
-        "label": "BelialVamdemon (W1)"
+        "label": "Apocalymon (W1)"
       },
       {
         "flag": 68,
-        "label": "Lucemon (W2)"
+        "label": "BelialVamdemon (W2)"
       },
       {
         "flag": 69,
-        "label": "Devimon (W3)"
+        "label": "Lucemon (W3)"
       },
       {
-        "flag": 82,
+        "flag": 70,
+        "label": "Mecha Rogue X (final)"
+      },
+      {
+        "flag": 83,
         "label": "LordKnightmon"
       },
       {
-        "flag": 85,
+        "flag": 86,
         "label": "Story cleared (final)"
       },
       {
-        "flag": 609,
-        "label": "Final scene"
-      },
-      {
-        "flag": 375,
-        "label": "Quest 1"
+        "flag": 610,
+        "label": "Final scene (transient)"
       },
       {
         "flag": 376,
-        "label": "Quest 2"
+        "label": "Quest 1"
       },
       {
         "flag": 377,
-        "label": "Quest 3"
+        "label": "Quest 2"
       },
       {
         "flag": 378,
-        "label": "Quest 4"
+        "label": "Quest 3"
       },
       {
         "flag": 379,
-        "label": "Quest 5"
+        "label": "Quest 4"
       },
       {
         "flag": 380,
+        "label": "Quest 5"
+      },
+      {
+        "flag": 381,
         "label": "Final gate"
       },
       {
-        "flag": 24,
-        "label": "Lobby flag 24 (first-visit)"
-      },
-      {
         "flag": 501,
-        "label": "Lobby flag 501 (save state)"
+        "label": "Terminal Area introduction completed"
       },
       {
-        "flag": 508,
-        "label": "Lobby flag 508 (early state)"
+        "flag": 502,
+        "label": "Commander Room introduction completed"
       },
       {
-        "flag": 931,
-        "label": "Lobby flag 931 (quest init)"
+        "flag": 503,
+        "label": "Practice stage completed"
       },
       {
-        "flag": 935,
-        "label": "Lobby flag 935 (quest init)"
+        "flag": 504,
+        "label": "Tutorial milestone 504"
       },
       {
-        "flag": 936,
-        "label": "Lobby flag 936 (quest init)"
+        "flag": 505,
+        "label": "Tutorial milestone 505"
       },
       {
-        "flag": 960,
-        "label": "Lobby flag 960 (system init)"
+        "flag": 506,
+        "label": "Tutorial milestone 506"
+      },
+      {
+        "flag": 507,
+        "label": "Tutorial milestone 507"
       }
     ],
     "story_presets": [
@@ -4303,12 +4333,6 @@
         "name": "Fresh (tutorial)",
         "flags": [
           1,
-          24,
-          501,
-          508,
-          931,
-          935,
-          936,
           960
         ],
         "folders": []
@@ -4316,27 +4340,56 @@
       {
         "name": "After World 1",
         "flags": [
-          0,
-          2,
-          66,
+          3,
+          20,
           67,
-          701
+          320,
+          322,
+          383,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507
         ],
         "folders": [
           0,
           1,
-          2
+          2,
+          3
         ]
       },
       {
         "name": "After World 2",
         "flags": [
-          0,
-          4,
-          66,
+          5,
+          20,
+          50,
           67,
           68,
-          703
+          82,
+          320,
+          321,
+          322,
+          323,
+          324,
+          325,
+          326,
+          329,
+          330,
+          331,
+          332,
+          335,
+          383,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507
         ],
         "folders": [
           0,
@@ -4350,13 +4403,38 @@
       {
         "name": "After World 3",
         "flags": [
-          0,
-          5,
+          6,
+          20,
+          50,
+          56,
+          57,
           67,
           68,
           69,
           82,
-          704
+          320,
+          321,
+          322,
+          323,
+          324,
+          325,
+          326,
+          327,
+          329,
+          330,
+          331,
+          332,
+          333,
+          335,
+          383,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          904
         ],
         "folders": [
           0,
@@ -4373,13 +4451,40 @@
       {
         "name": "All worlds + keys",
         "flags": [
-          0,
           6,
+          20,
+          50,
+          56,
+          57,
           67,
           68,
           69,
           82,
-          705
+          83,
+          320,
+          321,
+          322,
+          323,
+          324,
+          325,
+          326,
+          327,
+          328,
+          329,
+          330,
+          331,
+          332,
+          333,
+          335,
+          383,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          904
         ],
         "folders": [
           0,
@@ -4398,13 +4503,41 @@
       {
         "name": "Story cleared (post-game)",
         "flags": [
-          0,
+          20,
+          50,
+          56,
+          57,
           67,
           68,
           69,
+          70,
           82,
-          85,
-          609
+          83,
+          86,
+          320,
+          321,
+          322,
+          323,
+          324,
+          325,
+          326,
+          327,
+          328,
+          329,
+          330,
+          331,
+          332,
+          333,
+          335,
+          383,
+          501,
+          502,
+          503,
+          504,
+          505,
+          506,
+          507,
+          904
         ],
         "folders": [
           0,

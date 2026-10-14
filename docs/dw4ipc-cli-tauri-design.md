@@ -126,7 +126,7 @@ pub struct UiData {
     pub catalogue: Vec<Item>,          // 539 entries
     pub caps: Vec<NamedCap>,           // every CAP_* constant, keyed by field
     pub powerups: Vec<PowerupLimit>,   // 11 slots: name + Normal cap
-    pub mirrors: Vec<Mirror>,          // 38 active -> per-difficulty rows
+    pub mirrors: Vec<Mirror>,          // 43 active -> per-difficulty rows
     pub folder_labels: Vec<String>,    // 12
     pub flag_labels: Vec<FlagLabel>,
     pub story_presets: Vec<StoryPreset>,

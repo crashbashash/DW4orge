@@ -44,7 +44,7 @@ fn edits_survive_a_save_and_reload() {
     let edits = EditSet {
         bit: 42_424,
         name: "ZZZ".to_string(),
-        story: vec![StoryEdit::flag(Difficulty::Normal, 0, true)],
+        story: vec![StoryEdit::flag(Difficulty::Normal, 1, true)],
         ..Default::default()
     };
     doc.apply(&edits, Mode::Normal).expect("apply");
@@ -53,8 +53,8 @@ fn edits_survive_a_save_and_reload() {
     let reloaded = Document::load_raw(&path).expect("reload");
     assert_eq!(reloaded.data().bit(), 42_424);
     assert_eq!(reloaded.data().player_name(), "ZZZ");
-    assert_eq!(reloaded.data().raw_flags()[0], 1);
-    assert_eq!(reloaded.data().raw_flags()[699], 1);
+    assert_eq!(reloaded.data().raw_flags()[1], 1);
+    assert_eq!(reloaded.data().raw_flags()[700], 1);
     assert!(reloaded.loaded_checksums_ok());
 }
 

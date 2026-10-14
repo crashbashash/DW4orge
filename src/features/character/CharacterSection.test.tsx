@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import type { SpeciesStats } from '../../bindings';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { EditorProvider, useEditor } from '../../app/EditorProvider';
@@ -52,6 +53,51 @@ describe('CharacterSection', () => {
       expect((screen.getByLabelText('Level') as HTMLInputElement).value).toBe('42'),
     );
     expect((screen.getByLabelText('EXP') as HTMLInputElement).value).toBe('5000');
+  });
+
+  it('keeps unsaved progression when a species switch is cancelled', async () => {
+    await setup();
+    await userEvent.clear(screen.getByLabelText('Level'));
+    await userEvent.type(screen.getByLabelText('Level'), '17{Enter}');
+    await userEvent.click(screen.getByRole('button', { name: /species/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Agumon' }));
+    expect(await screen.findByRole('dialog', { name: /discard progression/i })).toBeTruthy();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect((screen.getByLabelText('Level') as HTMLInputElement).value).toBe('17');
+    expect(screen.getByRole('button', { name: /species/i }).textContent).toContain('Dorumon');
+  });
+
+  it('switches only after explicitly discarding unsaved progression', async () => {
+    await setup();
+    await userEvent.clear(screen.getByLabelText('Level'));
+    await userEvent.type(screen.getByLabelText('Level'), '17{Enter}');
+    await userEvent.click(screen.getByRole('button', { name: /species/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Agumon' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Discard and switch' }));
+    expect((screen.getByLabelText('Level') as HTMLInputElement).value).toBe('1');
+    expect(screen.getByRole('button', { name: /species/i }).textContent).toContain('Agumon');
+  });
+
+  it('guards progression edited while a species query is in flight', async () => {
+    let resolve: ((value: SpeciesStats) => void) | undefined;
+    await setup({ speciesStats: () => new Promise<SpeciesStats>((done) => { resolve = done; }) });
+    await userEvent.click(screen.getByRole('button', { name: /species/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Agumon' }));
+    await userEvent.clear(screen.getByLabelText('Level'));
+    await userEvent.type(screen.getByLabelText('Level'), '17{Enter}');
+    await act(async () => { resolve?.({ level: 1, exp: 0,
+      tech: [1, 1, 1, 1, 1, 1, 1, 1, 1], upcnt: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }); });
+    expect(await screen.findByRole('dialog', { name: /discard progression/i })).toBeTruthy();
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect((screen.getByLabelText('Level') as HTMLInputElement).value).toBe('17');
+  });
+
+  it('reports a species read failure and keeps the current draft', async () => {
+    await setup({ speciesStats: async () => { throw { kind: 'unsupported', message: 'read failed' }; } });
+    await userEvent.click(screen.getByRole('button', { name: /species/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Agumon' }));
+    expect((await screen.findByRole('alert')).textContent).toContain('read failed');
+    expect(screen.getByRole('button', { name: /species/i }).textContent).toContain('Dorumon');
   });
 
   it('syncs EXP to the level threshold', async () => {

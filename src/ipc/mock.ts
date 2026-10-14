@@ -16,7 +16,7 @@ import { mirrorTargets } from '../lib/story';
 
 export type MockOptions = {
   validateEdits?: (edits: EditSet, mode: Mode) => ValidationReport;
-  speciesStats?: (species: Species, mode: Mode) => SpeciesStats;
+  speciesStats?: (species: Species, mode: Mode) => SpeciesStats | Promise<SpeciesStats>;
   openPaths?: (string | null)[];
   savePaths?: (string | null)[];
   onCloseRequested?: (handler: () => boolean) => Promise<() => void>;

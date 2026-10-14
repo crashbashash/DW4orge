@@ -17,83 +17,83 @@ import type { StoryEdit } from "./StoryEdit";
  *   adding the chip to the device folder if absent; doing that at apply time
  *   instead means a socket cannot carry a stale index.
  */
-export type EditSet = { 
+export type EditSet = {
 /**
  * Species to switch to. Rewrites `DIGIMONNAME` when it changes.
  */
-species: Species, 
+species: Species,
 /**
  * Player name, at most 8 fullwidth characters.
  */
-name: string, 
+name: string,
 /**
  * Currency.
  */
-bit: number, 
+bit: number,
 /**
  * X-Data currency.
  */
-xdata: number, 
+xdata: number,
 /**
  * Junk-shop donation **threshold** (not a tier number), as `collect()`
  * writes `dict(JUNK_TIERS)[tier]`.
  */
-junk: number, 
+junk: number,
 /**
  * Level for the edited species.
  */
-level: number, 
+level: number,
 /**
  * EXP for the edited species.
  */
-exp: number, 
+exp: number,
 /**
  * The 9 technique values, signed.
  */
-tech: [number, number, number, number, number, number, number, number, number], 
+tech: [number, number, number, number, number, number, number, number, number],
 /**
  * The 11 X-Data power-up values.
  */
-upcnt: [number, number, number, number, number, number, number, number, number, number, number], 
+upcnt: [number, number, number, number, number, number, number, number, number, number, number],
 /**
  * The 30 usable device-folder slots.
  */
-device: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number], 
+device: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number],
 /**
  * 3 weapon slots, as indices into `device`.
  */
-weapons: [number, number, number], 
+weapons: [number, number, number],
 /**
  * Armor slot, as an index into `device`.
  */
-armor: number, 
+armor: number,
 /**
  * Sub/board slot, as an index into `device`.
  */
-sub: number, 
+sub: number,
 /**
  * 5 weapon mod sockets, as mod-chip base ids.
  */
-wmods: [number | null, number | null, number | null, number | null, number | null], 
+wmods: [number | null, number | null, number | null, number | null, number | null],
 /**
  * 5 armor mod sockets, as mod-chip base ids.
  */
-amods: [number | null, number | null, number | null, number | null, number | null], 
+amods: [number | null, number | null, number | null, number | null, number | null],
 /**
  * Story bits to write. Bits absent from this list keep their stored value.
  *
  * Each edit names the difficulty it was made on, so one save can carry
  * edits made on several difficulties at once.
  */
-story: Array<StoryEdit>, 
+story: Array<StoryEdit>,
 /**
  * Bank balance.
  */
-bank_bit: number, 
+bank_bit: number,
 /**
  * The 12 owned disk counts.
  */
-disks: [number, number, number, number, number, number, number, number, number, number, number, number], 
+disks: [number, number, number, number, number, number, number, number, number, number, number, number],
 /**
  * The 96 bank item slots.
  *

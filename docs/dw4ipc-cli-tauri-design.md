@@ -348,3 +348,14 @@ cargo test --workspace
 | `clap`/`tauri` derive macros trip new clippy lints | Gate runs `-D warnings`; fix inline |
 | `Category::Unknown(u8)` or borrowed fields do not derive cleanly for ts-rs | Resolved by probe: both derive. Generation pins `large_int = "number"` because `Cap` holds `i64` |
 | Adding serde derives to `dw4core` types changes the public API beyond `ts` | Derives are additive, need no new dependency, and the default `dw4core` build and its 227 tests are re-run unchanged |
+
+
+### Region selection (0.2.0)
+
+Open results carry `region` (USA/Europe/Japan, or null for unclassified raw data).
+New-save requests accept a region; omission defaults to USA or inherits a donor.
+Open accepts an optional region and returns `region_choice` with candidates when
+multiple regional saves are present. Save As accepts an export region for raw
+files; an existing source card keeps its region. The UI resolves these choices
+with a cancellable region dialog; no save is selected or written on cancellation.
+The CLI exposes the same selection through global `--region`.

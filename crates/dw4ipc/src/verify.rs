@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use dw4core::memcard::{Ps2Memcard, SAVE_DIR, SAVE_FILE, page_spare};
+use dw4core::memcard::{Ps2Memcard, page_spare};
 use dw4core::{SaveData, Severity};
 use serde::{Deserialize, Serialize};
 
@@ -57,6 +57,13 @@ pub struct VerifyReport {
 /// that no save can be extracted; a merely corrupt save is a report, not an
 /// error.
 pub fn verify_path(path: &Path) -> Result<VerifyReport, IpcError> {
+    verify_path_with_region(path, None)
+}
+
+pub fn verify_path_with_region(
+    path: &Path,
+    region: Option<dw4core::Region>,
+) -> Result<VerifyReport, IpcError> {
     let bytes = std::fs::read(path).map_err(|source| IpcError::Core {
         variant: "Io".to_string(),
         message: format!("{}: {source}", path.display()),
@@ -76,13 +83,8 @@ pub fn verify_path(path: &Path) -> Result<VerifyReport, IpcError> {
         let superblock = memcard.superblock().clone();
         let geometry = *memcard.geometry();
 
-        if let Err(err) = memcard.locate(SAVE_DIR, SAVE_FILE) {
-            problems.push(VerifyProblem {
-                severity: Severity::Error,
-                message: err.to_string(),
-            });
-        }
-        let save = memcard.read_save(SAVE_DIR, SAVE_FILE)?;
+        let region = memcard.save_region(region)?;
+        let save = memcard.read_save(region.save_name(), region.save_name())?;
 
         let (checked, mismatched) = ecc_scan(
             memcard.image(),
@@ -152,6 +154,9 @@ pub fn verify_path(path: &Path) -> Result<VerifyReport, IpcError> {
 
 /// Check every in-use page's ECC, skipping fully erased pages.
 fn ecc_scan(image: &[u8], raw_page_size: usize, total_pages: usize) -> (usize, Vec<usize>) {
+    if raw_page_size == 512 {
+        return (0, Vec::new());
+    }
     const DATA: usize = 512;
     let mut checked = 0;
     let mut mismatched = Vec::new();

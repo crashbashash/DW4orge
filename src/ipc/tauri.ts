@@ -11,7 +11,7 @@ function agentControlsEnabled(): boolean {
 
 export const tauriBackend: Backend = {
   appInfo: () => invoke('app_info'),
-  openSave: (path) => invoke('open_save', { path }),
+  openSave: (path, region) => invoke('open_save', { path, region: region ?? null }),
   newSave: (request) => invoke('new_save', { request }),
   getView: (mode) => invoke('get_view', { mode }),
   async validateEdits(edits: EditSet, mode: Mode): Promise<ValidationReport> {
@@ -25,7 +25,7 @@ export const tauriBackend: Backend = {
     }
   },
   save: (edits, mode): Promise<OpenResult> => invoke('save', { edits, mode }),
-  saveAs: (path, edits, mode): Promise<OpenResult> => invoke('save_as', { path, edits, mode }),
+  saveAs: (path, edits, mode, region): Promise<OpenResult> => invoke('save_as', { path, edits, mode, region: region ?? null }),
   speciesStats: (species: Species, mode: Mode) => invoke('species_stats', { species, mode }),
   async pickOpenPath() {
     if (agentControlsEnabled()) return invoke<string | null>('agent_pick_path', { kind: 'open' });

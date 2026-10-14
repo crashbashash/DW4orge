@@ -122,3 +122,22 @@ and four agent-protocol tests. Formatting, type checking, linting, both shell
 feature configurations and palette contrast checks also passed. Generated game
 cards, BIOS copies, states, screenshots, tokens and machine-specific logs remain
 outside the tracked source.
+
+
+## Regional validation (0.2.0)
+
+The existing automatic retail runner above uses USA addresses and English OCR;
+its preset matrix remains a USA test, not a claim of regional campaign coverage.
+European and Japanese support was checked separately with pristine regional discs
+and matching European v2.00 / Japanese v1.00 BIOSes. For each region, a generated
+Dorumon card loaded into gameplay, the Central Area Save Keeper successfully
+saved over it, and the written character loaded into gameplay after a cold boot.
+Both written files were 81,920 bytes, version 4, with identical mirrored blocks
+and valid additive checksums. Local game cards and captures remain outside Git.
+
+Automated regional regression checks cover all three card identities, regional
+icon metadata and ECC, region preservation across edits and Save As, backups,
+raw exports, and mixed-region selection with the other save preserved. CLI and
+UI tests cover region selection. To repeat game acceptance with the integrated
+writer, create a card using `dw4cli new --region europe|japan --out test.ps2`, mount
+it in an isolated PCSX2 profile and follow the load/save/cold-boot sequence above.

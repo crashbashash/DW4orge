@@ -7,7 +7,7 @@ use std::process::ExitCode;
 
 use clap::{Parser, Subcommand};
 use dw4core::document::DifficultyChoice;
-use dw4core::{Category, Difficulty, Mode, Species};
+use dw4core::{Category, Difficulty, Mode, Region, Species};
 use dw4ipc::{EditorSession, IpcError, NewSaveRequest};
 
 #[derive(Parser)]
@@ -16,6 +16,9 @@ struct Cli {
     /// Emit the IPC payloads as JSON instead of human text.
     #[arg(long, global = true)]
     json: bool,
+    /// usa | europe | japan. Selects a save on mixed-region cards and new card identity.
+    #[arg(long, global = true, value_parser = parse_region)]
+    region: Option<Region>,
     #[command(subcommand)]
     command: Command,
 }
@@ -40,7 +43,7 @@ enum Command {
         /// normal | hard | veryhard.
         #[arg(long, value_parser = parse_difficulty)]
         difficulty: Option<Difficulty>,
-        /// Copy this card and swap in the new save (required for `-o *.ps2`).
+        /// Copy a donor card and preserve its icons and other saves.
         #[arg(long)]
         card: Option<PathBuf>,
         /// Output file.
@@ -78,7 +81,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
     match &cli.command {
         Command::Info { path } => {
             let mut session = EditorSession::new_session();
-            let result = session.open(path)?;
+            let result = session.open_with_region(path, cli.region)?;
             if cli.json {
                 output::json(&result);
             } else {
@@ -87,7 +90,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
         }
         Command::Dump { path } => {
             let mut session = EditorSession::new_session();
-            let result = session.open(path)?;
+            let result = session.open_with_region(path, cli.region)?;
             if cli.json {
                 output::json(&result.view);
             } else {
@@ -124,6 +127,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
                 });
             }
             let req = NewSaveRequest {
+                region: cli.region,
                 species: species.unwrap_or(Species::DEFAULT),
                 name: name.clone().unwrap_or_else(|| "TST".to_string()),
                 story: story.clone(),
@@ -146,7 +150,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
             }
         }
         Command::Verify { path } => {
-            let report = dw4ipc::verify_path(path)?;
+            let report = dw4ipc::verify_path_with_region(path, cli.region)?;
             if cli.json {
                 output::json(&report);
             } else {
@@ -195,5 +199,14 @@ fn parse_category(text: &str) -> Result<Category, String> {
         "board" => Ok(Category::Board),
         "mod" => Ok(Category::Mod),
         other => Err(format!("unknown category {other:?}")),
+    }
+}
+
+fn parse_region(text: &str) -> Result<Region, String> {
+    match text.to_ascii_lowercase().as_str() {
+        "usa" | "us" => Ok(Region::Usa),
+        "europe" | "eu" => Ok(Region::Europe),
+        "japan" | "jp" => Ok(Region::Japan),
+        _ => Err(format!("unknown region {text:?}; use usa, europe or japan")),
     }
 }

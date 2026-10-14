@@ -6,11 +6,13 @@ import {
   useMemo,
   useReducer,
   useRef,
+  useState,
   type ReactNode,
 } from 'react';
-import type { EditSet, NewSaveRequest, OpenResult, Species, SpeciesStats, StoryKind } from '../bindings';
+import type { EditSet, NewSaveRequest, OpenResult, Region, Species, SpeciesStats, StoryKind } from '../bindings';
+import { RegionDialog } from '../components/RegionDialog';
 import { useBackend } from '../ipc/context';
-import { describeIpcError, fieldErrors } from '../ipc/errors';
+import { describeIpcError, fieldErrors, isIpcError } from '../ipc/errors';
 import type { StoryDraft } from '../lib/story';
 import {
   buildEditSet,
@@ -57,6 +59,18 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     theme: detectTheme(),
   }));
   const validationSeq = useRef(0);
+  const [regionRequest, setRegionRequest] = useState<{ regions: Region[]; message: string } | null>(null);
+  const regionResolve = useRef<((region: Region | null) => void) | null>(null);
+  const chooseRegion = useCallback((regions: Region[], message: string) => new Promise<Region | null>(resolve => {
+    regionResolve.current = resolve;
+    setRegionRequest({ regions, message });
+  }), []);
+  const finishRegion = useCallback((region: Region | null) => {
+    regionResolve.current?.(region);
+    regionResolve.current = null;
+    setRegionRequest(null);
+  }, []);
+  useEffect(() => () => { regionResolve.current?.(null); }, []);
 
   useEffect(() => {
     let alive = true;
@@ -108,10 +122,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const load = useCallback(
-    async (run: () => Promise<OpenResult>) => {
+    async (run: () => Promise<OpenResult | null>) => {
       dispatch({ type: 'busy', busy: true });
       try {
-        dispatch({ type: 'loaded', result: await run() });
+        const result = await run();
+        if (result) dispatch({ type: 'loaded', result });
       } catch (err: unknown) {
         reportFailure(err);
       } finally {
@@ -124,8 +139,16 @@ export function EditorProvider({ children }: { children: ReactNode }) {
   const open = useCallback(async () => {
     const path = await backend.pickOpenPath();
     if (!path) return;
-    await load(() => backend.openSave(path));
-  }, [backend, load]);
+    await load(async () => {
+      try { return await backend.openSave(path); }
+      catch (err: unknown) {
+        if (!isIpcError(err) || err.kind !== 'region_choice') throw err;
+        const region = await chooseRegion(err.regions, 'This card contains saves from multiple regions. Choose the save to edit.');
+        if (!region) return null;
+        return backend.openSave(path, region);
+      }
+    });
+  }, [backend, load, chooseRegion]);
 
   const openSample = useCallback(async () => {
     const sample = backend.openSample;
@@ -159,8 +182,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     if (!edits) return;
     const path = await backend.pickSavePath(defaultSaveName(state.session?.path ?? null));
     if (!path) return;
-    await write(() => backend.saveAs(path, edits, state.mode));
-  }, [backend, edits, state.mode, state.session, write]);
+    let region: Region | undefined;
+    if (/\.ps2$/i.test(path) && state.session?.region == null) {
+      const picked = await chooseRegion(['usa', 'europe', 'japan'], 'Raw saves do not identify their region. Choose the game that will use this memory card.');
+      if (!picked) return;
+      region = picked;
+    }
+    await write(() => region ? backend.saveAs(path, edits, state.mode, region) : backend.saveAs(path, edits, state.mode));
+  }, [backend, edits, state.mode, state.session, write, chooseRegion]);
 
   const save = useCallback(async () => {
     if (!edits || !state.session) return;
@@ -209,7 +238,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     [backend.openSample, newSave, open, openSample, save, saveAs, speciesStats, state, toggleTheme],
   );
 
-  return <EditorContext.Provider value={api}>{children}</EditorContext.Provider>;
+  return <EditorContext.Provider value={api}>{children}<RegionDialog request={regionRequest} finish={finishRegion} /></EditorContext.Provider>;
 }
 
 export function useEditor(): EditorApi {

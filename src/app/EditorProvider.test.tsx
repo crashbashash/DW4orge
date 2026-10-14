@@ -16,8 +16,9 @@ function Probe() {
       <span data-testid="errors">{api.state.validation.errors.length}</span>
       <span data-testid="error">{api.state.error ?? ''}</span>
       <span data-testid="dirty">{dirty(api.state) ? 'yes' : 'no'}</span>
+      <button onClick={() => void api.open()}>open</button>
       <button onClick={() => void api.openSample()}>sample</button>
-      <button onClick={() => void api.newSave({ species: 'Dorumon', name: 'TST', story: null, difficulty: 'auto' })}>
+      <button onClick={() => void api.newSave({ region: null, species: 'Dorumon', name: 'TST', story: null, difficulty: 'auto' })}>
         new
       </button>
       <button onClick={() => void api.saveAs()}>save as</button>
@@ -105,5 +106,50 @@ describe('EditorProvider', () => {
     await waitFor(() => expect(screen.getByTestId('species').textContent).toBe('Dorumon'));
     await userEvent.click(screen.getByRole('button', { name: 'save as' }));
     expect(pick).toHaveBeenCalledWith('Mcd001.ps2');
+  });
+});
+
+
+describe('regional choices', () => {
+  it('asks before opening a mixed-region card and retries the selected region', async () => {
+    const backend = renderProbe();
+    vi.spyOn(backend, 'pickOpenPath').mockResolvedValue('/mixed.ps2');
+    const original = backend.openSave;
+    const open = vi.spyOn(backend, 'openSave').mockRejectedValueOnce({ kind: 'region_choice', regions: ['usa', 'japan'], message: 'choose a region' }).mockImplementation(original);
+    await userEvent.click(screen.getByRole('button', { name: 'open' }));
+    await screen.findByRole('dialog', { name: 'Choose save region' });
+    await userEvent.click(screen.getByRole('button', { name: 'Japan (Digimon World X)' }));
+    await waitFor(() => expect(open).toHaveBeenLastCalledWith('/mixed.ps2', 'japan'));
+    expect(screen.getByTestId('error').textContent).toBe('');
+  });
+
+  it('canceling region selection retains the current document and writes nothing', async () => {
+    const backend = renderProbe();
+    await userEvent.click(screen.getByRole('button', { name: 'sample' }));
+    vi.spyOn(backend, 'pickOpenPath').mockResolvedValue('/mixed.ps2');
+    const open = vi.spyOn(backend, 'openSave').mockRejectedValue({ kind: 'region_choice', regions: ['usa', 'japan'], message: 'choose' });
+    const save = vi.spyOn(backend, 'saveAs');
+    await userEvent.click(screen.getByRole('button', { name: 'open' }));
+    await screen.findByRole('dialog', { name: 'Choose save region' });
+    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(open).toHaveBeenCalledTimes(1);
+    expect(save).not.toHaveBeenCalled();
+    expect(screen.getByTestId('species').textContent).toBe('Dorumon');
+    expect(screen.getByTestId('error').textContent).toBe('');
+  });
+
+  it('asks which region to use when exporting an unknown raw save as a card', async () => {
+    const backend = renderProbe();
+    vi.spyOn(backend, 'pickOpenPath').mockResolvedValue('/unknown.raw');
+    vi.spyOn(backend, 'pickSavePath').mockResolvedValue('/export.ps2');
+    const save = vi.spyOn(backend, 'saveAs');
+    await userEvent.click(screen.getByRole('button', { name: 'open' }));
+    await waitFor(() => expect(screen.getByTestId('species').textContent).toBe('Dorumon'));
+    await userEvent.click(screen.getByRole('button', { name: 'save as' }));
+    await screen.findByRole('dialog', { name: 'Choose save region' });
+    expect(save).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole('button', { name: 'Europe' }));
+    await waitFor(() => expect(save).toHaveBeenCalledWith('/export.ps2', expect.any(Object), 'normal', 'europe'));
   });
 });

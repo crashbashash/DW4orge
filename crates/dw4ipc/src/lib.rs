@@ -22,7 +22,7 @@ pub const PRODUCT_NAME: &str = "DW4orge";
 
 // The core types that appear in command signatures and payloads, re-exported so
 // the CLI and the shell need one dependency.
-pub use dw4core::{EditSet, Mode, SaveView, Species, Warning};
+pub use dw4core::{EditSet, Mode, Region, SaveView, Species, Warning};
 
 pub use catalogue_query::catalogue_search;
 pub use error::IpcError;
@@ -31,4 +31,4 @@ pub use payload::{
 };
 pub use session::EditorSession;
 pub use ui::{app_info, ui_data};
-pub use verify::{CardReport, VerifyProblem, VerifyReport, verify_path};
+pub use verify::{CardReport, VerifyProblem, VerifyReport, verify_path, verify_path_with_region};

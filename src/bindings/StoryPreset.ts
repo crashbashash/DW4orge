@@ -3,15 +3,15 @@
 /**
  * A complete story state: which flags and folders to set.
  */
-export type StoryPreset = { 
+export type StoryPreset = {
 /**
  * Label shown in the preset dropdown.
  */
-name: string, 
+name: string,
 /**
  * Active flags to set.
  */
-flags: Array<number>, 
+flags: Array<number>,
 /**
  * Folders to set.
  */

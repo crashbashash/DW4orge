@@ -10,19 +10,19 @@ import type { StoryKind } from "./StoryKind";
  * single `difficulty_var`, so one save can carry edits made on several
  * difficulties at once.
  */
-export type StoryEdit = { 
+export type StoryEdit = {
 /**
  * Which field this targets.
  */
-kind: StoryKind, 
+kind: StoryKind,
 /**
  * Flag index (0-1023) or folder index (0-11).
  */
-index: number, 
+index: number,
 /**
  * The value to write.
  */
-value: boolean, 
+value: boolean,
 /**
  * The difficulty whose mirror column this edit targets, and every lower
  * one. The live bytes are written either way.

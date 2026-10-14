@@ -198,3 +198,72 @@ fn verify_of_a_corrupt_save_exits_one() {
         .expect("runs");
     assert_eq!(out.status.code(), Some(1));
 }
+
+#[test]
+fn regional_cards_can_be_created_detected_verified_and_used_as_donors() {
+    let dir = tempfile::tempdir().unwrap();
+    for region in ["usa", "europe", "japan"] {
+        let card = dir.path().join(format!("{region}.ps2"));
+        let made = bin()
+            .args(["new", "--region", region, "--out", card.to_str().unwrap()])
+            .output()
+            .unwrap();
+        assert!(
+            made.status.success(),
+            "{}",
+            String::from_utf8_lossy(&made.stderr)
+        );
+        let info = bin()
+            .args(["info", "--json", card.to_str().unwrap()])
+            .output()
+            .unwrap();
+        let result: serde_json::Value = serde_json::from_slice(&info.stdout).unwrap();
+        assert_eq!(result["region"], region);
+        assert!(
+            bin()
+                .args(["verify", card.to_str().unwrap()])
+                .status()
+                .unwrap()
+                .success()
+        );
+        let copy = dir.path().join(format!("{region}-copy.ps2"));
+        assert!(
+            bin()
+                .args([
+                    "new",
+                    "--card",
+                    card.to_str().unwrap(),
+                    "--name",
+                    "COPY",
+                    "--out",
+                    copy.to_str().unwrap()
+                ])
+                .status()
+                .unwrap()
+                .success()
+        );
+        let info = bin()
+            .args(["info", "--json", copy.to_str().unwrap()])
+            .output()
+            .unwrap();
+        let result: serde_json::Value = serde_json::from_slice(&info.stdout).unwrap();
+        assert_eq!(result["region"], region);
+        assert_eq!(result["view"]["name"], "COPY");
+        let data_only = dir.path().join(format!("{region}-data-only.ps2"));
+        let bytes = std::fs::read(&card).unwrap();
+        let bytes: Vec<u8> = bytes
+            .as_chunks::<528>()
+            .0
+            .iter()
+            .flat_map(|p| p[..512].iter().copied())
+            .collect();
+        std::fs::write(&data_only, bytes).unwrap();
+        assert!(
+            bin()
+                .args(["verify", data_only.to_str().unwrap()])
+                .status()
+                .unwrap()
+                .success()
+        );
+    }
+}

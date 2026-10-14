@@ -33,10 +33,19 @@ impl EditorSession {
     /// # Errors
     /// Whatever `Document::load` reports, mapped to [`IpcError`].
     pub fn open(&mut self, path: &Path) -> Result<OpenResult, IpcError> {
-        let doc = Document::load(path)?;
+        self.open_with_region(path, None)
+    }
+
+    pub fn open_with_region(
+        &mut self,
+        path: &Path,
+        region: Option<dw4core::Region>,
+    ) -> Result<OpenResult, IpcError> {
+        let doc = Document::load_with_region(path, region)?;
         let source = source_kind(path)?;
         let view = doc.view(Mode::Normal);
         let result = OpenResult {
+            region: doc.region(),
             path: Some(path_string(path)?),
             source,
             view,
@@ -78,7 +87,7 @@ impl EditorSession {
         let data = build_save(&spec);
 
         let mut doc = match card {
-            Some(path) => Document::load(path)?,
+            Some(path) => Document::load_with_region(path, req.region)?,
             None => Document::from_bytes(&data)?,
         };
         if card.is_some() {
@@ -87,14 +96,19 @@ impl EditorSession {
             *doc.data_mut() = SaveData::parse(&data)?;
         }
 
+        if card.is_none() {
+            doc.set_region(req.region.unwrap_or_default())?;
+        }
         let view = doc.view(Mode::Normal);
         let source = if card.is_some() {
             SourceKind::Memcard
         } else {
             SourceKind::Raw
         };
+        let region = doc.region();
         self.doc = Some(doc);
         Ok(OpenResult {
+            region,
             path: None,
             source,
             view,
@@ -177,7 +191,20 @@ impl EditorSession {
         edits: &EditSet,
         mode: Mode,
     ) -> Result<OpenResult, IpcError> {
+        self.save_as_with_region(path, edits, mode, None)
+    }
+
+    pub fn save_as_with_region(
+        &mut self,
+        path: &Path,
+        edits: &EditSet,
+        mode: Mode,
+        region: Option<dw4core::Region>,
+    ) -> Result<OpenResult, IpcError> {
         let doc = self.doc.as_mut().ok_or(IpcError::NoOpenDocument)?;
+        if let Some(region) = region {
+            doc.set_region(region)?;
+        }
         doc.apply(edits, mode)
             .map_err(|fields| IpcError::Validation { fields })?;
         doc.save(path)?;
@@ -192,6 +219,7 @@ impl EditorSession {
 /// Project after a write, using the card/raw source the path now resolves to.
 fn finish(doc: &Document, path: &Path) -> Result<OpenResult, IpcError> {
     Ok(OpenResult {
+        region: doc.region(),
         path: Some(path_string(path)?),
         source: source_kind(path)?,
         view: doc.view(Mode::Normal),

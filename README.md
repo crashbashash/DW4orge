@@ -1,6 +1,7 @@
 # DW4orge
 
-A save editor for **Digimon World 4** (PS2, NTSC-U, `SLUS_208.36`).
+A save editor for **Digimon World 4** / **Digimon World X** on PS2: USA, Europe and Japan.
+Version **0.2.0** adds regional memory-card support.
 
 Point it at a memory-card image or a bare save file, change your Digimon,
 inventory or progress in a normal form UI, and write it back. It also ships a
@@ -17,6 +18,20 @@ scriptable CLI.
 Open a `.ps2` memory card or a bare 81,920-byte save — the file's own bytes
 decide which, not the extension. A new save can be created from nothing:
 DW4orge synthesises a complete memory card that PCSX2 mounts and the game loads.
+Choose **Region** in New Save: USA, Europe or Japan. Existing cards are detected
+automatically and keep their region, icons and other files when edited or copied.
+If a card contains saves from multiple regions, choose which one to edit.
+
+| Release | Executable | Save directory and file |
+| --- | --- | --- |
+| USA | `SLUS_208.36` | `BASLUS-20836savedata` |
+| Europe | `SLES_534.05` | `BESLES-53405savedata` |
+| Japan (Digimon World X) | `SLPS_254.53` | `BISLPS-25453savedata` |
+
+Raw saves share the same layout and do not identify their region. When exporting
+an opened raw save to a `.ps2` card, the app asks which regional game will use it.
+New Japanese cards use the Japanese memory-card title; player names retain their
+stored UTF-16 characters. This does not change the editor's English item labels.
 
 Edits go through six sections (below), with validation on every change that
 points at the exact field and says how to fix it. Undo/redo spans the whole
@@ -137,16 +152,27 @@ cargo run -p dw4ipc --example gen_ui_fixtures
 The app icons are generated from the committed 1024² source artwork with
 `tools/gen_icons.py` (needs Pillow).
 
+### Regional CLI examples
+
+```bash
+dw4cli new --region europe --name EUROTEST --out europe.ps2
+dw4cli new --region japan --name JPTEST --out japan.ps2
+dw4cli info europe.ps2           # detects Europe automatically
+dw4cli verify japan.ps2         # checks save checksums and card ECC
+dw4cli info mixed.ps2 --region japan  # select a save on a mixed-region card
+```
+
+New cards default to USA when `--region` is omitted. `new --card donor.ps2`
+inherits the donor's region; use `--region` to select on a mixed-region donor.
+Writing to an existing card requires the matching regional save to exist; the
+editor does not rename or convert another region's save silently.
+
 ## Roadmap
 
 Known gaps, roughly in priority order:
 
 - [ ] **Launch the Windows `.msi` and macOS `.dmg`.** CI builds them, but no one
   has ever run them.
-- [ ] **Test the other PS2 regional releases.** Only NTSC-U is exercised. The
-  NTSC-J and PAL discs may name the save on the card differently (NTSC-U is
-  `BASLUS-20836savedata`) and could differ in the fields themselves; every
-  measurement in `docs/save-format.md` comes from the NTSC-U image.
 - [ ] **Build a GameCube save editor.** DW4orge is only setup to work with PS2.
 - [ ] **Native Wayland Support**, currently uses a compatibility hook (sorta jank).
 - [ ] **Packaging for Arch and Flatpak.**

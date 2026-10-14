@@ -3,15 +3,15 @@
 /**
  * One power-up slot's Normal-mode limit.
  */
-export type PowerupLimit = { 
+export type PowerupLimit = {
 /**
  * Slot index in `BASE_UPCNT` order.
  */
-slot: number, 
+slot: number,
 /**
  * Display name.
  */
-stat: string, 
+stat: string,
 /**
  * Largest value Normal mode accepts.
  */

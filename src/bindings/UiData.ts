@@ -11,31 +11,31 @@ import type { StoryPreset } from "./StoryPreset";
  *
  * Serialize-only for the same reason as [`AppInfo`].
  */
-export type UiData = { 
+export type UiData = {
 /**
  * Every catalogue entry, ordered by base id.
  */
-catalogue: Array<Item>, 
+catalogue: Array<Item>,
 /**
  * Field limits, keyed by the path `validate` reports.
  */
-caps: Array<NamedCap>, 
+caps: Array<NamedCap>,
 /**
  * The eleven power-up slots and their Normal-mode caps.
  */
-powerups: Array<PowerupLimit>, 
+powerups: Array<PowerupLimit>,
 /**
  * The active-to-mirror table.
  */
-mirrors: Array<Mirror>, 
+mirrors: Array<Mirror>,
 /**
  * The twelve story folder labels.
  */
-folder_labels: Array<string>, 
+folder_labels: Array<string>,
 /**
  * Flag labels for every story group.
  */
-flag_labels: Array<FlagLabel>, 
+flag_labels: Array<FlagLabel>,
 /**
  * The story presets.
  */

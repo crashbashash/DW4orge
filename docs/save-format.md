@@ -10,8 +10,7 @@ deliberately differs from the original Python editor.
 
 ## 1. Purpose
 
-DW4orge is a desktop save editor for **Digimon World 4** (PS2, USA,
-`SLUS_208.36`). It rewrites the original Python/tkinter editor as a
+DW4orge is a desktop save editor for **Digimon World 4** / **Digimon World X** (PS2, USA, Europe and Japan). It rewrites the original Python/tkinter editor as a
 **Tauri 2** application (Rust core + React frontend), with a redesigned
 interface and a headless CLI.
 
@@ -883,7 +882,7 @@ regenerate fixtures on demand.
   hosts (see the README's Linux section).
 
 Bundle identity: product name `DW4orge`, identifier
-`io.github.crashbashash.dw4orge`, version `0.1.1`. The icon set lives in
+`io.github.crashbashash.dw4orge`, version `0.2.0`. The icon set lives in
 `src-tauri/icons/` and is generated from `src-tauri/icons/source.png` by
 `tools/gen_icons.py`.
 
@@ -951,3 +950,32 @@ written into a freshly synthesised standard card
 (`dw4core::memcard::format_card`). Passing a donor card
 (`dw4cli new --card <template.ps2>`) instead copies that card and overwrites its
 save, which preserves its icons and extra files.
+
+
+## Regional PS2 support (0.2.0)
+
+All three releases use the same 81,920-byte record, version 4, mirrored 0xA000
+blocks, additive checksum and field offsets. The European and Japanese record
+writer/restore routines match the USA routines after accounting for address
+relocation; the checksum routine is byte-identical. Generated cards were accepted
+by the regional retail games with matching BIOSes, overwritten through the Save
+Keeper, and loaded into gameplay again after a cold boot. This validates that
+path, not every item, advanced value, name glyph or campaign preset.
+
+`Region` owns the identifiers: USA `BASLUS-20836savedata`, Europe
+`BESLES-53405savedata`, Japan `BISLPS-25453savedata`. Card discovery checks all three
+and rejects ambiguity until a caller selects one. `Document` retains the chosen
+region through Save and Save As, so writes touch only its file chain. A destination
+or donor must contain the matching save. Existing icons and unrelated files are
+preserved. Raw saves have no inherent region; an export region is contextual and
+is not inserted into the raw game data.
+
+New cards use the selected identifier. Japan's `icon.sys` title is Shift-JIS
+デジモンワールドＸセーブデータ with split value 18; USA and Europe retain the
+existing fullwidth English title and split value 26. The animated icon and card
+geometry use the existing templates accepted by all three games.
+
+IPC adds `NewSaveRequest.region`, `OpenResult.region`, optional region arguments
+for open/save-as, and `region_choice` errors carrying the available regions. The
+UI asks for a region on mixed-card open and unknown-raw-to-card export. The CLI
+accepts `--region usa|europe|japan` for explicit selection and new-card creation.

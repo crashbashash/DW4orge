@@ -3,15 +3,15 @@
 /**
  * A field's limits: what the game tolerates, and what the type can hold.
  */
-export type Cap = { 
+export type Cap = {
 /**
  * Maximum accepted in Normal mode. Values are never negative there.
  */
-normal_max: number, 
+normal_max: number,
 /**
  * Minimum accepted in Advanced mode.
  */
-dtype_min: number, 
+dtype_min: number,
 /**
  * Maximum accepted in Advanced mode.
  */

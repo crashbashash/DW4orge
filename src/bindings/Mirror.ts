@@ -3,19 +3,19 @@
 /**
  * One active story flag and the mirror it is restored from, per difficulty.
  */
-export type Mirror = { 
+export type Mirror = {
 /**
  * The flag the game reads during play.
  */
-active: number, 
+active: number,
 /**
  * Where the active flag is copied from on Normal.
  */
-normal: number, 
+normal: number,
 /**
  * Where the active flag is copied from on Hard.
  */
-hard: number, 
+hard: number,
 /**
  * Where the active flag is copied from on Very Hard.
  */

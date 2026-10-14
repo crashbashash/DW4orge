@@ -18,6 +18,7 @@ fn sample_view() -> SaveView {
 #[test]
 fn open_result_round_trips_through_json() {
     let result = OpenResult {
+        region: None,
         path: Some("/tmp/example.raw".to_string()),
         source: SourceKind::Raw,
         view: sample_view(),
@@ -69,6 +70,7 @@ fn core_errors_map_to_named_variants() {
 #[test]
 fn new_save_request_uses_core_enums() {
     let req = dw4ipc::NewSaveRequest {
+        region: None,
         species: Species::Dorumon,
         name: "abc".to_string(),
         story: Some("Fresh (tutorial)".to_string()),

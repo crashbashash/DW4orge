@@ -8,96 +8,96 @@ import type { Species } from "./Species";
  * This is a *projection*, not a second source of truth: it is rebuilt from the
  * bytes on every open and every save, and never written back wholesale.
  */
-export type SaveView = { 
+export type SaveView = {
 /**
  * Species derived from `DIGIMONNAME`.
  */
-species: Species, 
+species: Species,
 /**
  * Player name.
  */
-name: string, 
+name: string,
 /**
  * Currency.
  */
-bit: number, 
+bit: number,
 /**
  * X-Data currency.
  */
-xdata: number, 
+xdata: number,
 /**
  * Junk-shop donation counter as stored.
  */
-junk_counter: number, 
+junk_counter: number,
 /**
  * Tier that counter reaches.
  */
-junk_tier: number, 
+junk_tier: number,
 /**
  * Level for `species`.
  */
-level: number, 
+level: number,
 /**
  * EXP for `species`, lifted to the level threshold in Normal mode.
  */
-exp: number, 
+exp: number,
 /**
  * The 9 techniques, signed.
  */
-tech: [number, number, number, number, number, number, number, number, number], 
+tech: [number, number, number, number, number, number, number, number, number],
 /**
  * The 11 power-ups.
  */
-upcnt: [number, number, number, number, number, number, number, number, number, number, number], 
+upcnt: [number, number, number, number, number, number, number, number, number, number, number],
 /**
  * The 30 usable device slots.
  */
-device: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number], 
+device: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number],
 /**
  * 3 weapon slots, as device indices.
  */
-weapons: [number, number, number], 
+weapons: [number, number, number],
 /**
  * Armor slot, as a device index.
  */
-armor: number, 
+armor: number,
 /**
  * Sub slot, as a device index.
  */
-sub: number, 
+sub: number,
 /**
  * 5 weapon mod sockets, as device indices.
  */
-wmods: [number, number, number, number, number], 
+wmods: [number, number, number, number, number],
 /**
  * 5 armor mod sockets, as device indices.
  */
-amods: [number, number, number, number, number], 
+amods: [number, number, number, number, number],
 /**
  * The 1024 raw `BASE_FLAG` bytes, so the Story tab can render every
  * checkbox without a second call.
  */
-story_flags: Array<number>, 
+story_flags: Array<number>,
 /**
  * The 12 raw `BASE_FLAGFOLDER` bytes.
  */
-story_folders: Array<number>, 
+story_folders: Array<number>,
 /**
  * Difficulty inferred from the live mirror set.
  */
-difficulty: Difficulty, 
+difficulty: Difficulty,
 /**
  * Bank balance.
  */
-bank_bit: number, 
+bank_bit: number,
 /**
  * The 12 owned disk counts.
  */
-disks: [number, number, number, number, number, number, number, number, number, number, number, number], 
+disks: [number, number, number, number, number, number, number, number, number, number, number, number],
 /**
  * The 96 bank slots.
  */
-bank_items: Array<number>, 
+bank_items: Array<number>,
 /**
  * Whether the loaded bytes carried valid checksums.
  */

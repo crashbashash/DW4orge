@@ -7,31 +7,31 @@ import type { UiData } from "./UiData";
  * Serialize-only: `UiData` carries `FlagLabel` and `StoryPreset`, which hold
  * `'static` borrowed fields and so cannot be deserialised.
  */
-export type AppInfo = { 
+export type AppInfo = {
 /**
  * Product name.
  */
-name: string, 
+name: string,
 /**
  * Binary version.
  */
-version: string, 
+version: string,
 /**
  * `dw4core` version, so a stale binding is detectable.
  */
-core_version: string, 
+core_version: string,
 /**
  * Bytes in a save.
  */
-save_size: number, 
+save_size: number,
 /**
  * Bytes in one mirrored block.
  */
-block_size: number, 
+block_size: number,
 /**
  * Bumped whenever any payload changes shape.
  */
-schema_version: number, 
+schema_version: number,
 /**
  * Static UI tables.
  */

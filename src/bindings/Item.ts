@@ -4,23 +4,23 @@ import type { Category } from "./Category";
 /**
  * One catalogue entry, keyed by its base id (the low 16 bits of a stored id).
  */
-export type Item = { 
+export type Item = {
 /**
  * The base id: `category << 8 | index`.
  */
-base_id: number, 
+base_id: number,
 /**
  * Display name, without any grade suffix.
  */
-name: string, 
+name: string,
 /**
  * Which slot the item belongs to.
  */
-category: Category, 
+category: Category,
 /**
  * Grade index 0-4, where the item is graded.
  */
-grade: number | null, 
+grade: number | null,
 /**
  * Free-text caveat, where the data files carry one.
  */

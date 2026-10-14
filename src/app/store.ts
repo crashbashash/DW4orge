@@ -27,6 +27,7 @@ export type StoryDrafts = Record<Difficulty, StoryDraft>;
 export type Session = {
   path: string | null;
   source: SourceKind;
+  region: import('../bindings').Region | null;
   view: SaveView;
   baseline: EditSet;
   /**
@@ -293,6 +294,7 @@ function sessionFrom(result: OpenResult, mirrors: readonly Mirror[]): Session {
   return {
     path: result.path,
     source: result.source,
+    region: result.region,
     view: result.view,
     baseline: viewToEditSet(result.view),
     baselines: storyDraftsFromView(result.view, mirrors),

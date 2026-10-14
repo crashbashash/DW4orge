@@ -4,11 +4,11 @@ import type { Cap } from "./Cap";
 /**
  * One cap, keyed by the field path the validator uses.
  */
-export type NamedCap = { 
+export type NamedCap = {
 /**
  * Validator path, e.g. `"bit"` or `"upcnt"`.
  */
-field: string, 
+field: string,
 /**
  * The limits themselves.
  */

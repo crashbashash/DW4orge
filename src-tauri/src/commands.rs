@@ -1,8 +1,8 @@
 //! The IPC commands. Bodies delegate to `dw4ipc`.
 
 use dw4ipc::{
-    AppInfo, EditSet, EditorSession, IpcError, Mode, NewSaveRequest, OpenResult, SaveView, Species,
-    SpeciesStats, Warning,
+    AppInfo, EditSet, EditorSession, IpcError, Mode, NewSaveRequest, OpenResult, Region, SaveView,
+    Species, SpeciesStats, Warning,
 };
 use tauri::State;
 
@@ -18,8 +18,12 @@ fn session(state: &AppState) -> std::sync::MutexGuard<'_, EditorSession> {
 
 /// Open a card or raw save. `kind` is decided by content, not extension.
 #[tauri::command]
-pub fn open_save(state: State<'_, AppState>, path: String) -> Result<OpenResult, IpcError> {
-    session(&state).open(std::path::Path::new(&path))
+pub fn open_save(
+    state: State<'_, AppState>,
+    path: String,
+    region: Option<Region>,
+) -> Result<OpenResult, IpcError> {
+    session(&state).open_with_region(std::path::Path::new(&path), region)
 }
 
 /// Synthesise a new save in memory; nothing is written until `save_as`.
@@ -64,8 +68,9 @@ pub fn save_as(
     path: String,
     edits: EditSet,
     mode: Mode,
+    region: Option<Region>,
 ) -> Result<OpenResult, IpcError> {
-    session(&state).save_as(std::path::Path::new(&path), &edits, mode)
+    session(&state).save_as_with_region(std::path::Path::new(&path), &edits, mode, region)
 }
 
 /// Static app identity plus the UI tables. Never fails.

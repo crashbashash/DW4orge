@@ -25,7 +25,7 @@ pub use entry::{
     MODE_HIDDEN, MODE_ROOT_DOTDOT, MODE_SAVE_DIR_DOTDOT,
 };
 pub use fat::{ALLOCATED_BIT, CHAIN_END, FatTable, UNALLOCATED};
-pub use format::format_card;
+pub use format::{format_card, format_card_for_region};
 pub use geometry::{CardKind, Geometry, SB_MAGIC, SB_SIZE, Superblock};
 pub use ps2::{LocatedFile, Ps2Memcard};
 pub use raw::RawFile;
@@ -82,29 +82,42 @@ pub fn is_raw_save(bytes: &[u8]) -> bool {
 /// # Errors
 /// [`crate::Error::File`] if unreadable, or whatever the container reports.
 pub fn load_save(path: &Path) -> crate::Result<Vec<u8>> {
+    Ok(load_save_with_region(path, None)?.0)
+}
+
+/// Read bytes and retain the card identity. Raw saves have no detectable region.
+pub fn load_save_with_region(
+    path: &Path,
+    requested: Option<crate::Region>,
+) -> crate::Result<(Vec<u8>, Option<crate::Region>)> {
     let bytes = std::fs::read(path).map_err(|source| crate::Error::File {
         path: path.to_path_buf(),
         source,
     })?;
-    if is_memcard(&bytes) {
-        Ps2Memcard::from_image(bytes)?.read_save(SAVE_DIR, SAVE_FILE)
-    } else {
-        Ok(RawFile::from_bytes(bytes, path)?.into_bytes())
-    }
+    load_save_from_bytes_with_region(&bytes, requested)
 }
 
-/// Read a save out of an in-memory container, deciding by content.
-///
-/// The path-based [`load_save`] reads the file for you; this is the same
-/// dispatch for bytes already in memory.
-///
-/// # Errors
-/// Whatever the detected container reports.
+/// Read a save out of an in-memory container.
 pub fn load_save_from_bytes(bytes: &[u8]) -> crate::Result<Vec<u8>> {
+    Ok(load_save_from_bytes_with_region(bytes, None)?.0)
+}
+
+pub fn load_save_from_bytes_with_region(
+    bytes: &[u8],
+    requested: Option<crate::Region>,
+) -> crate::Result<(Vec<u8>, Option<crate::Region>)> {
     if is_memcard(bytes) {
-        Ps2Memcard::from_image(bytes.to_vec())?.read_save(SAVE_DIR, SAVE_FILE)
+        let mut card = Ps2Memcard::from_image(bytes.to_vec())?;
+        let region = card.save_region(requested)?;
+        Ok((
+            card.read_save(region.save_name(), region.save_name())?,
+            Some(region),
+        ))
     } else {
-        Ok(RawFile::from_bytes(bytes.to_vec(), Path::new(""))?.into_bytes())
+        Ok((
+            RawFile::from_bytes(bytes.to_vec(), Path::new(""))?.into_bytes(),
+            requested,
+        ))
     }
 }
 
@@ -127,6 +140,15 @@ pub fn load_save_from_bytes(bytes: &[u8]) -> crate::Result<Vec<u8>> {
 /// [`crate::Error::NoSave`] if a `.ps2` donor is named but is not a card, or
 /// whatever [`format_card`] reports.
 pub fn render_container(path: &Path, source: Option<&Path>, data: &[u8]) -> crate::Result<Vec<u8>> {
+    render_container_for_region(path, source, data, None)
+}
+
+pub fn render_container_for_region(
+    path: &Path,
+    source: Option<&Path>,
+    data: &[u8],
+    region: Option<crate::Region>,
+) -> crate::Result<Vec<u8>> {
     if path.exists() {
         let bytes = std::fs::read(path).map_err(|source_err| crate::Error::File {
             path: path.to_path_buf(),
@@ -134,7 +156,8 @@ pub fn render_container(path: &Path, source: Option<&Path>, data: &[u8]) -> crat
         })?;
         if is_memcard(&bytes) {
             let mut card = Ps2Memcard::from_image(bytes)?;
-            card.write_save(SAVE_DIR, SAVE_FILE, data)?;
+            let region = card.save_region(region)?;
+            card.write_save(region.save_name(), region.save_name(), data)?;
             return Ok(card.image().to_vec());
         }
     } else if path
@@ -144,7 +167,7 @@ pub fn render_container(path: &Path, source: Option<&Path>, data: &[u8]) -> crat
         // No donor card: synthesise a standard one. A donor, when given, is
         // still copied so its icons and any other files survive.
         let Some(source) = source else {
-            return format_card(data);
+            return format_card_for_region(data, region.unwrap_or_default());
         };
         let bytes = std::fs::read(source).map_err(|source_err| crate::Error::File {
             path: source.to_path_buf(),
@@ -158,7 +181,8 @@ pub fn render_container(path: &Path, source: Option<&Path>, data: &[u8]) -> crat
             )));
         }
         let mut card = Ps2Memcard::from_image(bytes)?;
-        card.write_save(SAVE_DIR, SAVE_FILE, data)?;
+        let region = card.save_region(region)?;
+        card.write_save(region.save_name(), region.save_name(), data)?;
         return Ok(card.image().to_vec());
     }
 

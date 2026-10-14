@@ -27,6 +27,9 @@ describe('NewSaveDialog', () => {
     await userEvent.click(screen.getByRole('button', { name: /species/i }));
     await userEvent.click(await screen.findByRole('option', { name: 'Agumon' }));
 
+    await userEvent.click(screen.getByRole('button', { name: /region/i }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Japan (Digimon World X)' }));
+
     const name = screen.getByLabelText('Player name');
     await userEvent.clear(name);
     await userEvent.type(name, 'abc');
@@ -39,6 +42,7 @@ describe('NewSaveDialog', () => {
 
     await waitFor(() =>
       expect(spy).toHaveBeenCalledWith({
+        region: 'japan',
         species: 'Agumon',
         name: 'abc',
         story: 'Fresh (tutorial)',

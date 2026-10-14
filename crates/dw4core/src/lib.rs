@@ -1,6 +1,6 @@
-//! Digimon World 4 (USA, `SLUS_208.36`) save-format engine.
+//! Digimon World 4 / Digimon World X (PS2, USA/Europe/Japan) save-format engine.
 //!
-//! The save file is `BASLUS-20836savedata`, 81,920 bytes: two byte-identical
+//! Each region uses its own card filename (see [`Region`]), with 81,920 bytes: two byte-identical
 //! 0xA000-byte blocks (a mirror/backup). Every write here updates both, so the
 //! mirror cannot drift.
 //!
@@ -66,3 +66,6 @@ pub const SAVE_SIZE: usize = BLOCK * 2;
 
 /// The "no item / no slot" sentinel. Never `0`.
 pub const EMPTY: u32 = 0xFFFF_FFFF;
+
+pub mod region;
+pub use region::Region;

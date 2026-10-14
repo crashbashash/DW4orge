@@ -33,3 +33,8 @@ External reverse-engineering references (not required for building)
 
 Digimon World 4 and all related names are trademarks of their respective
 owners. This project is an unaffiliated fan tool and ships no game code.
+
+Regional PS2 support (0.2.0) was additionally verified against the European
+SLES_534.05 and Japanese SLPS_254.53 releases. The vendored catalogue and original
+format fixtures retain their USA provenance; regional support does not imply
+localized catalogue labels or complete campaign testing in every release.

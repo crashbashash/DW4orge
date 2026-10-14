@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Difficulty, DifficultyChoice, Species } from '../../bindings';
+import type { Difficulty, DifficultyChoice, Region, Species } from '../../bindings';
 import { Modal } from '../../components/Modal';
 import { SelectField } from '../../components/SelectField';
 import { TextField } from '../../components/TextField';
@@ -17,6 +17,7 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 
 export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { state, newSave } = useEditor();
+  const [region, setRegion] = useState<Region>('usa');
   const [species, setSpecies] = useState<Species>('Dorumon');
   const [name, setName] = useState('TST');
   const [story, setStory] = useState<string | null>(null);
@@ -25,7 +26,7 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
   if (!state.appInfo) return null;
 
   const submit = async () => {
-    await newSave({ species, name, story, difficulty });
+    await newSave({ region, species, name, story, difficulty });
     onClose();
   };
 
@@ -46,6 +47,9 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
       }
     >
       <div className="grid">
+        <SelectField label="Region" value={region} options={[
+          { value: 'usa', label: 'USA' }, { value: 'europe', label: 'Europe' }, { value: 'japan', label: 'Japan (Digimon World X)' },
+        ]} onChange={setRegion} />
         <SelectField
           label="Species"
           value={species}

@@ -1,6 +1,6 @@
 import type { FieldError, IpcError } from '../bindings';
 
-const KINDS = ['validation', 'core', 'no_open_document', 'unsupported'] as const;
+const KINDS = ['validation', 'core', 'no_open_document', 'unsupported', 'region_choice'] as const;
 
 export function isIpcError(value: unknown): value is IpcError {
   if (typeof value !== 'object' || value === null || !('kind' in value)) return false;
@@ -23,6 +23,7 @@ export function describeIpcError(value: unknown): string {
         return value.message;
       case 'no_open_document':
         return 'no save is open';
+      case 'region_choice':
       case 'unsupported':
         return value.message;
     }

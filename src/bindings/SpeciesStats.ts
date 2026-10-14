@@ -8,19 +8,19 @@
  * that block's values without a `get_view` round-trip (`_load_species_stats`,
  * `save_editor_gui.py:776`). Response-only: nothing deserialises it.
  */
-export type SpeciesStats = { 
+export type SpeciesStats = {
 /**
  * Level stored for this species.
  */
-level: number, 
+level: number,
 /**
  * EXP for this species, lifted to the level threshold in Normal mode.
  */
-exp: number, 
+exp: number,
 /**
  * The 9 techniques, signed.
  */
-tech: [number, number, number, number, number, number, number, number, number], 
+tech: [number, number, number, number, number, number, number, number, number],
 /**
  * The 11 power-ups.
  */

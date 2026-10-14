@@ -51,6 +51,10 @@ pub enum Error {
     #[error("{dir}/{file} not found in the card")]
     SaveNotFound { dir: String, file: String },
 
+    /// More than one regional save is present; the caller must choose.
+    #[error("this card contains multiple regional saves; choose a region")]
+    AmbiguousRegion { regions: Vec<crate::Region> },
+
     /// A cluster chain is broken, loops, or runs past the data area.
     #[error("cluster chain from {start} is invalid: {reason}")]
     BadClusterChain { start: u32, reason: String },

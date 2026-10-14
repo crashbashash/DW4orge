@@ -12,7 +12,7 @@ use crate::memcard::ecc::page_spare;
 use crate::memcard::geometry::{CardKind, Geometry, Superblock};
 use crate::memcard::{
     ALLOCATED_BIT, ENTRY_SIZE, Entry, MODE_DIR_ENTRY, MODE_FILE_ENTRY, MODE_ROOT_DOTDOT,
-    MODE_SAVE_DIR_DOTDOT, SAVE_DIR, SAVE_FILE,
+    MODE_SAVE_DIR_DOTDOT,
 };
 
 /// Bytes in a standard card, spare included.
@@ -198,19 +198,19 @@ fn with_own_cluster(mut slot: [u8; ENTRY_SIZE], cluster: u32) -> [u8; ENTRY_SIZE
     slot
 }
 
-fn root_entries() -> Vec<[u8; ENTRY_SIZE]> {
+fn root_entries(region: crate::Region) -> Vec<[u8; ENTRY_SIZE]> {
     vec![
         stamped(Entry::new(MODE_DIR_ENTRY, 3, 0, ".").encode(), 0),
         stamped(Entry::new(MODE_ROOT_DOTDOT, 0, 0, "..").encode(), 1),
         stamped(
-            Entry::new(MODE_DIR_ENTRY, 5, SAVE_DIR_CHAIN[0], SAVE_DIR).encode(),
+            Entry::new(MODE_DIR_ENTRY, 5, SAVE_DIR_CHAIN[0], region.save_name()).encode(),
             2,
         ),
     ]
 }
 
 /// The save directory's entries, in slot order.
-fn save_dir_entries(save_len: u32) -> Vec<[u8; ENTRY_SIZE]> {
+fn save_dir_entries(save_len: u32, region: crate::Region) -> Vec<[u8; ENTRY_SIZE]> {
     vec![
         with_own_cluster(
             stamped(Entry::new(MODE_DIR_ENTRY, 0, 0, ".").encode(), 3),
@@ -228,7 +228,7 @@ fn save_dir_entries(save_len: u32) -> Vec<[u8; ENTRY_SIZE]> {
             5,
         ),
         stamped(
-            Entry::new(MODE_FILE_ENTRY, save_len, SAVE_CLUSTER, SAVE_FILE).encode(),
+            Entry::new(MODE_FILE_ENTRY, save_len, SAVE_CLUSTER, region.save_name()).encode(),
             6,
         ),
         stamped(
@@ -253,6 +253,11 @@ fn save_dir_entries(save_len: u32) -> Vec<[u8; ENTRY_SIZE]> {
 /// [`Error::BadSaveSize`] if `save` is not [`crate::SAVE_SIZE`] bytes, or
 /// whatever parsing the committed page-0 template reports.
 pub fn format_card(save: &[u8]) -> Result<Vec<u8>, Error> {
+    format_card_for_region(save, crate::Region::Usa)
+}
+
+/// Create a card with the selected release's identifiers and title metadata.
+pub fn format_card_for_region(save: &[u8], region: crate::Region) -> Result<Vec<u8>, Error> {
     if save.len() != crate::SAVE_SIZE {
         return Err(Error::BadSaveSize {
             expected: crate::SAVE_SIZE,
@@ -276,7 +281,7 @@ pub fn format_card(save: &[u8]) -> Result<Vec<u8>, Error> {
     write_fat(&mut image, &geom, ifc_cluster + 1, &fat_entries(&geom));
 
     // Directories: root spans 0..=1 (3 entries), the save directory 2..=4 (5).
-    let root = root_entries();
+    let root = root_entries(region);
     write_relative_cluster(
         &mut image,
         &geom,
@@ -289,7 +294,7 @@ pub fn format_card(save: &[u8]) -> Result<Vec<u8>, Error> {
         1,
         &entry_cluster(&root[2..], geom.cluster_size),
     );
-    let dir = save_dir_entries(save.len() as u32);
+    let dir = save_dir_entries(save.len() as u32, region);
     write_relative_cluster(
         &mut image,
         &geom,
@@ -312,9 +317,30 @@ pub fn format_card(save: &[u8]) -> Result<Vec<u8>, Error> {
     // Payloads.
     write_file(&mut image, &geom, ICON1_ICO_CLUSTER, ICON1_ICO);
     write_file(&mut image, &geom, SAVE_CLUSTER, save);
-    write_file(&mut image, &geom, ICON_SYS_CLUSTER, ICON_SYS);
+    write_file(
+        &mut image,
+        &geom,
+        ICON_SYS_CLUSTER,
+        &regional_icon_sys(region),
+    );
 
     Ok(image)
+}
+
+/// The Japanese title is Shift-JIS, as authored in the retail PS2 configuration.
+fn regional_icon_sys(region: crate::Region) -> Vec<u8> {
+    let mut icon = ICON_SYS.to_vec();
+    if region == crate::Region::Japan {
+        icon[6..8].copy_from_slice(&18u16.to_le_bytes());
+        icon[192..260].fill(0);
+        let title: &[u8] = &[
+            0x83, 0x66, 0x83, 0x57, 0x83, 0x82, 0x83, 0x93, 0x83, 0x8f, 0x81, 0x5b, 0x83, 0x8b,
+            0x83, 0x68, 0x82, 0x77, 0x83, 0x5a, 0x81, 0x5b, 0x83, 0x75, 0x83, 0x66, 0x81, 0x5b,
+            0x83, 0x5e,
+        ];
+        icon[192..192 + title.len()].copy_from_slice(title);
+    }
+    icon
 }
 
 #[cfg(test)]
@@ -399,7 +425,7 @@ mod tests {
 
     #[test]
     fn the_save_directory_dot_entry_names_its_own_cluster() {
-        let entries = save_dir_entries(81_920);
+        let entries = save_dir_entries(81_920, crate::Region::Usa);
         let dot = &entries[0];
         assert_eq!(
             u32::from_le_bytes([dot[0x14], dot[0x15], dot[0x16], dot[0x17]]),

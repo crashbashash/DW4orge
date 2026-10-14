@@ -8,15 +8,15 @@ import type { Severity } from "./Severity";
  * `"bit"`, `"device[3].mods"`, `"equip.armor"`, `"story.flag[66]"`,
  * `"bank_items[7]"`.
  */
-export type FieldError = { 
+export type FieldError = {
 /**
  * Where the problem is.
  */
-path: string, 
+path: string,
 /**
  * What is wrong, in a form fit to show the user.
  */
-message: string, 
+message: string,
 /**
  * Whether this blocked the edit.
  */

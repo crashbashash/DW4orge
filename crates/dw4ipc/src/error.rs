@@ -22,6 +22,11 @@ pub enum IpcError {
         /// Its rendered message.
         message: String,
     },
+    /// A mixed-region card needs an explicit choice before opening.
+    RegionChoice {
+        regions: Vec<dw4core::Region>,
+        message: String,
+    },
     /// No save is open.
     NoOpenDocument,
     /// The request cannot be honoured at all.
@@ -35,6 +40,12 @@ impl IpcError {
     /// Wrap a core error.
     #[must_use]
     pub fn core(err: &dw4core::Error) -> Self {
+        if let dw4core::Error::AmbiguousRegion { regions } = err {
+            return Self::RegionChoice {
+                regions: regions.clone(),
+                message: err.to_string(),
+            };
+        }
         Self::Core {
             variant: core_variant(err).to_string(),
             message: err.to_string(),
@@ -59,6 +70,7 @@ impl std::fmt::Display for IpcError {
                 Ok(())
             }
             Self::Core { variant, message } => write!(f, "{variant}: {message}"),
+            Self::RegionChoice { message, .. } => write!(f, "{message}"),
             Self::NoOpenDocument => write!(f, "no save is open"),
             Self::Unsupported { message } => write!(f, "{message}"),
         }
@@ -79,6 +91,7 @@ fn core_variant(err: &dw4core::Error) -> &'static str {
         dw4core::Error::NotAMemcard(_) => "NotAMemcard",
         dw4core::Error::BadCardGeometry(_) => "BadCardGeometry",
         dw4core::Error::BadCard(_) => "BadCard",
+        dw4core::Error::AmbiguousRegion { .. } => "AmbiguousRegion",
         dw4core::Error::SaveNotFound { .. } => "SaveNotFound",
         dw4core::Error::BadClusterChain { .. } => "BadClusterChain",
         dw4core::Error::NoFreeDeviceSlot(_) => "NoFreeDeviceSlot",

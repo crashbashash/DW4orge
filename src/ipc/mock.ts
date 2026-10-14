@@ -53,19 +53,20 @@ export function createMockBackend(options: MockOptions = {}): Backend {
   return {
     appInfo: async () => structuredClone(appInfo),
 
-    openSave: async (path) => {
-      current = { ...fixture(), path };
+    openSave: async (path, region) => {
+      current = { ...fixture(), path, source: /\.ps2$/i.test(path) ? 'memcard' : 'raw', region: region ?? (/\.ps2$/i.test(path) ? 'usa' : null) };
       return structuredClone(current);
     },
 
     openSample: async () => {
-      current = { ...fixture(), path: '/mock/Mcd001.ps2' };
+      current = { ...fixture(), path: '/mock/Mcd001.ps2', source: 'memcard', region: 'usa' };
       return structuredClone(current);
     },
 
     newSave: async (request: NewSaveRequest) => {
       const base = fixture();
       current = {
+        region: request.region ?? 'usa',
         path: null,
         source: 'raw',
         view: { ...base.view, species: request.species, name: request.name },
@@ -84,9 +85,9 @@ export function createMockBackend(options: MockOptions = {}): Backend {
       return structuredClone(current);
     },
 
-    saveAs: async (path, edits) => {
+    saveAs: async (path, edits, _mode, region) => {
       const doc = needDoc();
-      current = { ...doc, path, view: applyEdits(doc.view, edits, appInfo.ui.mirrors) };
+      current = { ...doc, path, region: region ?? doc.region, view: applyEdits(doc.view, edits, appInfo.ui.mirrors) };
       return structuredClone(current);
     },
 

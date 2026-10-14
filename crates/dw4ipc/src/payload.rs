@@ -20,6 +20,9 @@ pub enum SourceKind {
 /// Everything the New Save dialog supplies.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 pub struct NewSaveRequest {
+    /// Card region. Omitted requests default to USA, or inherit a donor card.
+    #[serde(default)]
+    pub region: Option<dw4core::Region>,
     /// Species for the new character.
     pub species: Species,
     /// Player name, at most 8 fullwidth characters.
@@ -34,6 +37,9 @@ pub struct NewSaveRequest {
 /// The result of opening or creating a save.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 pub struct OpenResult {
+    /// Detected card region; raw files have no inherent regional identity.
+    #[serde(default)]
+    pub region: Option<dw4core::Region>,
     /// The file, or `None` for a save that has not been written yet.
     pub path: Option<String>,
     /// Which container it came from.

@@ -26,3 +26,5 @@ export type { StoryEdit } from './StoryEdit';
 export type { StoryKind } from './StoryKind';
 export type { StoryPreset } from './StoryPreset';
 export type { UiData } from './UiData';
+
+export type { Region } from './Region';

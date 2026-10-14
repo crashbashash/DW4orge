@@ -367,6 +367,7 @@ pub struct Document {
     source_card: Option<PathBuf>,
     /// Whether the bytes as loaded had valid checksums.
     loaded_checksums_ok: bool,
+    region: Option<crate::Region>,
 }
 
 impl Document {
@@ -382,6 +383,7 @@ impl Document {
             path: None,
             source_card: None,
             loaded_checksums_ok,
+            region: None,
         })
     }
 
@@ -393,9 +395,14 @@ impl Document {
     /// # Errors
     /// [`crate::Error::File`] if unreadable, or whatever the container reports.
     pub fn load(path: &Path) -> crate::Result<Self> {
-        let bytes = crate::memcard::load_save(path)?;
+        Self::load_with_region(path, None)
+    }
+
+    pub fn load_with_region(path: &Path, requested: Option<crate::Region>) -> crate::Result<Self> {
+        let (bytes, region) = crate::memcard::load_save_with_region(path, requested)?;
         let mut doc = Self::from_bytes(&bytes)?;
         doc.path = Some(path.to_path_buf());
+        doc.region = region;
         // Remember the card, so Save As to a new .ps2 can copy it.
         if crate::memcard::is_memcard(&fs::read(path).map_err(|source| crate::Error::File {
             path: path.to_path_buf(),
@@ -404,6 +411,22 @@ impl Document {
             doc.source_card = Some(path.to_path_buf());
         }
         Ok(doc)
+    }
+
+    #[must_use]
+    pub fn region(&self) -> Option<crate::Region> {
+        self.region
+    }
+
+    /// Select a card region for raw or newly synthesized data. Existing cards keep theirs.
+    pub fn set_region(&mut self, region: crate::Region) -> crate::Result<()> {
+        if self.source_card.is_some() && self.region != Some(region) {
+            return Err(crate::Error::NoSave(
+                "an existing card keeps its original region".into(),
+            ));
+        }
+        self.region = Some(region);
+        Ok(())
     }
 
     /// The underlying save.
@@ -857,7 +880,12 @@ impl Document {
     /// post-write verification fails.
     pub fn save(&mut self, path: &Path) -> crate::Result<()> {
         let save = self.data.to_bytes();
-        let bytes = crate::memcard::render_container(path, self.source_card.as_deref(), &save)?;
+        let bytes = crate::memcard::render_container_for_region(
+            path,
+            self.source_card.as_deref(),
+            &save,
+            self.region,
+        )?;
 
         if path.exists() {
             let bak = backup_path(path);
@@ -873,7 +901,8 @@ impl Document {
 
         // Re-read through the same content dispatch, so a card is verified as a
         // card and a raw file as a raw file.
-        let written = crate::memcard::load_save(path)?;
+        let (written, region) = crate::memcard::load_save_with_region(path, self.region)?;
+        self.region = region;
         let check = SaveData::parse(&written).map_err(|e| crate::Error::NoSave(e.to_string()))?;
         if !check.verify() {
             return Err(crate::Error::NoSave(format!(
@@ -883,6 +912,9 @@ impl Document {
         }
 
         self.path = Some(path.to_path_buf());
+        if crate::memcard::is_memcard(&bytes) {
+            self.source_card = Some(path.to_path_buf());
+        }
         self.loaded_checksums_ok = true;
         Ok(())
     }

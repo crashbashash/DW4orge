@@ -5,6 +5,7 @@ import type {
   Mode,
   NewSaveRequest,
   OpenResult,
+  Region,
   SaveView,
   Species,
   SpeciesStats,
@@ -22,12 +23,12 @@ export type ValidationReport = {
 /** Everything the UI can ask of the shell. */
 export interface Backend {
   appInfo(): Promise<AppInfo>;
-  openSave(path: string): Promise<OpenResult>;
+  openSave(path: string, region?: Region): Promise<OpenResult>;
   newSave(request: NewSaveRequest): Promise<OpenResult>;
   getView(mode: Mode): Promise<SaveView>;
   validateEdits(edits: EditSet, mode: Mode): Promise<ValidationReport>;
   save(edits: EditSet, mode: Mode): Promise<OpenResult>;
-  saveAs(path: string, edits: EditSet, mode: Mode): Promise<OpenResult>;
+  saveAs(path: string, edits: EditSet, mode: Mode, region?: Region): Promise<OpenResult>;
   speciesStats(species: Species, mode: Mode): Promise<SpeciesStats>;
   pickOpenPath(): Promise<string | null>;
   pickSavePath(defaultName: string): Promise<string | null>;

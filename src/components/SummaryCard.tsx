@@ -1,6 +1,7 @@
 import type { Difficulty } from '../bindings';
 import { useEditor } from '../app/EditorProvider';
 import { formatNumber } from '../lib/num';
+import { REGION_LABELS } from './RegionDialog';
 import { SelectField } from './SelectField';
 
 const DIFFICULTIES: Difficulty[] = ['Normal', 'Hard', 'VeryHard'];
@@ -29,6 +30,7 @@ export function SummaryCard() {
 
   return (
     <section className="summary" aria-label="Save summary">
+      <Field label="Region" value={session.region ? REGION_LABELS[session.region] : 'Unknown (raw save)'} />
       <Field label="Species" value={view.species} />
       <Field label="Name" value={view.name} />
       <Field label="Level" value={String(view.level)} />

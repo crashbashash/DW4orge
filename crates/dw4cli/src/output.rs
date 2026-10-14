@@ -29,6 +29,12 @@ pub fn info(result: &OpenResult) {
     );
     println!("container:  {source}");
     println!(
+        "region:     {}",
+        result
+            .region
+            .map_or("unknown (raw save)", dw4core::Region::label)
+    );
+    println!(
         "checksum:   {}",
         if view.checksum_ok { "ok" } else { "MISMATCH" }
     );

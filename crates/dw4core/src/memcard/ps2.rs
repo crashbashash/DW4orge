@@ -174,6 +174,29 @@ impl Ps2Memcard {
         })
     }
 
+    /// Find a regional save without silently picking one on a mixed-region card.
+    pub fn save_region(&self, requested: Option<crate::Region>) -> Result<crate::Region, Error> {
+        if let Some(region) = requested {
+            self.locate(region.save_name(), region.save_name())?;
+            return Ok(region);
+        }
+        let mut regions = Vec::new();
+        for region in crate::Region::ALL {
+            match self.locate(region.save_name(), region.save_name()) {
+                Ok(_) => regions.push(region),
+                Err(Error::SaveNotFound { .. }) => {}
+                Err(err) => return Err(err),
+            }
+        }
+        match regions.as_slice() {
+            [region] => Ok(*region),
+            [] => Err(Error::NoSave(
+                "no USA, European or Japanese DW4 save found in this card".into(),
+            )),
+            _ => Err(Error::AmbiguousRegion { regions }),
+        }
+    }
+
     /// Read `dir`/`file` out of the card.
     ///
     /// # Errors

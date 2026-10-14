@@ -5,7 +5,7 @@
 
 use dw4core::{
     Cap, Category, Difficulty, DifficultyChoice, EditSet, FieldError, FlagLabel, Item, Mirror,
-    Mode, SaveView, Severity, Species, StoryEdit, StoryKind, StoryPreset,
+    Mode, Region, SaveView, Severity, Species, StoryEdit, StoryKind, StoryPreset,
 };
 use ts_rs::{Config, ExportError, TS};
 
@@ -19,7 +19,7 @@ use crate::payload::{
 /// # Errors
 /// [`ExportError`] if a type cannot be exported.
 pub fn exported_types(cfg: &Config) -> Result<Vec<(&'static str, String)>, ExportError> {
-    Ok(vec![
+    let types = vec![
         ("AppInfo", AppInfo::export_to_string(cfg)?),
         ("Cap", Cap::export_to_string(cfg)?),
         ("Category", Category::export_to_string(cfg)?),
@@ -36,6 +36,7 @@ pub fn exported_types(cfg: &Config) -> Result<Vec<(&'static str, String)>, Expor
         ("NewSaveRequest", NewSaveRequest::export_to_string(cfg)?),
         ("OpenResult", OpenResult::export_to_string(cfg)?),
         ("PowerupLimit", PowerupLimit::export_to_string(cfg)?),
+        ("Region", Region::export_to_string(cfg)?),
         ("SaveView", SaveView::export_to_string(cfg)?),
         ("Severity", Severity::export_to_string(cfg)?),
         ("SourceKind", SourceKind::export_to_string(cfg)?),
@@ -45,7 +46,19 @@ pub fn exported_types(cfg: &Config) -> Result<Vec<(&'static str, String)>, Expor
         ("StoryKind", StoryKind::export_to_string(cfg)?),
         ("StoryPreset", StoryPreset::export_to_string(cfg)?),
         ("UiData", UiData::export_to_string(cfg)?),
-    ])
+    ];
+    Ok(types
+        .into_iter()
+        .map(|(name, body)| {
+            let body = body
+                .lines()
+                .map(str::trim_end)
+                .collect::<Vec<_>>()
+                .join("\n")
+                + "\n";
+            (name, body)
+        })
+        .collect())
 }
 
 /// The configuration every generation and check uses.

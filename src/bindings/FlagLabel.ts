@@ -3,11 +3,11 @@
 /**
  * A flag and the label the UI shows for it.
  */
-export type FlagLabel = { 
+export type FlagLabel = {
 /**
  * The flag index.
  */
-flag: number, 
+flag: number,
 /**
  * Human label.
  */

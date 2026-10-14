@@ -5,9 +5,9 @@
 //! an explicit value or left zero; the block is then duplicated and both
 //! checksums are fixed.
 //!
-//! This mirrors `dw4build.py` field for field, so a synthesised save is
-//! byte-identical to the Python builder's for the same input. `tests/builder.rs`
-//! proves that against nine Python-generated fixtures.
+//! Non-story bytes retain parity with the original Python builder. Story
+//! presets use corrected retail checkpoints and restoration mappings; tests
+//! verify that divergence separately from the byte-layout fixtures.
 
 use crate::codes::{MAX_LEVEL, level_threshold, upcnt_safe_cap};
 use crate::flags::{apply_story, preset_by_name};
@@ -39,7 +39,7 @@ pub struct SaveSpec {
 
     /// Model stem written to `DIGIMONNAME`, e.g. `p_dorumon`.
     pub digimon_name: String,
-    /// Player name, truncated to three fullwidth characters.
+    /// Player name, encoded as up to eight fullwidth characters.
     pub player_name: String,
     /// The active species. Keep in step with `digimon_name` via [`SaveSpec::set_species`].
     pub species: Species,
@@ -615,7 +615,7 @@ mod tests {
         let parsed = SaveData::parse(&build_save(&spec)).unwrap();
 
         // Active flags.
-        for flag in [0, 2, 66, 67, 701] {
+        for flag in [3, 20, 67, 320, 322, 383, 501, 502, 503, 504, 505, 506, 507] {
             assert_eq!(
                 parsed.get_bytes(offsets::BASE_FLAG + flag, 1),
                 &[1],
@@ -623,7 +623,7 @@ mod tests {
             );
         }
         // Their Normal mirrors.
-        for mirror in [699usize, 701, 707, 708] {
+        for mirror in [702usize, 707, 708, 725, 727, 804] {
             assert_eq!(
                 parsed.get_bytes(offsets::BASE_FLAG + mirror, 1),
                 &[1],
@@ -631,7 +631,7 @@ mod tests {
             );
         }
         // Folders and their mirrors.
-        for folder in 0..3usize {
+        for folder in 0..4usize {
             assert_eq!(
                 parsed.get_bytes(offsets::BASE_FLAG_FOLDER + folder, 1),
                 &[1],
@@ -644,7 +644,7 @@ mod tests {
             );
         }
         // Folders 3-9 stay clear.
-        for folder in 3..10usize {
+        for folder in 4..11usize {
             assert_eq!(
                 parsed.get_bytes(offsets::BASE_FLAG_FOLDER + folder, 1),
                 &[0],
@@ -666,21 +666,23 @@ mod tests {
         );
 
         // Active flags are identical across difficulties...
-        for flag in [0usize, 2, 66, 67, 701] {
+        for flag in [
+            3usize, 20, 67, 320, 322, 383, 501, 502, 503, 504, 505, 506, 507,
+        ] {
             assert_eq!(n[flag], 1, "Normal active {flag}");
             assert_eq!(h[flag], 1, "Hard active {flag}");
             assert_eq!(v[flag], 1, "Very Hard active {flag}");
         }
         // ...but the mirrors are not: each difficulty writes its own column and
         // every lower one, so 66 mirrors to 707 / 707+73 / 707+73+77.
-        assert_eq!((n[707], h[73], v[77]), (1, 1, 1));
-        assert_eq!((n[73], n[77]), (0, 0), "Normal reaches no harder column");
+        assert_eq!((n[708], h[74], v[78]), (1, 1, 1));
+        assert_eq!((n[74], n[78]), (0, 0), "Normal reaches no harder column");
         assert_eq!(
-            (h[707], h[77]),
+            (h[708], h[78]),
             (1, 0),
             "Hard fills Normal but not Very Hard"
         );
-        assert_eq!((v[707], v[73]), (1, 1), "Very Hard fills the whole stack");
+        assert_eq!((v[708], v[74]), (1, 1), "Very Hard fills the whole stack");
 
         // And the folder bands differ the same way.
         assert_eq!((n[518], h[530], v[542]), (1, 1, 1));

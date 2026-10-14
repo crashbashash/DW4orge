@@ -1,8 +1,6 @@
-//! The synthesised save must be byte-identical to the Python builder's.
-//!
-//! Every fixture here was produced by `dw4build.build_save`, so these tests
-//! compare whole 81,920-byte files rather than sampling fields. Because both
-//! Python sources agree on the presets, all six can be checked this way.
+//! Non-story synthesis retains the legacy Python builder's exact bytes.
+//! Story flags and folders deliberately differ: retail-derived regression tests
+//! in flags.rs cover corrected checkpoints and load-time restoration.
 use dw4core::{Difficulty, STORY_PRESETS, SaveSpec, build_save, spec_maxed, spec_with_story};
 use std::path::PathBuf;
 
@@ -22,7 +20,11 @@ fn differing_offsets(a: &[u8], b: &[u8]) -> Vec<usize> {
     a.iter()
         .zip(b)
         .enumerate()
-        .filter(|(i, (x, y))| x != y && *i >= 4)
+        .filter(|(i, (x, y))| {
+            x != y
+                && *i >= 4
+                && !(dw4core::offsets::BASE_FLAG..dw4core::offsets::BASE_COUNTER).contains(i)
+        })
         .map(|(i, _)| i)
         .collect()
 }
@@ -44,7 +46,7 @@ fn a_plain_fresh_save_is_byte_identical_to_python() {
 }
 
 #[test]
-fn a_fresh_story_save_is_byte_identical_to_python() {
+fn a_fresh_story_save_preserves_non_story_synthesis() {
     let spec = spec_with_story("Fresh (tutorial)", Difficulty::Normal).unwrap();
     let ours = build_save(&spec);
     let theirs = expected("fresh_story.raw");
@@ -55,7 +57,7 @@ fn a_fresh_story_save_is_byte_identical_to_python() {
 }
 
 #[test]
-fn a_maxed_save_is_byte_identical_to_python() {
+fn a_maxed_save_preserves_non_story_synthesis() {
     let spec = spec_maxed("Fresh (tutorial)", Difficulty::Normal, 999).unwrap();
     let ours = build_save(&spec);
     let theirs = expected("maxed.raw");
@@ -66,7 +68,7 @@ fn a_maxed_save_is_byte_identical_to_python() {
 }
 
 #[test]
-fn every_story_preset_is_byte_identical_to_python() {
+fn every_story_preset_preserves_non_story_synthesis() {
     // All six, because both Python sources agree on all six. If this fails for
     // one preset, the canonical list and the Python sources have diverged and
     // it needs a deliberate decision.
@@ -107,7 +109,7 @@ fn the_hard_and_very_hard_mirrors_have_no_python_equivalent_to_match() {
         let flags = &save[dw4core::offsets::BASE_FLAG..][..dw4core::offsets::FLAG_COUNT];
 
         // Folders 0..3 are set, so the first three of this band's mirrors are too.
-        for folder in 0..3u32 {
+        for folder in 0..4u32 {
             assert_eq!(
                 flags[(band + folder) as usize],
                 1,
@@ -115,7 +117,7 @@ fn the_hard_and_very_hard_mirrors_have_no_python_equivalent_to_match() {
             );
         }
         // Nothing leaks past the mirrored-folder window.
-        for folder in 3..10u32 {
+        for folder in 4..11u32 {
             assert_eq!(
                 flags[(band + folder) as usize],
                 0,

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { StatusBar } from '../components/StatusBar';
 import { Sidebar } from '../components/Sidebar';
 import { SummaryCard } from '../components/SummaryCard';
@@ -11,21 +13,40 @@ import { CloseGuard } from './CloseGuard';
 import { useEditor } from './EditorProvider';
 import { TopBar } from './TopBar';
 import { useShortcuts } from './useShortcuts';
+import { dirty } from './selectors';
 
 export function AppShell() {
-  const { state, open, save, saveAs, undo, redo, clearError } = useEditor();
+  const { state, open, openSample, save, saveAs, undo, redo, clearError } = useEditor();
+  const [pendingOpen, setPendingOpen] = useState<'open' | 'sample' | null>(null);
+  const requestOpen = (kind: 'open' | 'sample' = 'open') => {
+    if (state.status === 'busy') return;
+    if (dirty(state)) setPendingOpen(kind);
+    else void (kind === 'open' ? open() : openSample());
+  };
 
   useShortcuts({
-    open: () => void open(),
-    save: () => void save(),
-    saveAs: () => void saveAs(),
+    open: () => requestOpen(),
+    save: () => { if (state.status !== 'busy') void save(); },
+    saveAs: () => { if (state.status !== 'busy') void saveAs(); },
     undo,
     redo,
   });
 
   return (
     <div className="app">
-      <TopBar />
+      <TopBar onOpen={() => requestOpen()} onSample={() => requestOpen('sample')} />
+      <ConfirmDialog
+        isOpen={pendingOpen !== null}
+        title="Discard unsaved changes?"
+        message="This save has unsaved changes. Opening another save will discard them."
+        confirmLabel="Discard"
+        onCancel={() => setPendingOpen(null)}
+        onConfirm={() => {
+          const kind = pendingOpen;
+          setPendingOpen(null);
+          if (kind) void (kind === 'open' ? open() : openSample());
+        }}
+      />
       <CloseGuard />
       <div className="body">
         <Sidebar />
@@ -48,7 +69,7 @@ export function AppShell() {
               <h2>DW4orge</h2>
               <p>Open a PS2 memory card or a raw save to begin.</p>
               <div className="empty-actions">
-                <button type="button" onClick={() => void open()}>
+                <button type="button" onClick={() => requestOpen()}>
                   Open save
                 </button>
               </div>

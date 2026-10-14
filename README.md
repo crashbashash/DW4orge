@@ -44,7 +44,7 @@ native window title bar.
 | **Items** | The 30-slot device folder: searchable picker over the 539-item catalogue, rarity colour, `+N` bonus and mod count; Advanced also edits raw ids |
 | **Equipment** | 3 weapons, armor, board, and the 5 weapon / 5 armor mod sockets. A mod chip that is not in the inventory is added for you |
 | **Disks** | The 12 disk counts — HP/MP α–γ, Cure, Raise, Gate, Recovery, B. Pack, Key Chain |
-| **Story** | Kinda works, kinda doesn't. Still need to work on it. |
+| **Story** | Six retail-derived progression presets, per-difficulty drafts, flags, key folders and mirror-write previews |
 | **Bank** | Balance and the item slots |
 
 The item catalogue and every game constant are vendored from the disassembly,
@@ -150,8 +150,7 @@ Known gaps, roughly in priority order:
 - [ ] **Build a GameCube save editor.** DW4orge is only setup to work with PS2.
 - [ ] **Native Wayland Support**, currently uses a compatibility hook (sorta jank).
 - [ ] **Packaging for Arch and Flatpak.**
-- [ ] **Story changes not fully tested** Still need to test story changes
-  so don't expect the presets to be working properly.
+- [ ] **Complete campaign playthroughs after preset loading.** Automated retail tests cover loading, restoration and player control; subsequent boss and quest playthroughs remain separate.
 
 ## Documentation
 
@@ -159,6 +158,8 @@ Known gaps, roughly in priority order:
   filesystem, checksums and item-id packing.
 - [`docs/dw4ipc-cli-tauri-design.md`](docs/dw4ipc-cli-tauri-design.md) — the IPC
   payloads and the CLI/Tauri service layer.
+- [`docs/testing.md`](docs/testing.md) — optional desktop agent controls and
+  native editor/game regression runners.
 - [`docs/frontend-design.md`](docs/frontend-design.md) — the store, validation
   flow, fixtures and testing.
 

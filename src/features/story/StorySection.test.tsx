@@ -51,7 +51,7 @@ describe('StorySection', () => {
     expect((screen.getByLabelText(/tutorial \(fresh start\)/i) as HTMLInputElement).checked).toBe(
       false,
     );
-    expect((screen.getByLabelText(/world 1 access/i) as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText(/post-W1/i) as HTMLInputElement).checked).toBe(true);
   });
 
   it('overrides the detected difficulty', async () => {
@@ -73,7 +73,7 @@ describe('StorySection', () => {
     // The card has no Hard mirror column stored, so the mirrored bit reads off.
     expect(tutorial().checked).toBe(false);
     // A lobby flag has no mirror at all, so it is shared and stays checked.
-    expect((screen.getByLabelText(/lobby flag 24/i) as HTMLInputElement).checked).toBe(true);
+    expect((screen.getByLabelText(/terminal area introduction completed/i) as HTMLInputElement).checked).toBe(true);
   });
 
   it('keeps a preset applied on one difficulty when the selector moves away and back', async () => {
@@ -81,7 +81,7 @@ describe('StorySection', () => {
     // unsaved preset silently vanished until you saved after every change.
     await setup();
     const tutorial = () => screen.getByLabelText(/tutorial \(fresh start\)/i) as HTMLInputElement;
-    const world1 = () => screen.getByLabelText(/world 1 access/i) as HTMLInputElement;
+    const world1 = () => screen.getByLabelText(/post-W1/i) as HTMLInputElement;
 
     // Apply the preset on Normal, the detected difficulty.
     await userEvent.click(screen.getByRole('button', { name: /preset/i }));
@@ -112,6 +112,6 @@ describe('StorySection', () => {
     const rows = screen
       .getAllByRole('listitem')
       .map((item) => item.textContent?.replace(/\s+/g, ' ').trim());
-    expect(rows).toContain('Normal · flag 707 = set');
+    expect(rows).toContain('Normal · flag 708 = set');
   });
 });

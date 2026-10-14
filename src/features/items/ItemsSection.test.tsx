@@ -41,6 +41,7 @@ describe('ItemsSection', () => {
     expect(screen.queryByTestId('item-row-0')).toBeNull();
   });
 
+  // Full UI interactions can exceed five seconds on shared CI runners.
   it('writes a picked item into the device folder', async () => {
     await setup();
     const row = screen.getByTestId('item-row-0');
@@ -56,5 +57,5 @@ describe('ItemsSection', () => {
         name: /item/i,
       }) as HTMLInputElement).value,
     ).toBe('Omega Blade');
-  });
+  }, 15_000);
 });

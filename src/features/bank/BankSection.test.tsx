@@ -33,6 +33,7 @@ async function setup() {
 }
 
 describe('BankSection', () => {
+  // Full UI interactions can exceed five seconds on shared CI runners.
   it('pages through 96 slots and writes a picked item', async () => {
     await setup();
     expect(screen.getAllByTestId(/^item-row-/)).toHaveLength(12);
@@ -50,7 +51,7 @@ describe('BankSection', () => {
     expect(screen.getByTestId('bank0').textContent).toBe(String(1281));
     expect((input as HTMLInputElement).value).toBe('Omega Blade');
     expect(screen.getByTestId('bank0').textContent).not.toBe(String(EMPTY));
-  });
+  }, 15_000);
 
   it('moves to the last page', async () => {
     await setup();

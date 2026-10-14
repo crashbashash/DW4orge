@@ -79,7 +79,7 @@ describe('open → edit → save', () => {
 
     await waitFor(() => expect(saves).toHaveLength(1));
     expect(saves[0]?.story).toEqual([
-      { kind: 'flag', index: 66, value: true, difficulty: 'Normal' },
+      { kind: 'flag', index: 67, value: true, difficulty: 'Normal' },
     ]);
   });
 

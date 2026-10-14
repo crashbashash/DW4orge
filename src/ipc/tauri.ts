@@ -5,6 +5,10 @@ import type { Backend, ValidationReport } from './backend';
 import { OPEN_FILTERS, SAVE_FILTERS } from './backend';
 import { fieldErrors } from './errors';
 
+function agentControlsEnabled(): boolean {
+  return (window as Window & { __DW4_AGENT_CONTROL__?: boolean }).__DW4_AGENT_CONTROL__ === true;
+}
+
 export const tauriBackend: Backend = {
   appInfo: () => invoke('app_info'),
   openSave: (path) => invoke('open_save', { path }),
@@ -24,10 +28,13 @@ export const tauriBackend: Backend = {
   saveAs: (path, edits, mode): Promise<OpenResult> => invoke('save_as', { path, edits, mode }),
   speciesStats: (species: Species, mode: Mode) => invoke('species_stats', { species, mode }),
   async pickOpenPath() {
+    if (agentControlsEnabled()) return invoke<string | null>('agent_pick_path', { kind: 'open' });
     const picked = await open({ multiple: false, directory: false, filters: OPEN_FILTERS });
     return typeof picked === 'string' ? picked : null;
   },
-  pickSavePath: (defaultName) => save({ defaultPath: defaultName, filters: SAVE_FILTERS }),
+  pickSavePath: (defaultName) => agentControlsEnabled()
+    ? invoke<string | null>('agent_pick_path', { kind: 'save' })
+    : save({ defaultPath: defaultName, filters: SAVE_FILTERS }),
   async onCloseRequested(handler) {
     // Imported lazily, like `theme.ts`, so the window module stays out of the
     // initial bundle.

@@ -313,28 +313,31 @@ meaning `base_id & 0xFF` within the stated category:
 `BASE_FLAG[i] == 0x01` means "event happened / boss defeated / flag set".
 `BASE_FLAGFOLDER[i] == 0x01` means "folder SET". Folders are not inverted.
 
-The title screen restores **active ← mirror** on load, so an edit survives only
-if the mirror byte is written too. The complete per-difficulty map (from
-`FLAG_MAP.md` §7) is:
+The title screen restores **active ← mirror** on load. The retail load script
+(`entry_0806/chunk_0006`) and save script (`entry_0810/chunk_0004`) agree on
+these **43** mappings. An earlier Lua decoder omitted inclusive loop endpoints
+and shifted several IDs; the Python story tables inherited those errors.
 
-| active | Normal (−1) | Hard (0) | Very Hard (1) |
+| active | Normal (0) | Hard (1) | Very Hard (2) |
 | --- | --- | --- | --- |
-| intro 0–4 | 699–703 | 6–10 | 12–16 |
-| 18–19 | 705–706 | 740–741 | 770–771 |
-| 66–68 | 707–709 | 73–75 | 77–79 |
-| 82 | 711 | 742 | 772 |
-| 85 | 712 | 86 | 87 |
-| 88–97 | 713–722 | 743–752 | 773–782 |
-| 319–325 | 724–730 | 754–760 | 784–790 |
-| 328–331 | 732–735 | 762–765 | 792–795 |
-| 334 | 737 | 767 | 797 |
-| 48 | 800 | 801 | 802 |
-| 382 | 803 | 804 | 805 |
-| 81 | 806 | 807 | 808 |
-| 333 | 809 | 810 | 811 |
+| intro/chapter 1–6 | 700–705 | 7–12 | 13–18 |
+| 19–20 | 706–707 | 741–742 | 771–772 |
+| bosses 67–70 | 708–711 | 74–77 | 78–81 |
+| 83 | 712 | 743 | 773 |
+| story cleared 86 | 713 | 87 | 88 |
+| 89–99 | 714–724 | 744–754 | 774–784 |
+| 320–327 | 725–732 | 755–762 | 785–792 |
+| 329–333 | 733–737 | 763–767 | 793–797 |
+| 335 | 738 | 768 | 798 |
+| 49 | 801 | 802 | 803 |
+| 383 | 804 | 805 | 806 |
+| 82 | 807 | 808 | 809 |
+| 334 | 810 | 811 | 812 |
 
-Folders: `folder[i]` mirrors to flag `518+i` (Normal), `530+i` (Hard),
-`542+i` (Very Hard), for `i` in 0–9.
+Folders 0–10 restore from `518+i` (Normal), `530+i` (Hard), or `542+i`
+(Very Hard). Folder 11 is saved but cleared without restoration on load.
+Quest flags 376–381 and final-scene flag 610 are also cleared on load.
+
 
 Difficulty is **not stored in the save**. It is inferred by scoring each
 difficulty's mirror set against the live bytes and taking the highest; a tie
@@ -363,21 +366,15 @@ editor reads and writes the columns like this:
 
 ## 5. Deliberate divergences from the Python implementation
 
-The Python editor is the only known-good implementation. DW4orge deviates from
-it in the deliberate ways below — behavioural, plus one feature it drops — and
-records each here.
+The Python editor remains a byte-layout oracle for non-story fields. Story
+semantics are verified against corrected retail scripts and actual game loads.
+DW4orge differs in the following ways.
 
-1. **Mirror table.** The Python editor carries two different *partial* mirror
-   tables. `save_editor_gui.FLAG_MIRRORS` knows 10 flags per difficulty;
-   `dw4build.NORMAL_FLAG_MIRRORS` knows all 38 for Normal only. Neither
-   describes Hard or Very Hard completely. DW4orge implements the complete
-   table in §4.5 for all three difficulties.
-
-   Verified against both sources: our Normal column is **exactly**
-   `dw4build.NORMAL_FLAG_MIRRORS` (38 of 38 rows), and the GUI's tables are
-   strict subsets of ours — 10 flags each, all 10 covered, for all three
-   difficulties. The GUI omits 28 flags: 18–19, 88–97, 319–331, 334, 48, 382,
-   81 and 333.
+1. **Retail-derived story state.** The old Python mirror tables are incomplete
+   and their presets omit prerequisite state. DW4orge uses all 43 mappings in
+   §4.5 and complete progression checkpoints extracted from the retail debug
+   scripts. Tests preserve Python parity for non-story bytes while independently
+   checking game restoration of story flags and folders.
 
 2. **New-save difficulty.** The Python New dialog never asks for a difficulty,
    and `dw4build._build_story` hardcodes the Normal mirror map, silently
@@ -392,18 +389,18 @@ records each here.
    being mapped and is not carried over (see §1). Advanced **mode** remains: it
    still unlocks glitch/crash item IDs and values above the in-game caps.
 
-4. **No silent clamping in the frontend.** The Python `collect()` clamps BIT to
-   the Normal cap (`_clamp_bit`) and rewrites the widget. DW4orge shows the
-   typed value and an inline error instead, so a save never persists a number
-   the user did not enter. The authoritative caps are unchanged; only the
-   silent rewrite is dropped.
+4. **Normal-mode input limits.** Numeric inputs enforce the displayed Normal
+   caps on entry and commit. Advanced mode permits values above gameplay caps;
+   Rust still validates data-type bounds and rejects invalid writes.
 
 5. **A mode change does not reload species stats.** The Python editor re-reads
    the stored EXP when Advanced is toggled (via `_load_species_stats`), which
    shows a lower value than Normal's lifted one. DW4orge keeps the draft across
    a toggle — mode affects validation and the cap hints only — because
    re-projecting would discard unsaved edits. Switching *species* still reloads
-   that species' stored block, through `species_stats`.
+   that species' stored block, through `species_stats`. Unsaved level, EXP,
+   technique or power-up edits require an explicit discard confirmation before
+   a species switch; cancelling retains the current draft.
 
 6. **Techniques are labelled with the `codes::TECHNIQUES` names** (`blunt`,
    `slash`, …), as the Python editor labels them. The names are not in any IPC
@@ -430,25 +427,30 @@ records each here.
 
 ### Story presets
 
-Both Python sources agree on all six presets, flag for flag, so there is no
-inconsistency to resolve here. DW4orge keeps the single canonical list below so
-the Story tab and the New Save dialog cannot drift apart, and pins it against
-the Python values with a test.
+The canonical presets follow the game's debug progression checkpoints
+(`entry_0603/chunks_0071–0075`). They include tutorial and briefing prerequisites,
+not just a chapter selector and boss bits. A new record also retains init flag
+960. Presets contain active flags; mirror bytes are derived for the selected
+and lower difficulties.
 
-| Preset | Folders set | Flags set |
+| Preset | Folders set | Chapter/completion state |
 | --- | --- | --- |
-| Fresh (tutorial) | — | 1, 24, 501, 508, 931, 935, 936, 960 |
-| After World 1 | 0–2 | 0, 2, 66, 67, 701 |
-| After World 2 | 0–5 | 0, 4, 66, 67, 68, 703 |
-| After World 3 | 0–8 | 0, 5, 67, 68, 69, 82, 704 |
-| All worlds + keys | 0–10 | 0, 6, 67, 68, 69, 82, 705 |
-| Story cleared (post-game) | 0–10 | 0, 67, 68, 69, 82, 85, 609 |
+| Fresh (tutorial) | — | tutorial 1 |
+| After World 1 | 0–3 | post-W1/key briefing 3 |
+| After World 2 | 0–5 | World 3 briefing 5 |
+| After World 3 | 0–8 | World 4 briefing 6 |
+| All worlds + keys | 0–10 | World 4, keys collected; final clear off |
+| Story cleared (post-game) | 0–10 | final clear 86; chapter 1–6 off |
 
-Note that flag 66 belongs to "After World 1" and "After World 2" only: it is
-Apocalymon, the World 1 boss, and it presumes W1 is where you are. Flag 609 is
-the final scene and appears only in "Story cleared".
+`flags::STORY_PRESETS` is the complete flag list. The Story panel replaces every
+preset-governed milestone, including required bits without visible checkboxes,
+so applying Fresh after a progressed preset removes its prerequisites. Unrelated
+flags remain untouched.
 
-Everything else is intended to be behaviourally identical to the Python editor.
+The game determines which difficulties are available from its completion state.
+The editor's difficulty selection chooses which story columns are written; it
+does not bypass the game's difficulty-selection menu. See
+[automated testing](testing.md) for the native editor and retail test runners.
 
 ---
 

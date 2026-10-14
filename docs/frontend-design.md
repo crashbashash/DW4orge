@@ -220,23 +220,22 @@ them.
 - **Gate:** `npm run typecheck && npm run lint && npm test && npm run build &&
   npm run check:contrast`.
 
-## 8. Not verified
+## 8. Native regression coverage
 
-The following paths are outside the automated gate:
+The optional agent-control shell runs the production frontend and Rust service.
+Native tests cover all presets and editor difficulty settings, raw and card
+save/reopen, character values, inventory, equipment, disks, bank pages, story
+replacement, all species, undo/redo, error handling and the native close guard.
+[Testing](testing.md) documents the protocol and reproducible runners.
 
-- **No visual check.** Layout, colour and focus behaviour are not covered by the
-  test suite; they need `npm run dev` in a browser.
-- **Native packaging and desktop integration.** The Tauri shell has its own
-  compile gate in CI. Package installation, native dialogs, window-manager
-  behaviour and platform-specific icons require manual testing on each
-  supported operating system.
-- **The native window-close prompt.** `CloseGuard` is exercised in jsdom
-  against a mock that fires the handler by hand; the real
-  `getCurrentWindow().onCloseRequested` / `destroy()` path needs the Tauri
-  shell, so it is compiled (`cargo check`) but not driven by a real window.
-- **The native title bar following the app theme** (`theme.ts` calling Tauri's
-  `set_theme`, which tao maps to `gtk-application-prefer-dark-theme`) is a
-  real-Wayland path. jsdom and Xvfb cannot show the GTK client-side header bar,
-  so this is only observable on a compositor that draws it (KDE Plasma on
-  Wayland).
-- **Whether the game accepts an edited save** remains a manual PCSX2 check.
+Opening through the toolbar, Ctrl+O or the browser sample action uses the same
+unsaved-work guard. A species switch separately checks for unsaved level, EXP,
+technique and power-up edits: Cancel preserves them; switching requires an
+explicit discard. The check uses the latest draft after asynchronous reads,
+and ignores stale replies after a session or mode change.
+
+Retail tests cold-boot generated cards, load every difficulty the game offers,
+and inspect actual restored flags, folders, selected difficulty and player
+control. This is save acceptance and opening-state coverage, rather than a
+complete campaign, boss or quest playthrough. Other regional discs and native
+Windows/macOS launch behavior remain outside the verified scope.

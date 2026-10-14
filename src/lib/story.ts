@@ -12,11 +12,11 @@ export type StoryGroup = { key: StoryGroupKey; label: string; flags: FlagLabel[]
  * (`INTRO_FLAGS`, `CHAPTER_FLAGS`, `BOSS_FLAGS`, `QUEST_FLAGS`, `LOBBY_FLAGS`).
  */
 const GROUPS: readonly { key: StoryGroupKey; label: string; size: number }[] = [
-  { key: 'intro', label: 'Intro', size: 7 },
-  { key: 'chapters', label: 'Chapters', size: 6 },
+  { key: 'intro', label: 'Story phase', size: 7 },
+  { key: 'chapters', label: 'Milestones', size: 6 },
   { key: 'bosses', label: 'Bosses', size: 7 },
-  { key: 'quests', label: 'Quests', size: 6 },
-  { key: 'lobby', label: 'Lobby', size: 7 },
+  { key: 'quests', label: 'Quests (reset on load)', size: 6 },
+  { key: 'lobby', label: 'Tutorial and lobby', size: 7 },
 ];
 
 const TOTAL_LABELS = GROUPS.reduce((sum, group) => sum + group.size, 0);
@@ -45,7 +45,7 @@ export function storyGroups(labels: readonly FlagLabel[]): StoryGroup[] {
 const FOLDER_MIRROR_BASE: Record<Difficulty, number> = { Normal: 518, Hard: 530, VeryHard: 542 };
 
 /** `flags::MIRRORED_FOLDERS`. */
-const MIRRORED_FOLDERS = 10;
+const MIRRORED_FOLDERS = 11;
 
 /** Difficulty order, matching `Difficulty::ALL` and `Difficulty::index`. */
 export const DIFFICULTY_ORDER: readonly Difficulty[] = ['Normal', 'Hard', 'VeryHard'];
@@ -108,6 +108,11 @@ export function applyPresetToStory(
   const onFlags = new Set(preset.flags);
   for (const flag of governedFlags) {
     if (flag >= 0 && flag < flags.length) flags[flag] = onFlags.has(flag);
+  }
+
+  // Presets also carry required milestones outside the displayed checkboxes.
+  for (const flag of preset.flags) {
+    if (flag >= 0 && flag < flags.length) flags[flag] = true;
   }
 
   const onFolders = new Set(preset.folders);

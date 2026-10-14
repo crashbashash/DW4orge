@@ -8,17 +8,15 @@
 //! Difficulty is **not stored in the save**. It is inferred by counting which
 //! mirror set is live (see [`detect_difficulty`]).
 //!
-//! Table provenance: reverse-engineered flag mappings derived from diffs of real
-//! in-game checkpoint saves. It is the union of the Python editor's two partial
-//! tables and supersedes both: the GUI's `FLAG_MIRRORS` knows 10 flags per
-//! difficulty, and `dw4build.NORMAL_FLAG_MIRRORS` knows all 38 for Normal only.
-//! Our Normal column is byte-equal to the builder's map, and the GUI's tables
-//! are strict subsets of ours — both verified against the Python sources.
+//! Table provenance: corrected retail title-screen restoration
+//! (`entry_0806/chunk_0006`) and character-select save (`entry_0810/chunk_0004`).
+//! The old Python tables omitted inclusive loop endpoints and included flags
+//! that are not mirrored. Tests use independently extracted retail mappings.
 
 use crate::offsets;
 use serde::{Deserialize, Serialize};
 
-/// The save's difficulty. Normal is `SYSgetDifficulty() == -1`.
+/// The save's difficulty. Normal is `SYSgetDifficulty() == 0`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "ts", derive(ts_rs::TS))]
 pub enum Difficulty {
@@ -84,57 +82,53 @@ impl Mirror {
 
 /// The complete active → mirror map, one row per flag. See the module docs.
 ///
-/// Laid out one row per line on purpose: this is the table from `FLAG_MAP.md`
-/// §7, and `rustfmt` would put each row on four lines.
+/// The retail scripts use inclusive loops; every endpoint is represented.
+/// Kept on one row per line for direct comparison with the extracted oracle.
 #[rustfmt::skip]
 pub const MIRRORS: &[Mirror] = &[
-    // intro 0-4
-    Mirror { active: 0,   normal: 699, hard: 6,   very_hard: 12 },
-    Mirror { active: 1,   normal: 700, hard: 7,   very_hard: 13 },
-    Mirror { active: 2,   normal: 701, hard: 8,   very_hard: 14 },
-    Mirror { active: 3,   normal: 702, hard: 9,   very_hard: 15 },
-    Mirror { active: 4,   normal: 703, hard: 10,  very_hard: 16 },
-    // 18-19
-    Mirror { active: 18,  normal: 705, hard: 740, very_hard: 770 },
-    Mirror { active: 19,  normal: 706, hard: 741, very_hard: 771 },
-    // bosses 66-68
-    Mirror { active: 66,  normal: 707, hard: 73,  very_hard: 77 },
-    Mirror { active: 67,  normal: 708, hard: 74,  very_hard: 78 },
-    Mirror { active: 68,  normal: 709, hard: 75,  very_hard: 79 },
-    // 82, 85
-    Mirror { active: 82,  normal: 711, hard: 742, very_hard: 772 },
-    Mirror { active: 85,  normal: 712, hard: 86,  very_hard: 87 },
-    // 88-97
-    Mirror { active: 88,  normal: 713, hard: 743, very_hard: 773 },
-    Mirror { active: 89,  normal: 714, hard: 744, very_hard: 774 },
-    Mirror { active: 90,  normal: 715, hard: 745, very_hard: 775 },
-    Mirror { active: 91,  normal: 716, hard: 746, very_hard: 776 },
-    Mirror { active: 92,  normal: 717, hard: 747, very_hard: 777 },
-    Mirror { active: 93,  normal: 718, hard: 748, very_hard: 778 },
-    Mirror { active: 94,  normal: 719, hard: 749, very_hard: 779 },
-    Mirror { active: 95,  normal: 720, hard: 750, very_hard: 780 },
-    Mirror { active: 96,  normal: 721, hard: 751, very_hard: 781 },
-    Mirror { active: 97,  normal: 722, hard: 752, very_hard: 782 },
-    // 319-325
-    Mirror { active: 319, normal: 724, hard: 754, very_hard: 784 },
+    Mirror { active: 1, normal: 700, hard: 7, very_hard: 13 },
+    Mirror { active: 2, normal: 701, hard: 8, very_hard: 14 },
+    Mirror { active: 3, normal: 702, hard: 9, very_hard: 15 },
+    Mirror { active: 4, normal: 703, hard: 10, very_hard: 16 },
+    Mirror { active: 5, normal: 704, hard: 11, very_hard: 17 },
+    Mirror { active: 6, normal: 705, hard: 12, very_hard: 18 },
+    Mirror { active: 19, normal: 706, hard: 741, very_hard: 771 },
+    Mirror { active: 20, normal: 707, hard: 742, very_hard: 772 },
+    Mirror { active: 49, normal: 801, hard: 802, very_hard: 803 },
+    Mirror { active: 67, normal: 708, hard: 74, very_hard: 78 },
+    Mirror { active: 68, normal: 709, hard: 75, very_hard: 79 },
+    Mirror { active: 69, normal: 710, hard: 76, very_hard: 80 },
+    Mirror { active: 70, normal: 711, hard: 77, very_hard: 81 },
+    Mirror { active: 82, normal: 807, hard: 808, very_hard: 809 },
+    Mirror { active: 83, normal: 712, hard: 743, very_hard: 773 },
+    Mirror { active: 86, normal: 713, hard: 87, very_hard: 88 },
+    Mirror { active: 89, normal: 714, hard: 744, very_hard: 774 },
+    Mirror { active: 90, normal: 715, hard: 745, very_hard: 775 },
+    Mirror { active: 91, normal: 716, hard: 746, very_hard: 776 },
+    Mirror { active: 92, normal: 717, hard: 747, very_hard: 777 },
+    Mirror { active: 93, normal: 718, hard: 748, very_hard: 778 },
+    Mirror { active: 94, normal: 719, hard: 749, very_hard: 779 },
+    Mirror { active: 95, normal: 720, hard: 750, very_hard: 780 },
+    Mirror { active: 96, normal: 721, hard: 751, very_hard: 781 },
+    Mirror { active: 97, normal: 722, hard: 752, very_hard: 782 },
+    Mirror { active: 98, normal: 723, hard: 753, very_hard: 783 },
+    Mirror { active: 99, normal: 724, hard: 754, very_hard: 784 },
     Mirror { active: 320, normal: 725, hard: 755, very_hard: 785 },
     Mirror { active: 321, normal: 726, hard: 756, very_hard: 786 },
     Mirror { active: 322, normal: 727, hard: 757, very_hard: 787 },
     Mirror { active: 323, normal: 728, hard: 758, very_hard: 788 },
     Mirror { active: 324, normal: 729, hard: 759, very_hard: 789 },
     Mirror { active: 325, normal: 730, hard: 760, very_hard: 790 },
-    // 328-331
-    Mirror { active: 328, normal: 732, hard: 762, very_hard: 792 },
+    Mirror { active: 326, normal: 731, hard: 761, very_hard: 791 },
+    Mirror { active: 327, normal: 732, hard: 762, very_hard: 792 },
     Mirror { active: 329, normal: 733, hard: 763, very_hard: 793 },
     Mirror { active: 330, normal: 734, hard: 764, very_hard: 794 },
     Mirror { active: 331, normal: 735, hard: 765, very_hard: 795 },
-    // 334
-    Mirror { active: 334, normal: 737, hard: 767, very_hard: 797 },
-    // the four singles
-    Mirror { active: 48,  normal: 800, hard: 801, very_hard: 802 },
-    Mirror { active: 382, normal: 803, hard: 804, very_hard: 805 },
-    Mirror { active: 81,  normal: 806, hard: 807, very_hard: 808 },
-    Mirror { active: 333, normal: 809, hard: 810, very_hard: 811 },
+    Mirror { active: 332, normal: 736, hard: 766, very_hard: 796 },
+    Mirror { active: 333, normal: 737, hard: 767, very_hard: 797 },
+    Mirror { active: 334, normal: 810, hard: 811, very_hard: 812 },
+    Mirror { active: 335, normal: 738, hard: 768, very_hard: 798 },
+    Mirror { active: 383, normal: 804, hard: 805, very_hard: 806 },
 ];
 
 /// First flag of each difficulty's folder-mirror band: 518 / 530 / 542.
@@ -142,8 +136,8 @@ pub const FOLDER_MIRROR_BASE: [u32; 3] = [518, 530, 542];
 
 /// How many folders are mirrored. Folder `N` mirrors to `base + N`.
 ///
-/// Folders 10 and 11 exist in `BASE_FLAGFOLDER` but have no mirror.
-pub const MIRRORED_FOLDERS: usize = 10;
+/// Folders 0–10 are restored on load. Folder 11 is not restored.
+pub const MIRRORED_FOLDERS: usize = 11;
 
 /// The flag that mirrors folder `folder` on `difficulty`, if it has one.
 #[must_use]
@@ -226,7 +220,7 @@ pub struct FlagLabel {
 pub const INTRO_FLAGS: &[FlagLabel] = &[
     FlagLabel {
         flag: 0,
-        label: "Idle (no active chapter - locked if 1-6 are all off)",
+        label: "Conversation state (transient)",
     },
     FlagLabel {
         flag: 1,
@@ -254,124 +248,87 @@ pub const INTRO_FLAGS: &[FlagLabel] = &[
     },
 ];
 
-/// Era markers. These overlap the intro mirrors deliberately.
+/// Persistent story milestones, separate from the current chapter selector.
+#[rustfmt::skip]
 pub const CHAPTER_FLAGS: &[FlagLabel] = &[
-    FlagLabel {
-        flag: 701,
-        label: "World 1 era",
-    },
-    FlagLabel {
-        flag: 702,
-        label: "Post-W1 (Ophanimon key)",
-    },
-    FlagLabel {
-        flag: 703,
-        label: "World 2 era",
-    },
-    FlagLabel {
-        flag: 704,
-        label: "World 3 era",
-    },
-    FlagLabel {
-        flag: 705,
-        label: "World 4 era",
-    },
-    FlagLabel {
-        flag: 706,
-        label: "Post-W4",
-    },
+    FlagLabel { flag: 19, label: "Story milestone 19" },
+    FlagLabel { flag: 20, label: "Leomon rescue completed" },
+    FlagLabel { flag: 320, label: "Tutorial completed" },
+    FlagLabel { flag: 322, label: "Leomon rescue briefing completed" },
+    FlagLabel { flag: 326, label: "World 3 briefing completed" },
+    FlagLabel { flag: 327, label: "World 4 briefing completed" },
 ];
 
 /// Boss defeats and the story-cleared markers.
 pub const BOSS_FLAGS: &[FlagLabel] = &[
     FlagLabel {
-        flag: 66,
+        flag: 67,
         label: "Apocalymon (W1)",
     },
     FlagLabel {
-        flag: 67,
-        label: "BelialVamdemon (W1)",
-    },
-    FlagLabel {
         flag: 68,
-        label: "Lucemon (W2)",
+        label: "BelialVamdemon (W2)",
     },
     FlagLabel {
         flag: 69,
-        label: "Devimon (W3)",
+        label: "Lucemon (W3)",
     },
     FlagLabel {
-        flag: 82,
+        flag: 70,
+        label: "Mecha Rogue X (final)",
+    },
+    FlagLabel {
+        flag: 83,
         label: "LordKnightmon",
     },
     FlagLabel {
-        flag: 85,
+        flag: 86,
         label: "Story cleared (final)",
     },
     FlagLabel {
-        flag: 609,
-        label: "Final scene",
+        flag: 610,
+        label: "Final scene (transient)",
     },
 ];
 
 /// The quest-chain flags.
 pub const QUEST_FLAGS: &[FlagLabel] = &[
     FlagLabel {
-        flag: 375,
+        flag: 376,
         label: "Quest 1",
     },
     FlagLabel {
-        flag: 376,
+        flag: 377,
         label: "Quest 2",
     },
     FlagLabel {
-        flag: 377,
+        flag: 378,
         label: "Quest 3",
     },
     FlagLabel {
-        flag: 378,
+        flag: 379,
         label: "Quest 4",
     },
     FlagLabel {
-        flag: 379,
+        flag: 380,
         label: "Quest 5",
     },
     FlagLabel {
-        flag: 380,
+        flag: 381,
         label: "Final gate",
     },
 ];
 
-/// Always-on lobby and system flags, set at new game and never cleared.
+/// Tutorial and lobby progress. These are state, not unconditional init bits.
+#[rustfmt::skip]
 pub const LOBBY_FLAGS: &[FlagLabel] = &[
-    FlagLabel {
-        flag: 24,
-        label: "Lobby flag 24 (first-visit)",
-    },
-    FlagLabel {
-        flag: 501,
-        label: "Lobby flag 501 (save state)",
-    },
-    FlagLabel {
-        flag: 508,
-        label: "Lobby flag 508 (early state)",
-    },
-    FlagLabel {
-        flag: 931,
-        label: "Lobby flag 931 (quest init)",
-    },
-    FlagLabel {
-        flag: 935,
-        label: "Lobby flag 935 (quest init)",
-    },
-    FlagLabel {
-        flag: 936,
-        label: "Lobby flag 936 (quest init)",
-    },
-    FlagLabel {
-        flag: 960,
-        label: "Lobby flag 960 (system init)",
-    },
+    FlagLabel { flag: 501, label: "Terminal Area introduction completed" },
+    FlagLabel { flag: 502, label: "Commander Room introduction completed" },
+    FlagLabel { flag: 503, label: "Practice stage completed" },
+    FlagLabel { flag: 504, label: "Tutorial milestone 504" },
+    FlagLabel { flag: 505, label: "Tutorial milestone 505" },
+    FlagLabel { flag: 506, label: "Tutorial milestone 506" },
+    FlagLabel { flag: 507, label: "Tutorial milestone 507" },
 ];
 
 /// The twelve `BASE_FLAGFOLDER` slots, in order.
@@ -387,7 +344,7 @@ pub const FOLDER_LABELS: [&str; 12] = [
     "Vein (W3, Diaboro ID)",
     "Mecha Nest (W4, MRE05 ID)",
     "Electro Mine (W4, LordKnight ID)",
-    "(unused)",
+    "Sidequest completion (not restored on load)",
 ];
 
 /// A complete story state: which flags and folders to set.
@@ -402,43 +359,40 @@ pub struct StoryPreset {
     pub folders: &'static [u32],
 }
 
-/// The canonical story presets.
-///
-/// Both Python sources — the GUI's `STORY_PRESETS` and `dw4build.STORY_PRESETS`
-/// — agree on all six of these, flag for flag, so there is no inconsistency to
-/// resolve. Keeping one list here means the Story tab and the New Save dialog
-/// cannot drift apart, and `tests/flags.rs` pins every entry against the Python
-/// values.
+/// Canonical presets based on the retail debug progression checkpoints.
+/// Fresh starts retain only the tutorial selector and the player init bit.
+/// Progressed presets include prerequisite tutorial and briefing state; a chapter
+/// flag alone is not a complete playable checkpoint.
 #[rustfmt::skip]
 pub const STORY_PRESETS: &[StoryPreset] = &[
     StoryPreset {
         name: "Fresh (tutorial)",
-        flags: &[1, 24, 501, 508, 931, 935, 936, 960],
+        flags: &[1, 960],
         folders: &[],
     },
     StoryPreset {
         name: "After World 1",
-        flags: &[0, 2, 66, 67, 701],
-        folders: &[0, 1, 2],
+        flags: &[3, 20, 67, 320, 322, 383, 501, 502, 503, 504, 505, 506, 507],
+        folders: &[0, 1, 2, 3],
     },
     StoryPreset {
         name: "After World 2",
-        flags: &[0, 4, 66, 67, 68, 703],
+        flags: &[5, 20, 50, 67, 68, 82, 320, 321, 322, 323, 324, 325, 326, 329, 330, 331, 332, 335, 383, 501, 502, 503, 504, 505, 506, 507],
         folders: &[0, 1, 2, 3, 4, 5],
     },
     StoryPreset {
         name: "After World 3",
-        flags: &[0, 5, 67, 68, 69, 82, 704],
+        flags: &[6, 20, 50, 56, 57, 67, 68, 69, 82, 320, 321, 322, 323, 324, 325, 326, 327, 329, 330, 331, 332, 333, 335, 383, 501, 502, 503, 504, 505, 506, 507, 904],
         folders: &[0, 1, 2, 3, 4, 5, 6, 7, 8],
     },
     StoryPreset {
         name: "All worlds + keys",
-        flags: &[0, 6, 67, 68, 69, 82, 705],
+        flags: &[6, 20, 50, 56, 57, 67, 68, 69, 82, 83, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 335, 383, 501, 502, 503, 504, 505, 506, 507, 904],
         folders: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     },
     StoryPreset {
         name: "Story cleared (post-game)",
-        flags: &[0, 67, 68, 69, 82, 85, 609],
+        flags: &[20, 50, 56, 57, 67, 68, 69, 70, 82, 83, 86, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 335, 383, 501, 502, 503, 504, 505, 506, 507, 904],
         folders: &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     },
 ];
@@ -466,12 +420,11 @@ pub struct StoryState {
 /// `Document::apply`: a save played on a harder difficulty still has to satisfy
 /// the lower difficulties' unlock state.
 ///
-/// Explicit preset flags are re-applied last: some of them (701, 703, 705) are
-/// also mirror targets, and must keep the value the preset asked for. The
-/// Python builder orders its writes the same way.
+/// Presets contain active flags only; mirror values are derived from them.
 #[must_use]
 pub fn apply_story(preset: &StoryPreset, difficulty: Difficulty) -> StoryState {
     let mut flags = vec![0u8; offsets::FLAG_COUNT];
+    flags[960] = 1;
     let mut folders = vec![0u8; offsets::FOLDER_COUNT];
 
     for &flag in preset.flags {
@@ -498,11 +451,6 @@ pub fn apply_story(preset: &StoryPreset, difficulty: Difficulty) -> StoryState {
         }
     }
 
-    // Re-apply, so an explicit flag that is also a mirror target keeps its value.
-    for &flag in preset.flags {
-        flags[flag as usize] = 1;
-    }
-
     StoryState { flags, folders }
 }
 
@@ -513,8 +461,8 @@ mod tests {
 
     #[test]
     fn the_table_has_one_row_per_mirrored_flag() {
-        // 5 intro + 2 + 3 bosses + 2 + 10 + 7 + 4 + 1 + 4 singles = 38.
-        assert_eq!(MIRRORS.len(), 38);
+        // Inclusive retail loops: 6 + 2 + 4 + 2 + 11 + 8 + 5 + 1 + 4 = 43.
+        assert_eq!(MIRRORS.len(), 43);
     }
 
     #[test]
@@ -525,81 +473,6 @@ mod tests {
                 seen.insert(row.active),
                 "active {} appears twice",
                 row.active
-            );
-        }
-    }
-
-    #[test]
-    fn the_documented_rows_are_present_and_correct() {
-        let find = |active: u32| *MIRRORS.iter().find(|r| r.active == active).expect("row");
-
-        // Intro 0-4 -> 699-703 / 6-10 / 12-16.
-        let intro = find(0);
-        assert_eq!((intro.normal, intro.hard, intro.very_hard), (699, 6, 12));
-        let intro4 = find(4);
-        assert_eq!(
-            (intro4.normal, intro4.hard, intro4.very_hard),
-            (703, 10, 16)
-        );
-
-        // 18-19.
-        let eighteen = find(18);
-        assert_eq!(
-            (eighteen.normal, eighteen.hard, eighteen.very_hard),
-            (705, 740, 770)
-        );
-
-        // The bosses and the final-clear flag.
-        let apoc = find(66);
-        assert_eq!((apoc.normal, apoc.hard, apoc.very_hard), (707, 73, 77));
-        let cleared = find(85);
-        assert_eq!(
-            (cleared.normal, cleared.hard, cleared.very_hard),
-            (712, 86, 87)
-        );
-
-        // A range row at both ends, and the four singles.
-        let q = find(88);
-        assert_eq!((q.normal, q.hard, q.very_hard), (713, 743, 773));
-        let late = find(97);
-        assert_eq!((late.normal, late.hard, late.very_hard), (722, 752, 782));
-        let range319 = find(319);
-        assert_eq!(
-            (range319.normal, range319.hard, range319.very_hard),
-            (724, 754, 784)
-        );
-        let range325 = find(325);
-        assert_eq!(
-            (range325.normal, range325.hard, range325.very_hard),
-            (730, 760, 790)
-        );
-        let range328 = find(328);
-        assert_eq!(
-            (range328.normal, range328.hard, range328.very_hard),
-            (732, 762, 792)
-        );
-        let range331 = find(331);
-        assert_eq!(
-            (range331.normal, range331.hard, range331.very_hard),
-            (735, 765, 795)
-        );
-        let thirty_four = find(334);
-        assert_eq!(
-            (thirty_four.normal, thirty_four.hard, thirty_four.very_hard),
-            (737, 767, 797)
-        );
-
-        for (active, normal, hard, very_hard) in [
-            (48, 800, 801, 802),
-            (382, 803, 804, 805),
-            (81, 806, 807, 808),
-            (333, 809, 810, 811),
-        ] {
-            let row = find(active);
-            assert_eq!(
-                (row.normal, row.hard, row.very_hard),
-                (normal, hard, very_hard),
-                "active {active}"
             );
         }
     }
@@ -644,16 +517,16 @@ mod tests {
         assert_eq!(folder_mirror(9, Difficulty::Normal), Some(527));
         assert_eq!(folder_mirror(0, Difficulty::Hard), Some(530));
         assert_eq!(folder_mirror(9, Difficulty::VeryHard), Some(551));
-        // Only ten folders are mirrored; 10 and 11 are not.
-        assert_eq!(folder_mirror(10, Difficulty::Normal), None);
+        // All eleven progression folders are restored; sidequest folder 11 is not.
+        assert_eq!(folder_mirror(10, Difficulty::Normal), Some(528));
         assert_eq!(folder_mirror(11, Difficulty::Normal), None);
     }
 
     #[test]
     fn mirror_lookup_finds_a_flag_or_reports_none() {
-        assert_eq!(mirror_of(66, Difficulty::Normal), Some(707));
-        assert_eq!(mirror_of(66, Difficulty::Hard), Some(73));
-        assert_eq!(mirror_of(66, Difficulty::VeryHard), Some(77));
+        assert_eq!(mirror_of(67, Difficulty::Normal), Some(708));
+        assert_eq!(mirror_of(67, Difficulty::Hard), Some(74));
+        assert_eq!(mirror_of(67, Difficulty::VeryHard), Some(78));
         assert_eq!(
             mirror_of(24, Difficulty::Normal),
             None,
@@ -766,7 +639,13 @@ mod tests {
             folders: &[],
         };
         let state = apply_story(&empty, Difficulty::Normal);
-        assert!(state.flags.iter().all(|&b| b == 0));
+        assert!(
+            state
+                .flags
+                .iter()
+                .enumerate()
+                .all(|(i, &b)| b == u8::from(i == 960))
+        );
         assert!(state.folders.iter().all(|&b| b == 0));
     }
 
@@ -775,14 +654,14 @@ mod tests {
         // The core rule: the active flag alone reverts on load.
         let only_intro = StoryPreset {
             name: "intro",
-            flags: &[0],
+            flags: &[1],
             folders: &[],
         };
         for difficulty in Difficulty::ALL {
             let state = apply_story(&only_intro, difficulty);
-            assert_eq!(state.flags[0], 1, "{difficulty:?} active");
+            assert_eq!(state.flags[1], 1, "{difficulty:?} active");
             assert_eq!(
-                state.flags[mirror_of(0, difficulty).unwrap() as usize],
+                state.flags[mirror_of(1, difficulty).unwrap() as usize],
                 1,
                 "{difficulty:?} mirror"
             );
@@ -793,22 +672,22 @@ mod tests {
     fn a_preset_copies_down_to_the_lower_difficulties() {
         let only_intro = StoryPreset {
             name: "intro",
-            flags: &[0],
+            flags: &[1],
             folders: &[0],
         };
 
         let very_hard = apply_story(&only_intro, Difficulty::VeryHard);
-        assert_eq!(very_hard.flags[12], 1, "Very Hard mirror");
-        assert_eq!(very_hard.flags[6], 1, "Hard mirror");
-        assert_eq!(very_hard.flags[699], 1, "Normal mirror");
+        assert_eq!(very_hard.flags[13], 1, "Very Hard mirror");
+        assert_eq!(very_hard.flags[7], 1, "Hard mirror");
+        assert_eq!(very_hard.flags[700], 1, "Normal mirror");
         assert_eq!(very_hard.flags[542], 1, "Very Hard folder mirror");
         assert_eq!(very_hard.flags[530], 1, "Hard folder mirror");
         assert_eq!(very_hard.flags[518], 1, "Normal folder mirror");
 
         let normal = apply_story(&only_intro, Difficulty::Normal);
-        assert_eq!(normal.flags[699], 1, "Normal mirror");
-        assert_eq!(normal.flags[6], 0, "Normal reaches no harder column");
-        assert_eq!(normal.flags[12], 0, "Normal reaches no harder column");
+        assert_eq!(normal.flags[700], 1, "Normal mirror");
+        assert_eq!(normal.flags[7], 0, "Normal reaches no harder column");
+        assert_eq!(normal.flags[13], 0, "Normal reaches no harder column");
     }
 
     #[test]
@@ -825,85 +704,15 @@ mod tests {
     }
 
     #[test]
-    fn explicit_preset_flags_win_over_mirror_writes() {
-        // 701 is both an intro mirror (of flag 2) and the "World 1 era" chapter
-        // flag. The Python builder re-applies explicit flags last for exactly
-        // this reason, and so must we.
-        let both = StoryPreset {
-            name: "both",
-            flags: &[701],
-            folders: &[],
-        };
-        let state = apply_story(&both, Difficulty::Normal);
-        assert_eq!(state.flags[701], 1, "the explicit chapter flag survives");
-    }
-
-    #[test]
     fn the_fresh_preset_matches_the_documented_flag_set() {
         let fresh = preset_by_name("Fresh (tutorial)").unwrap();
-        assert_eq!(fresh.flags, &[1, 24, 501, 508, 931, 935, 936, 960]);
+        assert_eq!(fresh.flags, &[1, 960]);
         assert!(fresh.folders.is_empty());
 
         let state = apply_story(fresh, Difficulty::Normal);
         assert_eq!(state.flags[1], 1);
         assert_eq!(state.flags[700], 1, "flag 1's Normal mirror");
-        assert_eq!(state.flags[24], 1, "lobby flag 24 is not mirrored");
-    }
-
-    #[test]
-    fn the_presets_match_the_python_values_exactly() {
-        // Both Python sources agree on all six presets, so these are pinned
-        // literally. Flag 66 is Apocalymon (W1) and belongs only to the two
-        // post-W1 presets; flag 609 is the final scene and belongs only to
-        // the post-game one.
-        let expected: [(&str, &[u32], &[u32]); 6] = [
-            (
-                "Fresh (tutorial)",
-                &[1, 24, 501, 508, 931, 935, 936, 960],
-                &[],
-            ),
-            ("After World 1", &[0, 2, 66, 67, 701], &[0, 1, 2]),
-            (
-                "After World 2",
-                &[0, 4, 66, 67, 68, 703],
-                &[0, 1, 2, 3, 4, 5],
-            ),
-            (
-                "After World 3",
-                &[0, 5, 67, 68, 69, 82, 704],
-                &[0, 1, 2, 3, 4, 5, 6, 7, 8],
-            ),
-            (
-                "All worlds + keys",
-                &[0, 6, 67, 68, 69, 82, 705],
-                &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            ),
-            (
-                "Story cleared (post-game)",
-                &[0, 67, 68, 69, 82, 85, 609],
-                &[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-            ),
-        ];
-
-        assert_eq!(STORY_PRESETS.len(), expected.len());
-        for (preset, (name, flags, folders)) in STORY_PRESETS.iter().zip(expected) {
-            assert_eq!(preset.name, name);
-            assert_eq!(preset.flags, flags, "{name} flags");
-            assert_eq!(preset.folders, folders, "{name} folders");
-        }
-    }
-
-    #[test]
-    fn flag_66_and_609_appear_only_where_they_belong() {
-        let with = |flag: u32| -> Vec<&str> {
-            STORY_PRESETS
-                .iter()
-                .filter(|p| p.flags.contains(&flag))
-                .map(|p| p.name)
-                .collect()
-        };
-        assert_eq!(with(66), vec!["After World 1", "After World 2"]);
-        assert_eq!(with(609), vec!["Story cleared (post-game)"]);
+        assert_eq!(state.flags[960], 1, "player initialization bit");
     }
 
     #[test]

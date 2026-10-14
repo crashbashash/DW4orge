@@ -84,3 +84,6 @@ jobs:
       - name: Check the shell crate
         working-directory: src-tauri
         run: cargo check --all-targets
+      - name: Test opt-in agent controls
+        working-directory: src-tauri
+        run: cargo test --features agent-control --lib

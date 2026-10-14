@@ -84,8 +84,9 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
       </div>
 
       <p className="muted">
-        A difficulty also fills in the easier ones, so the save can be loaded on
-        any mode up to the one you pick.
+        Story flags are written to the selected difficulty and the easier ones.
+        The game still checks completion to decide which modes are available
+        when you load the save.
       </p>
     </Modal>
   );

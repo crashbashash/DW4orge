@@ -1,7 +1,6 @@
 # DW4orge
 
 A save editor for **Digimon World 4** / **Digimon World X** on PS2: USA, Europe and Japan.
-Version **0.2.0** adds regional memory-card support.
 
 Point it at a memory-card image or a bare save file, change your Digimon,
 inventory or progress in a normal form UI, and write it back. It also ships a

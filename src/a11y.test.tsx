@@ -53,6 +53,7 @@ async function loadSample() {
 }
 
 describe('accessibility', () => {
+  // Full UI interactions can exceed five seconds on shared CI runners.
   it('names every control in every section', async () => {
     await loadSample();
     const main = screen.getByRole('main');
@@ -60,7 +61,7 @@ describe('accessibility', () => {
       await userEvent.click(screen.getByRole('button', { name: section }));
       expect(unlabelledControls(main), `unlabelled controls in ${section}`).toEqual([]);
     }
-  });
+  }, 15_000);
 
   it('has a single h1 plus the landmarks', async () => {
     await loadSample();

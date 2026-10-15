@@ -192,6 +192,8 @@ editor does not rename or convert another region's save silently.
 
 ## Roadmap
 
+- [x] **GameCube card and GCI editing.**
+- [x] **GameCube save creation (GCI and memory card).**
 - [x] **Xbox save support.**
 - [ ] **Select additional character save boxes on GameCube.**
 - [ ] **Native Wayland support.**

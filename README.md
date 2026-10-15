@@ -19,9 +19,11 @@ scriptable CLI.
 Choose **Open** and select a PS2 `.ps2` memory card, a GameCube `.raw`/`.gcp`
 memory card or `.gci` save, an Xbox `SaveData.dat` file or FATX memory-unit `.img`, or a bare 81,920-byte PS2/GameCube save. The editor detects the format
 automatically. Choose the regional save when a card contains more than
-one region, then edit the character, inventory, equipment or progress. Xbox saves
-show a **Character box** selector for occupied boxes; memory units can also
-contain multiple save containers. Switching boxes checks for unsaved changes.
+one region, then edit the character, inventory, equipment or progress. PS2 and
+Xbox saves show a **Character box** selector for occupied boxes; Xbox memory
+units can also contain multiple save containers. Switching boxes checks for
+unsaved changes. PS2 card and bare-save writes retain all four character boxes;
+empty boxes are omitted from the selector.
 
 **Save** updates the opened file. **Save As** writes a separate copy. Existing
 memory cards keep their icons, filesystem and unrelated saves. GameCube cards
@@ -96,6 +98,7 @@ dw4cli info Mcd001.ps2          # one-screen summary
 dw4cli dump Mcd001.ps2          # every editable field
 dw4cli new --species Dorumon --name abcdefgh -o new.ps2
 dw4cli verify new.ps2           # checksums and card ECC
+dw4cli info Mcd001.ps2 --box 'ps2#2'  # select PS2 character box 2
 dw4cli info SaveData.dat        # Xbox save and available character boxes
 dw4cli info SaveData.dat --xbox-slot 'SaveData.dat#4'
 dw4cli verify MemoryUnit.img    # Xbox signatures and FATX structure
@@ -195,6 +198,8 @@ editor does not rename or convert another region's save silently.
 - [x] **GameCube card and GCI editing.**
 - [x] **GameCube save creation (GCI and memory card).**
 - [x] **Xbox save support.**
+- [x] **Select additional character save boxes on PS2.**
+- [ ] **Create characters in empty save boxes on PS2, GameCube and Xbox.**
 - [ ] **Select additional character save boxes on GameCube.**
 - [ ] **Native Wayland support.**
 - [ ] **Packaging for Arch and Flatpak.**

@@ -527,7 +527,7 @@ legend {
   color: var(--accent-contrast);
 }
 
-.summary .xbox-choice {
+.summary .box-choice {
   width: max-content;
   max-width: 100%;
 }
@@ -539,18 +539,18 @@ legend {
   white-space: nowrap;
 }
 
-.summary .xbox-choice .select-button {
+.summary .box-choice .select-button {
   width: auto;
   max-width: 100%;
   gap: 12px;
 }
 
-.summary-xbox {
+.summary-boxes {
   display: flex;
   flex-wrap: wrap;
   gap: 12px 24px;
 }
 
-.summary-xbox > .field {
+.summary-boxes > .field {
   flex: 0 1 auto;
 }

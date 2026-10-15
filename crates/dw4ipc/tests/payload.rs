@@ -18,8 +18,8 @@ fn sample_view() -> SaveView {
 #[test]
 fn open_result_round_trips_through_json() {
     let result = OpenResult {
-        xbox_slots: None,
-        xbox_selection: None,
+        character_boxes: None,
+        character_selection: None,
         region: None,
         path: Some("/tmp/example.raw".to_string()),
         source: SourceKind::Raw,

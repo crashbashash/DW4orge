@@ -371,6 +371,7 @@ pub struct Document {
     source_gc_card: Option<PathBuf>,
     /// Whether the bytes as loaded had valid checksums.
     loaded_checksums_ok: bool,
+    original_save: Vec<u8>,
     region: Option<crate::Region>,
 }
 
@@ -380,7 +381,8 @@ impl Document {
     /// # Errors
     /// [`crate::Error::BadSaveSize`] if `bytes` is not [`crate::SAVE_SIZE`] long.
     pub fn from_bytes(bytes: &[u8]) -> crate::Result<Self> {
-        let data = SaveData::parse(bytes)?;
+        let mut data = SaveData::parse(bytes)?;
+        data.select_character_box(None)?;
         let loaded_checksums_ok = data.verify();
         Ok(Self {
             data,
@@ -390,6 +392,7 @@ impl Document {
             source_gci: None,
             source_gc_card: None,
             loaded_checksums_ok,
+            original_save: bytes.to_vec(),
             region: None,
         })
     }
@@ -426,15 +429,11 @@ impl Document {
             doc.path = Some(path.to_path_buf());
             return Ok(doc);
         }
-        if selection.is_some() {
-            return Err(crate::Error::NoSave(
-                "character-box selection is only available for Xbox saves".into(),
-            ));
-        }
         let (bytes, region) = crate::memcard::load_save_with_region(path, requested)?;
         let mut doc = Self::from_bytes(&bytes)?;
         doc.path = Some(path.to_path_buf());
         doc.region = region;
+        doc.data.select_character_box(selection)?;
         // Retain the source container for Save As metadata.
         let container_bytes = fs::read(path).map_err(|source| crate::Error::File {
             path: path.to_path_buf(),
@@ -451,14 +450,18 @@ impl Document {
     }
 
     #[must_use]
-    pub fn xbox_slots(&self) -> Vec<crate::xbox::XboxSlot> {
-        self.xbox
-            .as_ref()
-            .map_or_else(Vec::new, |source| source.choices().to_vec())
+    pub fn character_boxes(&self) -> Vec<crate::CharacterBox> {
+        self.xbox.as_ref().map_or_else(
+            || self.data.character_boxes(),
+            |source| source.choices().to_vec(),
+        )
     }
     #[must_use]
-    pub fn xbox_selection(&self) -> Option<String> {
-        self.xbox.as_ref().map(|source| source.selected())
+    pub fn character_selection(&self) -> Option<String> {
+        self.xbox.as_ref().map_or_else(
+            || self.data.character_selection(),
+            |source| Some(source.selected()),
+        )
     }
 
     #[must_use]
@@ -967,6 +970,15 @@ impl Document {
                 "Xbox exports require an opened Xbox save or memory unit".into(),
             ));
         }
+        if self.path.as_deref() == Some(path) && self.data.byte_order() == crate::ByteOrder::Little
+        {
+            let current = crate::memcard::load_save_with_region(path, self.region)?.0;
+            if current != self.original_save {
+                return Err(crate::Error::NoSave(
+                    "The PS2 save changed since opening. Reopen it before saving.".into(),
+                ));
+            }
+        }
         let save = self.data.to_bytes();
         let bytes = crate::memcard::render_container_with_sources(
             path,
@@ -992,6 +1004,7 @@ impl Document {
         // Re-read through the same content dispatch, so a card is verified as a
         // card and a raw file as a raw file.
         let (written, region) = crate::memcard::load_save_with_region(path, self.region)?;
+        self.original_save = written.clone();
         self.region = region.or(self.region);
         let check = SaveData::parse(&written).map_err(|e| crate::Error::NoSave(e.to_string()))?;
         if !check.verify() {

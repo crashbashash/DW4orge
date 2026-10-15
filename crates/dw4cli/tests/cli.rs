@@ -267,3 +267,44 @@ fn regional_cards_can_be_created_detected_verified_and_used_as_donors() {
         );
     }
 }
+
+#[test]
+fn ps2_character_boxes_are_listed_selected_and_invalid_choices_fail() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("boxes.bin");
+    let mut data = dw4core::build_save(&dw4core::SaveSpec::default());
+    for mirror in 0..2 {
+        let base = mirror * dw4core::BLOCK;
+        let record = data[base + 8..base + 0x2000].to_vec();
+        data[base + 0x6008..base + 0x8000].copy_from_slice(&record);
+        data[base + 8..base + 12].fill(0); // only box 4 is occupied
+    }
+    dw4core::fix_checksums(&mut data);
+    std::fs::write(&path, data).unwrap();
+    let out = bin()
+        .args(["info", path.to_str().unwrap(), "--json"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(value["character_selection"], "ps2#4");
+    assert_eq!(value["character_boxes"][0]["box_number"], 4);
+    for flag in ["--box", "--xbox-slot"] {
+        let out = bin()
+            .args(["info", path.to_str().unwrap(), flag, "ps2#4"])
+            .output()
+            .unwrap();
+        assert!(out.status.success());
+        assert!(String::from_utf8(out.stdout).unwrap().contains("ps2#4"));
+    }
+    let out = bin()
+        .args(["dump", path.to_str().unwrap(), "--box", "ps2#1"])
+        .output()
+        .unwrap();
+    assert!(!out.status.success());
+    assert!(
+        String::from_utf8(out.stderr)
+            .unwrap()
+            .contains("occupied PS2")
+    );
+}

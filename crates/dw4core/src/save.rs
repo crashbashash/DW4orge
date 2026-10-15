@@ -3,6 +3,17 @@ use crate::error::{Error, Result};
 use crate::offsets;
 use crate::species::Species;
 use crate::{BLOCK, SAVE_SIZE};
+use serde::{Deserialize, Serialize};
+
+/// An occupied character save box in a supported container.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
+pub struct CharacterBox {
+    pub id: String,
+    pub label: String,
+    /// One-based character box.
+    pub box_number: u8,
+}
 
 /// Byte order used by the platform's savedata serializer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -19,6 +30,7 @@ pub enum ByteOrder {
 pub struct SaveData {
     raw: Vec<u8>,
     byte_order: ByteOrder,
+    selected_box: usize,
 }
 
 impl std::fmt::Debug for SaveData {
@@ -29,6 +41,7 @@ impl std::fmt::Debug for SaveData {
             .field("len", &self.raw.len())
             .field("checksum", &self.get_u32(offsets::CHECKSUM))
             .field("byte_order", &self.byte_order)
+            .field("selected_box", &(self.selected_box + 1))
             .finish()
     }
 }
@@ -50,14 +63,73 @@ impl SaveData {
         Ok(Self {
             raw: bytes.to_vec(),
             byte_order,
+            selected_box: 0,
         })
+    }
+
+    /// PS2 stores four 0x2000-byte character records in each 0xA000 mirror.
+    /// The first eight bytes belong to the complete mirror, not the character.
+    pub const PS2_BOX_SIZE: usize = 0x2000;
+
+    #[must_use]
+    pub fn character_boxes(&self) -> Vec<CharacterBox> {
+        if self.byte_order != ByteOrder::Little || self.version() != 4 {
+            return Vec::new();
+        }
+        (0..4)
+            .filter_map(|index| {
+                let offset = index * Self::PS2_BOX_SIZE;
+                if (0..2).any(|mirror| {
+                    read_u32(&self.raw, mirror * BLOCK + offset + 8, self.byte_order) != 1
+                }) {
+                    return None;
+                }
+                let name = crate::decode_player_name(&self.raw[offset + 0x30..offset + 0x42]);
+                Some(CharacterBox {
+                    id: format!("ps2#{}", index + 1),
+                    label: format!("Box {} · {}", index + 1, name),
+                    box_number: (index + 1) as u8,
+                })
+            })
+            .collect()
+    }
+
+    /// Select an occupied PS2 box, or the first occupied box when omitted.
+    /// With no occupied boxes, an omitted selection retains legacy box-1 inspection.
+    pub fn select_character_box(&mut self, selection: Option<&str>) -> Result<()> {
+        let boxes = self.character_boxes();
+        let chosen = match selection {
+            Some(id) => Some(boxes.iter().find(|b| b.id == id).ok_or_else(|| {
+                Error::NoSave("no occupied PS2 character box matches the selection".into())
+            })?),
+            None => boxes.first(),
+        };
+        self.selected_box = chosen.map_or(0, |b| usize::from(b.box_number) - 1);
+        Ok(())
+    }
+
+    #[must_use]
+    pub fn character_selection(&self) -> Option<String> {
+        let id = format!("ps2#{}", self.selected_box + 1);
+        self.character_boxes()
+            .iter()
+            .any(|b| b.id == id)
+            .then_some(id)
+    }
+
+    fn field_offset(&self, offset: usize) -> usize {
+        if offset >= 8 {
+            offset + self.selected_box * Self::PS2_BOX_SIZE
+        } else {
+            offset
+        }
     }
 
     pub(crate) fn byte_order(&self) -> ByteOrder {
         self.byte_order
     }
 
-    /// The raw bytes as loaded — checksums **not** recomputed.
+    /// The complete four-box save — checksums **not** recomputed.
     #[must_use]
     pub fn as_bytes(&self) -> &[u8] {
         &self.raw
@@ -85,20 +157,25 @@ impl SaveData {
 
     // ---- raw access ------------------------------------------------------
 
-    /// A u32 from block 0. Use [`Self::get_u32_block`] to choose a block.
+    /// A selected-character field from mirror 0. Checksum/version stay shared. Use [`Self::get_u32_block`] to choose a block.
     #[must_use]
     pub fn get_u32(&self, offset: usize) -> u32 {
         self.get_u32_block(offset, 0)
     }
 
-    /// A u32 at `offset` in `block` (0 or 1).
+    /// A selected-character field at box-1 `offset` in mirror `block` (0 or 1).
     #[must_use]
     pub fn get_u32_block(&self, offset: usize, block: usize) -> u32 {
-        read_u32(&self.raw, block * BLOCK + offset, self.byte_order)
+        read_u32(
+            &self.raw,
+            block * BLOCK + self.field_offset(offset),
+            self.byte_order,
+        )
     }
 
     /// Write a u32 to `offset` in **both** blocks.
     pub fn set_u32(&mut self, offset: usize, value: u32) {
+        let offset = self.field_offset(offset);
         for block in 0..2 {
             write_u32(
                 &mut self.raw,
@@ -109,9 +186,10 @@ impl SaveData {
         }
     }
 
-    /// `len` bytes at `offset` from block 0.
+    /// `len` bytes at box-1 `offset` from the selected character in mirror 0.
     #[must_use]
     pub fn get_bytes(&self, offset: usize, len: usize) -> &[u8] {
+        let offset = self.field_offset(offset);
         &self.raw[offset..offset + len]
     }
 
@@ -122,6 +200,7 @@ impl SaveData {
     /// Panics if the write would extend past the end of a block. Every caller
     /// passes a fixed-size destination field, so this is a programming error.
     pub fn set_bytes(&mut self, offset: usize, data: &[u8]) {
+        let offset = self.field_offset(offset);
         assert!(
             offset + data.len() <= BLOCK,
             "field at 0x{offset:04X} (+{} bytes) runs past the {BLOCK}-byte block",

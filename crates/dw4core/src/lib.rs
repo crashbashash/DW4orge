@@ -57,7 +57,7 @@ pub use flags::{
 pub use item::{Category, build_item_id, category_of, is_empty, split_item_id};
 pub use name::{NAME_CHARS, decode_player_name, encode_player_name};
 pub use save::{
-    ByteOrder, SaveData, block_checksum, block_checksum_with_order, fix_checksums,
+    ByteOrder, CharacterBox, SaveData, block_checksum, block_checksum_with_order, fix_checksums,
     fix_checksums_with_order,
 };
 pub use species::Species;

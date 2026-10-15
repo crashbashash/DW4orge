@@ -1243,5 +1243,13 @@
       4294967295
     ],
     "checksum_ok": true
-  }
+  },
+  "character_boxes": [
+    {
+      "id": "ps2#1",
+      "label": "Box 1 · abc",
+      "box_number": 1
+    }
+  ],
+  "character_selection": "ps2#1"
 }

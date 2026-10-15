@@ -1,5 +1,21 @@
 # Automated editor and retail-game testing
 
+## Finding the PS2 Save Keeper from a fresh lobby arrival
+
+From the Terminal Area where a newly created or called Digimon appears, take
+the bridge to the **left**. Confirm **Central Area → Go to the destination**
+and wait for the area to finish loading. From the Central Area arrival point,
+walk left toward the central building, then up into the recessed counter
+between two green-topped terminals. The attendant there is the **Save Keeper**;
+the location label at the bottom of the screen confirms the name. Approach the
+attendant and press Cross to talk.
+
+The raised circular platforms in the Terminal Area are gates/healing facilities;
+the Save Keeper is across the bridge in Central Area. Private route captures
+are in `../Decomp/local/ps2-box-research/`: `bridge.png` shows the destination
+prompt, `central-spawn.png` the arrival point, and `central-keeper.png` the
+counter with the **Save Keeper** location label.
+
 ## Desktop agent controls
 
 Build the real Tauri app with its optional agent interface:
@@ -172,3 +188,39 @@ Japanese round-trip retained every tested editable field group, including both
 packed bank items and persistent story milestone 20. Only menu/runtime story
 flags 908/912 changed. Native screenshots checked the content-sized box selector
 and summary spacing.
+
+## PS2 character boxes (0.5.0 / schema 6)
+
+The retail USA game saved a second character into box 2 of the same
+`BASLUS-20836savedata` file. An independent FAT walk/extraction found the second
+character at `+0x2008` in each `0xA000` mirror, establishing the `0x2000` box
+stride. These bytes were previously misidentified as padding in one-box saves.
+
+`cargo run -p dw4ipc --example ps2_box_validation -- input.ps2 output.ps2 'ps2#2'`
+creates the controlled field matrix through the same service used by the app.
+It edits an existing occupied box and never initializes an empty one.
+The retail game cold-booted the output and displayed `PS2BOX2`, level 17 in
+box 2 alongside the untouched `TST` in box 1. It loaded that character into the
+lobby, then saved it again through the Save Keeper. The resulting save matched
+name, species, level/EXP, BIT, X-Data, junk counter, all techniques/power-ups,
+inventory, equipment/mod sockets, disks, bank balance/items, difficulty and
+story folders. Persistent milestone 20 survived; only runtime/menu flags 908
+and 912 differed. Both checksums verified. Independent byte comparisons
+confirmed box 1 was unchanged by both the editor write and the retail resave.
+
+The native desktop app verified both occupied choices, Cancel retaining an
+unsaved draft, Discard switching characters, selected-box retention through
+Save/Save As, and switching back to the unchanged first character. Its captured
+summary shows box 2 and the saved values without clipping. Private cards,
+captures and JSON reports are under `../Decomp/local/ps2-box-research/`.
+The source card and pristine disc were not edited; only isolated copies were
+attached to the test emulator.
+
+Automated coverage includes all four boxes, holes/default selection, empty and
+invalid choices, all three regional card identities, raw/card export, repeated
+saves, donor-card preservation, external-save conflicts, IPC selection failure
+retaining the session, CLI selection and the desktop discard guard. Final checks
+passed 314 Rust tests (including doctests), 159 frontend tests and four Tauri
+agent tests, plus formatting, Clippy, TypeScript, ESLint, production build and
+palette contrast. Live game coverage is USA box 2; other box/region combinations
+have automated format coverage, not a claimed full retail campaign test.

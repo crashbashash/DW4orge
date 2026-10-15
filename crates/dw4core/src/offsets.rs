@@ -1,4 +1,5 @@
-//! Every block-relative offset of the 0xA000-byte save block.
+//! Save fields expressed as box-1 offsets within a 0xA000-byte mirror.
+//! Checksum/version are shared; character fields add the selected box stride.
 //!
 //! One definition per field, in one place. Nothing else in the crate may
 //! hardcode an offset.
@@ -116,7 +117,7 @@ pub const TECHNIQUE_SLOTS: usize = 9;
 pub const BASE_UPCNT: usize = 0x0A3C;
 /// Power-up slots per species.
 pub const POWERUP_SLOTS: usize = 11;
-/// First offset of the zero padding that ends the record.
+/// End of the known box-1 character fields; later bytes must be preserved.
 ///
 /// 176 u32 from `BASE_UPCNT` ends at `0xCFC`. `dw4build.py` claims `0xAFC`;
 /// that is wrong by `0x200` and is confirmed against a synthesised save with

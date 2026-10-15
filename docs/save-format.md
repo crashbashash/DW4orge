@@ -185,7 +185,18 @@ The save file is `BASLUS-20836savedata`, 81920 bytes: **two byte-identical
 Per block: `checksum = Σ u32le(block+4 .. block+0xA000) mod 2³²`, stored at
 `block+0`. Writes go to both blocks; checksums are fixed for both.
 
-### 4.1 Block field map (block-relative offsets)
+Each mirror contains a shared 8-byte checksum/version header followed by four
+`0x2000`-byte character records. The first record begins at `+0x08`, then
+`+0x2008`, `+0x4008`, and `+0x6008`; the four records end at `+0x8008`.
+An occupied PS2 box has `ISUSE = 1` at record offset zero in both mirrors.
+These offsets were confirmed by saving a second character through the retail
+USA Save Keeper and cold-loading an editor-written second box.
+
+### 4.1 Field map (box-1 block offsets)
+
+The checksum/version at `+0x00`/`+0x04` are shared. For character fields from
+`+0x08` onward, add `(box_number - 1) * 0x2000`. `SaveData` applies that offset
+for the selected box; checksum calculation still covers the complete mirror.
 
 | Offset | Size | Field |
 | --- | --- | --- |
@@ -217,7 +228,9 @@ Per block: `checksum = Σ u32le(block+4 .. block+0xA000) mod 2³²`, stored at
 | `+0x7bc` | 16×u32 | `BASE_EXP` (per species) |
 | `+0x7fc` | 144×u32 | `BASE_SKILL` (16 species × 9 techniques, signed i32) |
 | `+0xa3c` | 176×u32 | `BASE_UPCNT` (16 species × 11 power-ups), ends `+0xcfc` |
-| `+0xcfc`..`+0x9fff` | | zero padding |
+| `+0xcfc`..`+0x2007` | | remaining bytes of box 1; preserved |
+| `+0x2008`..`+0x8007` | | character boxes 2–4 (same record layout) |
+| `+0x8008`..`+0x9fff` | | trailing bytes; preserved |
 
 > **Erosion note.** `dw4build.py` documents this padding as starting at
 > `+0x0afc` and defines `O_PAD_END = 0xAFC`. That is off by `0x200`: 176 u32
@@ -1133,7 +1146,8 @@ Save As from a memory unit keeps the full image with `.img` or exports the
 selected four-box save container with `.dat`. Atomic writes, backups, and
 post-write verification apply to both formats.
 
-The source kind, selected Xbox box and available choices cross IPC schema 5.
+The source kind, selected box and available choices cross IPC schema 6
+as `character_selection` and `character_boxes` (shared with PS2).
 The app selector guards unsaved changes, and the CLI accepts `--xbox-slot` with
 an ID printed by `info` or returned in JSON. New Save remains PS2/GameCube;
 Xbox support edits existing occupied boxes. HDD filesystem/qcow2 images and
@@ -1141,3 +1155,21 @@ Xbox save creation are outside this release.
 
 See [Xbox format and retail validation](xbox-save-research.md) for byte offsets,
 FATX geometry, signatures, regional evidence and reproducible probe commands.
+
+
+## PS2 character box selection
+
+PS2 memory cards and little-endian bare saves expose occupied boxes as `ps2#1`
+through `ps2#4`, in retail screen order (top-left, top-right, bottom-left,
+bottom-right). Opening without a selection chooses the first occupied box,
+including when box 1 is empty. No empty-box initialization or box copying is
+provided. GameCube additional-box selection remains separate work.
+
+All field access, including species arrays, story mirrors, equipment, disks and
+bank, follows the selected record. Both complete `0xA000` mirror checksums are
+recomputed after edits. Other character records, unknown bytes, icons and
+unrelated card files survive Save and Save As. A changed PS2 source save is
+rejected before overwriting it. Card Save As keeps the entire save; `.bin`
+exports all four boxes, and the current box remains selected after either write.
+
+Retail evidence and the Save Keeper route are in [testing](testing.md).

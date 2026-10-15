@@ -1,7 +1,7 @@
 //! Xbox signed save files and FATX controller memory-unit images.
+use crate::CharacterBox;
 use crate::{Error, Result, SaveData};
 use hmac::{Hmac, Mac};
-use serde::{Deserialize, Serialize};
 use sha1::Sha1;
 use std::collections::HashSet;
 
@@ -14,15 +14,6 @@ pub const FILE_SIZE: usize = 0x10030;
 const KEY: [u8; 16] = [
     0xf1, 0x10, 0x0c, 0x5c, 0xac, 0xeb, 0x2f, 0xe8, 0x3c, 0x97, 0xa6, 0xb8, 0x92, 0x59, 0x9c, 0x13,
 ];
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "ts", derive(ts_rs::TS))]
-pub struct XboxSlot {
-    pub id: String,
-    pub label: String,
-    /// One-based character box.
-    pub box_number: u8,
-}
 
 fn bad(message: impl Into<String>) -> Error {
     Error::NoSave(message.into())
@@ -100,7 +91,7 @@ impl FileEntry {
 pub struct XboxSource {
     image: Vec<u8>,
     files: Vec<FileEntry>,
-    choices: Vec<XboxSlot>,
+    choices: Vec<CharacterBox>,
     file_index: usize,
     box_index: usize,
     memory_unit: bool,
@@ -148,7 +139,7 @@ impl XboxSource {
                 } else {
                     format!("Box {} · {}", box_index + 1, name)
                 };
-                choices.push(XboxSlot {
+                choices.push(CharacterBox {
                     id,
                     label,
                     box_number: (box_index + 1) as u8,
@@ -180,7 +171,7 @@ impl XboxSource {
     }
 
     #[must_use]
-    pub fn choices(&self) -> &[XboxSlot] {
+    pub fn choices(&self) -> &[CharacterBox] {
         &self.choices
     }
     #[must_use]
@@ -541,7 +532,7 @@ mod tests {
                 .unwrap();
         doc.data_mut().set_bit(222);
         doc.save(&path).unwrap();
-        assert_eq!(doc.xbox_selection().as_deref(), Some("SaveData.dat#2"));
+        assert_eq!(doc.character_selection().as_deref(), Some("SaveData.dat#2"));
         assert_eq!(
             std::fs::read(temp.path().join("save.dat.bak")).unwrap(),
             original
@@ -567,7 +558,7 @@ mod tests {
         doc.data_mut().set_bit(444);
         let output = temp.path().join("export.dat");
         doc.save(&output).unwrap();
-        assert_eq!(doc.xbox_selection().as_deref(), Some("SaveData.dat#4"));
+        assert_eq!(doc.character_selection().as_deref(), Some("SaveData.dat#4"));
         assert_eq!(doc.data().bit(), 444);
         let source =
             XboxSource::parse(std::fs::read(&output).unwrap(), Some("SaveData.dat#1")).unwrap();

@@ -43,7 +43,7 @@ export type EditorApi = {
   toggleTheme(): void;
   open(): Promise<void>;
   openSample(): Promise<void>;
-  selectXboxSlot(selection: string): Promise<void>;
+  selectCharacterBox(selection: string): Promise<void>;
   canLoadSample: boolean;
   newSave(request: NewSaveRequest): Promise<void>;
   save(): Promise<void>;
@@ -151,9 +151,9 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     });
   }, [backend, load, chooseRegion]);
 
-  const selectXboxSlot = useCallback(async (selection: string) => {
+  const selectCharacterBox = useCallback(async (selection: string) => {
     if (!state.session?.path || state.status === 'busy') return;
-    await load(() => backend.openSave(state.session!.path!, undefined, selection));
+    await load(() => backend.openSave(state.session!.path!, state.session!.region ?? undefined, selection));
   }, [backend, load, state.session, state.status]);
 
   const openSample = useCallback(async () => {
@@ -235,14 +235,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       toggleTheme,
       open,
       openSample,
-      selectXboxSlot,
+      selectCharacterBox,
       canLoadSample: typeof backend.openSample === 'function',
       newSave,
       save,
       saveAs,
       speciesStats,
     }),
-    [backend.openSample, newSave, open, openSample, selectXboxSlot, save, saveAs, speciesStats, state, toggleTheme],
+    [backend.openSample, newSave, open, openSample, selectCharacterBox, save, saveAs, speciesStats, state, toggleTheme],
   );
 
   return <EditorContext.Provider value={api}>{children}<RegionDialog request={regionRequest} finish={finishRegion} /></EditorContext.Provider>;

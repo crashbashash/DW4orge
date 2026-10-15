@@ -260,3 +260,111 @@ fn species_stats_need_an_open_document() {
         dw4ipc::IpcError::NoOpenDocument
     );
 }
+
+#[test]
+fn ps2_box_switching_failed_selection_and_save_preserve_the_other_character() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("two.ps2");
+    let mut raw = dw4core::build_save(&dw4core::SaveSpec::default());
+    let second = dw4core::build_save(&dw4core::SaveSpec {
+        player_name: "SECOND".into(),
+        bit: 222,
+        ..Default::default()
+    });
+    for mirror in 0..2 {
+        let start = mirror * dw4core::BLOCK + 0x2000;
+        raw[start + 8..start + 0x2000].copy_from_slice(&second[8..0x2000]);
+    }
+    dw4core::fix_checksums(&mut raw);
+    std::fs::write(
+        &path,
+        dw4core::memcard::format_card_for_region(&raw, dw4core::Region::Japan).unwrap(),
+    )
+    .unwrap();
+    let mut session = EditorSession::new_session();
+    let first = session.open(&path).unwrap();
+    assert_eq!(first.character_boxes.as_ref().unwrap().len(), 2);
+    assert_eq!(first.character_selection.as_deref(), Some("ps2#1"));
+    let second = session
+        .open_with_selection(&path, first.region, Some("ps2#2"))
+        .unwrap();
+    assert_eq!(second.region, Some(dw4core::Region::Japan));
+    assert_eq!(second.view.name, "SECOND");
+    assert_eq!(second.view.bit, 222);
+    assert!(
+        session
+            .open_with_selection(&path, second.region, Some("ps2#4"))
+            .is_err()
+    );
+    assert_eq!(session.view(Mode::Normal).unwrap().name, "SECOND");
+    let mut edits = second.view.to_edit_set();
+    edits.name = "SAVED".into();
+    edits.bit = 345678;
+    let saved = session.save(&edits, Mode::Normal).unwrap();
+    assert_eq!(saved.character_selection.as_deref(), Some("ps2#2"));
+    assert_eq!(saved.character_boxes.unwrap()[1].label, "Box 2 · SAVED");
+    assert_eq!(saved.view.bit, 345678);
+    let first_again = session
+        .open_with_selection(&path, None, Some("ps2#1"))
+        .unwrap();
+    assert_eq!(first_again.view, first.view);
+    let back = dw4core::memcard::load_save(&path).unwrap();
+    for mirror in 0..2 {
+        let start = mirror * dw4core::BLOCK;
+        assert_eq!(
+            &back[start + 4..start + 0x2000],
+            &raw[start + 4..start + 0x2000]
+        );
+    }
+}
+
+#[test]
+fn new_character_on_a_donor_card_preserves_other_ps2_boxes() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("donor.ps2");
+    let copy = dir.path().join("copy.ps2");
+    let mut raw = dw4core::build_save(&dw4core::SaveSpec::default());
+    for mirror in 0..2 {
+        let base = mirror * dw4core::BLOCK;
+        let first = raw[base + 8..base + 0x2008].to_vec();
+        raw[base + 0x6008..base + 0x8008].copy_from_slice(&first);
+    }
+    dw4core::fix_checksums(&mut raw);
+    std::fs::write(
+        &path,
+        dw4core::memcard::format_card_for_region(&raw, dw4core::Region::Usa).unwrap(),
+    )
+    .unwrap();
+    let mut session = EditorSession::new_session();
+    let request = NewSaveRequest {
+        format: None,
+        region: None,
+        species: Species::Agumon,
+        name: "NEWONE".into(),
+        story: None,
+        difficulty: DifficultyChoice::Auto,
+    };
+    let gc = dir.path().join("gc.bin");
+    std::fs::write(
+        &gc,
+        dw4core::build_save_with_order(&dw4core::SaveSpec::default(), dw4core::ByteOrder::Big),
+    )
+    .unwrap();
+    assert!(session.new_save_on_card(&request, &gc).is_err());
+    let created = session.new_save_on_card(&request, &path).unwrap();
+    session
+        .save_as(&copy, &created.view.to_edit_set(), Mode::Normal)
+        .unwrap();
+    let fourth = session
+        .open_with_selection(&copy, None, Some("ps2#4"))
+        .unwrap();
+    assert_eq!(fourth.view.name, "TST");
+    let out = dw4core::memcard::load_save(&copy).unwrap();
+    for mirror in 0..2 {
+        let base = mirror * dw4core::BLOCK;
+        assert_eq!(
+            &out[base + 0x2008..base + dw4core::BLOCK],
+            &raw[base + 0x2008..base + dw4core::BLOCK]
+        );
+    }
+}

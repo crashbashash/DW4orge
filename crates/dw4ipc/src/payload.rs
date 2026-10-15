@@ -60,10 +60,10 @@ pub struct OpenResult {
     pub view: SaveView,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
-    pub xbox_slots: Option<Vec<dw4core::xbox::XboxSlot>>,
+    pub character_boxes: Option<Vec<dw4core::CharacterBox>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
-    pub xbox_selection: Option<String>,
+    pub character_selection: Option<String>,
 }
 
 /// One species' stored progression, for the Character section's species

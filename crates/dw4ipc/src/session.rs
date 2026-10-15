@@ -58,8 +58,8 @@ impl EditorSession {
             path: Some(path_string(path)?),
             source,
             view,
-            xbox_slots: (!doc.xbox_slots().is_empty()).then(|| doc.xbox_slots()),
-            xbox_selection: doc.xbox_selection(),
+            character_boxes: (!doc.character_boxes().is_empty()).then(|| doc.character_boxes()),
+            character_selection: doc.character_selection(),
         };
         self.doc = Some(doc);
         Ok(result)
@@ -111,6 +111,13 @@ impl EditorSession {
                 message: "GameCube creation cannot use a PS2 donor card".into(),
             });
         }
+        if let Some(path) = card
+            && source_kind(path)? != SourceKind::Memcard
+        {
+            return Err(IpcError::Unsupported {
+                message: "New-save donors must be PS2 memory-card images".into(),
+            });
+        }
         let data = build_save_with_order(&spec, order);
 
         let mut doc = match card {
@@ -118,9 +125,10 @@ impl EditorSession {
             None => Document::from_bytes(&data)?,
         };
         if card.is_some() {
-            // Replace the in-memory save while keeping the source card, so a
-            // later save_as copies the card and swaps in these bytes.
-            *doc.data_mut() = SaveData::parse(&data)?;
+            // Replace only the selected character in the donor save. The
+            // other three boxes and complete mirror headers must survive.
+            doc.data_mut()
+                .set_bytes(8, &data[8..8 + SaveData::PS2_BOX_SIZE]);
         }
 
         if card.is_none() {
@@ -142,8 +150,8 @@ impl EditorSession {
             path: None,
             source,
             view,
-            xbox_slots: None,
-            xbox_selection: None,
+            character_boxes: None,
+            character_selection: None,
         })
     }
 
@@ -255,8 +263,8 @@ fn finish(doc: &Document, path: &Path) -> Result<OpenResult, IpcError> {
         path: Some(path_string(path)?),
         source: source_kind(path)?,
         view: doc.view(Mode::Normal),
-        xbox_slots: (!doc.xbox_slots().is_empty()).then(|| doc.xbox_slots()),
-        xbox_selection: doc.xbox_selection(),
+        character_boxes: (!doc.character_boxes().is_empty()).then(|| doc.character_boxes()),
+        character_selection: doc.character_selection(),
     })
 }
 

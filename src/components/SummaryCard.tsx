@@ -25,7 +25,7 @@ const DIFFICULTY_OPTIONS = [
 
 export function SummaryCard() {
   const [pendingBox, setPendingBox] = useState<string | null>(null);
-  const { state, setDifficulty, selectXboxSlot } = useEditor();
+  const { state, setDifficulty, selectCharacterBox } = useEditor();
   const { session } = state;
   if (!session) return null;
   const { view } = session;
@@ -33,21 +33,21 @@ export function SummaryCard() {
   const choice = state.difficulty === 'auto' ? 'auto' : state.difficulty.fixed;
 
   return (
-    <section className={session.xbox_slots?.length ? "summary summary-xbox" : "summary"} aria-label="Save summary">
-      {session.xbox_slots?.length ? <>
-        <SelectField className="xbox-choice" label="Character box" value={session.xbox_selection ?? ''}
-          options={session.xbox_slots.map(slot => ({ value: slot.id, label: slot.label }))}
+    <section className={session.character_boxes?.length ? "summary summary-boxes" : "summary"} aria-label="Save summary">
+      {session.character_boxes?.length ? <>
+        <SelectField className="box-choice" label="Character box" value={session.character_selection ?? ''}
+          options={session.character_boxes.map(slot => ({ value: slot.id, label: slot.label }))}
           disabled={state.status === 'busy'}
           onChange={selection => {
-            if (selection === session.xbox_selection) return;
+            if (selection === session.character_selection) return;
             if (dirty(state)) setPendingBox(selection);
-            else void selectXboxSlot(selection);
+            else void selectCharacterBox(selection);
           }} />
         <ConfirmDialog isOpen={pendingBox !== null} title="Discard unsaved changes?"
           message="Switching character boxes will discard your unsaved changes." confirmLabel="Discard"
           onCancel={() => setPendingBox(null)} onConfirm={() => {
             const selection = pendingBox; setPendingBox(null);
-            if (selection) void selectXboxSlot(selection);
+            if (selection) void selectCharacterBox(selection);
           }} />
       </> : null}
       <Field

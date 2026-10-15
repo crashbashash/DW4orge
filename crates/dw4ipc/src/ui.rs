@@ -83,7 +83,7 @@ pub fn app_info() -> AppInfo {
         core_version: dw4core::VERSION.to_string(),
         save_size: dw4core::SAVE_SIZE,
         block_size: dw4core::BLOCK,
-        schema_version: 5,
+        schema_version: 6,
         ui: ui_data(),
     }
 }

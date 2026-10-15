@@ -23,7 +23,7 @@ export type ValidationReport = {
 /** Everything the UI can ask of the shell. */
 export interface Backend {
   appInfo(): Promise<AppInfo>;
-  openSave(path: string, region?: Region, xboxSelection?: string): Promise<OpenResult>;
+  openSave(path: string, region?: Region, characterSelection?: string): Promise<OpenResult>;
   newSave(request: NewSaveRequest): Promise<OpenResult>;
   getView(mode: Mode): Promise<SaveView>;
   validateEdits(edits: EditSet, mode: Mode): Promise<ValidationReport>;

@@ -361,15 +361,20 @@ with a cancellable region dialog; no save is selected or written on cancellation
 The CLI exposes the same selection through global `--region`.
 
 
-## Xbox selection and integrity (0.4.0 / schema 5)
+## Character selection and integrity (schema 6)
 
 `SourceKind` adds `xbox` for signed `SaveData.dat` files and `xbox_mu` for raw
-FATX memory-unit images. `OpenResult` adds optional `xbox_slots` (occupied boxes,
-with `id`, `label`, one-based `box_number`) and `xbox_selection`. `open_save`
-accepts optional `xbox_selection`; the equivalent service method is
+FATX memory-unit images. `OpenResult` carries optional `character_boxes` (occupied boxes,
+with `id`, `label`, one-based `box_number`) and `character_selection`. `open_save`
+accepts optional `character_selection`; the equivalent service method is
 `EditorSession::open_with_selection`. Failed selections retain the previous
 session. The UI reuses its load path with a discard guard when switching boxes.
-The CLI accepts `--xbox-slot` on info/dump; IDs are visible in `info` and JSON.
+The CLI accepts `--box` on info/dump (`--xbox-slot` remains an alias); IDs are
+visible in `info` and JSON. PS2 IDs are `ps2#1` through `ps2#4`; Xbox IDs retain
+the container path and box number. Switching retains the session's selected
+region, so mixed-region cards keep their identity. PS2 raw/card writes retain
+all boxes and compute checksums over both complete mirrors. Schema 6 replaces
+the Xbox-only payload field names from schema 5 with these shared names.
 
 The Xbox document retains the whole original container and adapts only the
 selected box to the existing `SaveView`/`EditSet`. Saves patch that box and sign

@@ -11,7 +11,7 @@ function agentControlsEnabled(): boolean {
 
 export const tauriBackend: Backend = {
   appInfo: () => invoke('app_info'),
-  openSave: (path, region, xboxSelection) => invoke('open_save', { path, region: region ?? null, xboxSelection: xboxSelection ?? null }),
+  openSave: (path, region, characterSelection) => invoke('open_save', { path, region: region ?? null, characterSelection: characterSelection ?? null }),
   newSave: (request) => invoke('new_save', { request }),
   getView: (mode) => invoke('get_view', { mode }),
   async validateEdits(edits: EditSet, mode: Mode): Promise<ValidationReport> {

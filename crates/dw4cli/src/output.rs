@@ -15,13 +15,13 @@ pub fn json<T: serde::Serialize>(value: &T) {
 /// Summary block for `info`.
 pub fn info(result: &OpenResult) {
     let view = &result.view;
-    if let Some(slots) = &result.xbox_slots {
+    if let Some(slots) = &result.character_boxes {
         for slot in slots {
             println!(
                 "{}: {}{}",
                 slot.id,
                 slot.label,
-                if result.xbox_selection.as_ref() == Some(&slot.id) {
+                if result.character_selection.as_ref() == Some(&slot.id) {
                     " (selected)"
                 } else {
                     ""

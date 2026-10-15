@@ -86,18 +86,21 @@ describe('AppShell', () => {
   });
 });
 
-it('guards Xbox character-box switching and sends the selected choice to the backend', async () => {
+it.each(['xbox', 'memcard'] as const)('guards %s character-box switching and retains the regional selection', async (source) => {
   const backend = createMockBackend();
   const sample = await backend.openSample!();
+  const prefix = source === 'memcard' ? 'ps2' : 'SaveData.dat';
+  const region = source === 'memcard' ? 'japan' as const : null;
   const choices = [
-    { id: 'SaveData.dat#1', label: 'Box 1 · ONE', box_number: 1 },
-    { id: 'SaveData.dat#4', label: 'Box 4 · FOUR', box_number: 4 },
+    { id: `${prefix}#1`, label: 'Box 1 · ONE', box_number: 1 },
+    { id: `${prefix}#4`, label: 'Box 4 · FOUR', box_number: 4 },
   ];
-  backend.openSample = async () => ({ ...sample, path: '/save.dat', source: 'xbox', xbox_slots: choices, xbox_selection: choices[0].id });
+  backend.openSample = async () => ({ ...sample, path: '/save.dat', source, region, character_boxes: choices, character_selection: choices[0].id });
   const selections: (string | undefined)[] = [];
   backend.openSave = async (_path, _region, selection) => {
+    expect(_region).toBe(region ?? undefined);
     selections.push(selection);
-    return { ...sample, path: '/save.dat', source: 'xbox', xbox_slots: choices, xbox_selection: selection, view: { ...sample.view, name: 'FOUR', bit: 444 } };
+    return { ...sample, path: '/save.dat', source, region, character_boxes: choices, character_selection: selection, view: { ...sample.view, name: 'FOUR', bit: 444 } };
   };
   render(<BackendProvider backend={backend}><App /></BackendProvider>);
   await userEvent.click(await screen.findByRole('button', { name: /load sample save/i }));
@@ -114,5 +117,5 @@ it('guards Xbox character-box switching and sends the selected choice to the bac
   await userEvent.click(await screen.findByRole('option', { name: 'Box 4 · FOUR' }));
   await userEvent.click(await screen.findByRole('button', { name: 'Discard' }));
   expect(await screen.findByDisplayValue('444')).toBeTruthy();
-  expect(selections).toEqual(['SaveData.dat#4']);
+  expect(selections).toEqual([`${prefix}#4`]);
 });

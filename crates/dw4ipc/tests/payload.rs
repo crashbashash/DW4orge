@@ -18,6 +18,8 @@ fn sample_view() -> SaveView {
 #[test]
 fn open_result_round_trips_through_json() {
     let result = OpenResult {
+        empty_boxes: None,
+        pending_write: false,
         character_boxes: None,
         character_selection: None,
         region: None,

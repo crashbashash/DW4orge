@@ -53,6 +53,23 @@ enum Command {
         #[arg(short, long)]
         out: PathBuf,
     },
+    /// Create a character in an empty PS2 box, writing a separate output or the same file.
+    CreateBox {
+        path: PathBuf,
+        /// Destination character box, 1 through 4; it must be empty.
+        #[arg(long)]
+        number: u8,
+        #[arg(long, value_parser = parse_species)]
+        species: Option<Species>,
+        #[arg(long)]
+        name: Option<String>,
+        #[arg(long)]
+        story: Option<String>,
+        #[arg(long, value_parser = parse_difficulty)]
+        difficulty: Option<Difficulty>,
+        #[arg(short, long)]
+        out: PathBuf,
+    },
     /// Check a save or card for corruption.
     Verify { path: PathBuf },
     /// List or search the item catalogue.
@@ -153,6 +170,38 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
                 output::json(&result);
             } else {
                 println!("wrote {}", result.path.as_deref().unwrap_or("(unknown)"));
+            }
+        }
+        Command::CreateBox {
+            path,
+            number,
+            species,
+            name,
+            story,
+            difficulty,
+            out,
+        } => {
+            if cli.character_box.is_some() {
+                return Err(IpcError::Unsupported {
+                    message: "Use --number to choose the empty destination box".into(),
+                });
+            }
+            let req = NewSaveRequest {
+                format: Some(dw4ipc::SourceKind::Memcard),
+                region: cli.region,
+                species: species.unwrap_or(Species::DEFAULT),
+                name: name.clone().unwrap_or_else(|| "TST".into()),
+                story: story.clone(),
+                difficulty: difficulty.map_or(DifficultyChoice::Auto, DifficultyChoice::Fixed),
+            };
+            let mut session = EditorSession::new_session();
+            session.open_with_region(path, cli.region)?;
+            let created = session.create_ps2_box(*number, &req)?;
+            let saved = session.save_as(out, &created.view.to_edit_set(), Mode::Normal)?;
+            if cli.json {
+                output::json(&saved);
+            } else {
+                println!("wrote {}", saved.path.as_deref().unwrap_or("(unknown)"));
             }
         }
         Command::Verify { path } => {

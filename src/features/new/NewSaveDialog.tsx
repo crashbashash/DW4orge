@@ -15,8 +15,11 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   VeryHard: 'Very Hard',
 };
 
-export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { state, newSave } = useEditor();
+export function NewSaveDialog({ isOpen, onClose, boxCreation = false }: { isOpen: boolean; onClose: () => void; boxCreation?: boolean }) {
+  const { state, newSave, createBox } = useEditor();
+  const [boxNumber, setBoxNumber] = useState(0);
+  const emptyBoxes = state.session?.empty_boxes ?? [];
+  const selectedBox = emptyBoxes.includes(boxNumber) ? boxNumber : emptyBoxes[0];
   const [format, setFormat] = useState<SourceKind>('memcard');
   const [region, setRegion] = useState<Region>('usa');
   const [species, setSpecies] = useState<Species>('Dorumon');
@@ -27,13 +30,14 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
   if (!state.appInfo) return null;
 
   const submit = async () => {
-    await newSave({ format, region, species, name, story, difficulty });
-    onClose();
+    const request = { format: boxCreation ? 'memcard' as const : format, region: boxCreation ? state.session?.region ?? null : region, species, name, story, difficulty };
+    const ok = boxCreation ? selectedBox !== undefined && await createBox(selectedBox, request) : await newSave(request);
+    if (ok) onClose();
   };
 
   return (
     <Modal
-      title="New save"
+      title={boxCreation ? "Create PS2 character box" : "New save"}
       isOpen={isOpen}
       onClose={onClose}
       footer={
@@ -41,13 +45,16 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
           <button type="button" onClick={onClose}>
             Cancel
           </button>
-          <button type="button" onClick={() => void submit()}>
+          <button type="button" disabled={state.status === 'busy' || (boxCreation && selectedBox === undefined)} onClick={() => void submit()}>
             Create
           </button>
         </>
       }
     >
       <div className="grid">
+        {boxCreation ? <SelectField label="Empty box" value={String(selectedBox ?? '')}
+          options={emptyBoxes.map(number => ({ value: String(number), label: `Box ${number} (empty)` }))}
+          onChange={value => setBoxNumber(Number(value))} /> : <>
         <SelectField label="Save format" value={format} options={[
           { value: 'memcard', label: 'PS2 memory card (.ps2)' },
           { value: 'gamecube', label: 'GameCube save (.gci)' },
@@ -56,6 +63,7 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
         <SelectField label="Region" value={region} options={[
           { value: 'usa', label: 'USA' }, { value: 'europe', label: 'Europe' }, { value: 'japan', label: 'Japan (Digimon World X)' },
         ]} onChange={setRegion} />
+        </>}
         <SelectField
           label="Species"
           value={species}
@@ -93,7 +101,9 @@ export function NewSaveDialog({ isOpen, onClose }: { isOpen: boolean; onClose: (
         />
       </div>
 
-      {format !== 'memcard' && <p className="muted">
+      {state.error && <p role="alert" className="danger">{state.error}</p>}
+      {boxCreation && <p className="muted">Creates a new character in the opened PS2 save. Other boxes are preserved. Use Save or Save As to write it.</p>}
+      {!boxCreation && format !== 'memcard' && <p className="muted">
         Creates a new GameCube save with a blank banner and icon. The game replaces them
         when it saves. GCI files can be imported into Dolphin; full cards can be mounted directly.
       </p>}

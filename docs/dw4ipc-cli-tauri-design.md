@@ -382,3 +382,22 @@ both records, then use the existing atomic write/backup policy with a complete
 byte comparison and reparse. A changed source file is rejected before overwrite.
 Normal-mode Xbox bank edits pack nonempty slots, because the retail loader
 stops at the first empty bank item. Advanced mode preserves raw placement.
+
+
+## Empty PS2 box creation (schema 7)
+
+`OpenResult.empty_boxes` lists available one-based creation targets. `None`
+means unsupported; an empty list means a supported but full PS2 save.
+`pending_write` marks container changes not represented by an EditSet diff.
+New files and newly created boxes are dirty immediately; successful writes
+clear that flag. This extends the existing discard/close guards to a created
+box whose file already has a path.
+
+`create_box(box_number, request: NewSaveRequest)` delegates to
+`EditorSession::create_ps2_box`. It reloads the existing path and selected
+region, validates the request/empty target, initializes a new character,
+selects it and returns a pending session. It never writes to disk. Errors leave
+the previous document intact. Existing card regions cannot be changed through
+creation. The CLI exposes this as `create-box --number N --out FILE`; the UI
+reuses the creation form with an empty-box selector and no format/region change.
+GameCube and Xbox creation targets remain unavailable.

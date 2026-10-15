@@ -350,3 +350,71 @@ fn gamecube_boxes_can_be_selected_from_gci_card_and_bare_files() {
         assert!(!bad.status.success());
     }
 }
+
+#[test]
+fn create_box_cli_adds_a_character_without_overwriting_occupied_boxes_or_source_files() {
+    let dir = tempfile::tempdir().unwrap();
+    let input = dir.path().join("input.ps2");
+    let output = dir.path().join("output.ps2");
+    let raw = dw4core::build_save(&dw4core::SaveSpec::default());
+    let original = dw4core::memcard::format_card_for_region(&raw, dw4core::Region::Europe).unwrap();
+    std::fs::write(&input, &original).unwrap();
+    let out = bin()
+        .args([
+            "create-box",
+            input.to_str().unwrap(),
+            "--number",
+            "4",
+            "--species",
+            "Veemon",
+            "--name",
+            "CLI4",
+            "--out",
+            output.to_str().unwrap(),
+            "--json",
+        ])
+        .output()
+        .unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    assert_eq!(value["character_selection"], "ps2#4");
+    assert_eq!(value["view"]["name"], "CLI4");
+    assert_eq!(value["pending_write"], false);
+    assert_eq!(value["region"], "europe");
+    assert_eq!(std::fs::read(&input).unwrap(), original);
+    let before = std::fs::read(&output).unwrap();
+    for n in ["1", "4", "0", "5"] {
+        let out = bin()
+            .args([
+                "create-box",
+                output.to_str().unwrap(),
+                "--number",
+                n,
+                "--out",
+                output.to_str().unwrap(),
+            ])
+            .output()
+            .unwrap();
+        assert!(!out.status.success());
+        assert_eq!(std::fs::read(&output).unwrap(), before);
+    }
+    let out = bin()
+        .args([
+            "create-box",
+            output.to_str().unwrap(),
+            "--number",
+            "2",
+            "--name",
+            "NEXT2",
+            "--out",
+            output.to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    assert!(output.with_extension("ps2.bak").exists());
+}

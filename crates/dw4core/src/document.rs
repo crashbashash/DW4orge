@@ -465,6 +465,24 @@ impl Document {
     }
 
     #[must_use]
+    pub fn empty_ps2_boxes(&self) -> Option<Vec<u8>> {
+        if self.xbox.is_some() {
+            None
+        } else {
+            self.data.empty_ps2_boxes()
+        }
+    }
+
+    pub fn create_ps2_box(&mut self, number: u8, spec: &crate::SaveSpec) -> crate::Result<()> {
+        if self.xbox.is_some() {
+            return Err(crate::Error::NoSave(
+                "Box creation currently supports PS2 saves only".into(),
+            ));
+        }
+        self.data.create_ps2_box(number, spec)
+    }
+
+    #[must_use]
     pub fn region(&self) -> Option<crate::Region> {
         self.region
     }

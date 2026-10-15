@@ -6,6 +6,7 @@ import { useEditor } from '../app/EditorProvider';
 import { formatNumber } from '../lib/num';
 import { REGION_LABELS } from './RegionDialog';
 import { SelectField } from './SelectField';
+import { NewSaveDialog } from '../features/new/NewSaveDialog';
 
 const DIFFICULTIES: Difficulty[] = ['Normal', 'Hard', 'VeryHard'];
 
@@ -25,6 +26,8 @@ const DIFFICULTY_OPTIONS = [
 
 export function SummaryCard() {
   const [pendingBox, setPendingBox] = useState<string | null>(null);
+  const [confirmCreate, setConfirmCreate] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const { state, setDifficulty, selectCharacterBox } = useEditor();
   const { session } = state;
   if (!session) return null;
@@ -33,7 +36,7 @@ export function SummaryCard() {
   const choice = state.difficulty === 'auto' ? 'auto' : state.difficulty.fixed;
 
   return (
-    <section className={session.character_boxes?.length ? "summary summary-boxes" : "summary"} aria-label="Save summary">
+    <section className={session.character_boxes?.length || session.empty_boxes ? "summary summary-boxes" : "summary"} aria-label="Save summary">
       {session.character_boxes?.length ? <>
         <SelectField className="box-choice" label="Character box" value={session.character_selection ?? ''}
           options={session.character_boxes.map(slot => ({ value: slot.id, label: slot.label }))}
@@ -50,6 +53,15 @@ export function SummaryCard() {
             if (selection) void selectCharacterBox(selection);
           }} />
       </> : null}
+      {session.empty_boxes && session.path && (session.source === 'memcard' || session.source === 'raw') && <>
+        <button type="button" disabled={state.status === 'busy' || session.empty_boxes.length === 0}
+          title={session.empty_boxes.length === 0 ? 'All PS2 boxes are occupied' : undefined}
+          onClick={() => dirty(state) ? setConfirmCreate(true) : setCreateOpen(true)}>Create box</button>
+        <ConfirmDialog isOpen={confirmCreate} title="Discard unsaved changes?"
+          message="Creating a character box will discard the current unsaved changes." confirmLabel="Discard"
+          onCancel={() => setConfirmCreate(false)} onConfirm={() => { setConfirmCreate(false); setCreateOpen(true); }} />
+        <NewSaveDialog isOpen={createOpen} boxCreation onClose={() => setCreateOpen(false)} />
+      </>}
       <Field
         label="Region"
         value={session.region ? REGION_LABELS[session.region] : session.source === 'gamecube' ? 'GameCube GCI' : session.source === 'xbox' || session.source === 'xbox_mu' ? 'Xbox (USA / Japan)' : 'Unknown (raw save)'}

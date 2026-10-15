@@ -55,6 +55,18 @@ USA, Europe and Japan (Digimon World X) are available. Existing cards retain
 their region. Player names use the game's fullwidth character encoding; the
 editor's item labels are in English.
 
+### Create a character in an empty PS2 box
+
+Open the existing PS2 memory card or bare save, then choose **Create box** next
+to **Character box**. Select an empty box, species, name, story preset and
+difficulty. Click **Create**, then **Save** or **Save As** to write it.
+
+Occupied boxes cannot be overwritten. Existing characters, icons and unrelated
+card files are preserved. A new character starts with fresh stats, starter
+weapons and its own identity. Creation counts as unsaved work immediately;
+switching characters, opening another save or closing asks before discarding it.
+Save each created character before creating another one.
+
 Edits go through six sections (below), with validation on every change that
 points at the exact field and says how to fix it. Undo/redo spans the whole
 session, and an indicator shows whether there are unsaved changes — a save you
@@ -99,6 +111,7 @@ dw4cli dump Mcd001.ps2          # every editable field
 dw4cli new --species Dorumon --name abcdefgh -o new.ps2
 dw4cli verify new.ps2           # checksums and card ECC
 dw4cli info Mcd001.ps2 --box 'ps2#2'  # select PS2 character box 2
+dw4cli create-box Mcd001.ps2 --number 3 --species Veemon --name NEW3 --out new.ps2
 dw4cli info NDMWSaveData.gci --box 'gamecube#4'  # select GameCube box 4
 dw4cli info SaveData.dat        # Xbox save and available character boxes
 dw4cli info SaveData.dat --xbox-slot 'SaveData.dat#4'
@@ -200,7 +213,8 @@ editor does not rename or convert another region's save silently.
 - [x] **GameCube save creation (GCI and memory card).**
 - [x] **Xbox save support.**
 - [x] **Select additional character save boxes on PS2.**
-- [ ] **Create characters in empty save boxes on PS2, GameCube and Xbox.**
+- [x] **Create characters in empty PS2 save boxes.**
+- [ ] **Create characters in empty save boxes on GameCube and Xbox.**
 - [x] **Select additional character save boxes on GameCube.**
 - [ ] **Native Wayland support.**
 - [ ] **Packaging for Arch and Flatpak.**

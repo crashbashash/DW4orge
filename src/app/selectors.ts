@@ -15,7 +15,7 @@ import { diffStory, type StoreState } from './store';
  */
 export function dirty(state: StoreState): boolean {
   if (!state.draft || !state.session) return false;
-  if (state.session.path === null) return true;
+  if (state.session.path === null || state.session.pending_write) return true;
   for (const difficulty of DIFFICULTY_ORDER) {
     const pending = diffStory(
       state.stories[difficulty],

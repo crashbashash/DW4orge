@@ -25,6 +25,7 @@ export interface Backend {
   appInfo(): Promise<AppInfo>;
   openSave(path: string, region?: Region, characterSelection?: string): Promise<OpenResult>;
   newSave(request: NewSaveRequest): Promise<OpenResult>;
+  createBox(boxNumber: number, request: NewSaveRequest): Promise<OpenResult>;
   getView(mode: Mode): Promise<SaveView>;
   validateEdits(edits: EditSet, mode: Mode): Promise<ValidationReport>;
   save(edits: EditSet, mode: Mode): Promise<OpenResult>;

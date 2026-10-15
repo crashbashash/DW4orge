@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { emptyEditSet } from '../lib/editSet';
+import { viewToEditSet } from '../app/store';
 import { createMockBackend } from './mock';
 
 describe('createMockBackend', () => {
@@ -7,7 +8,7 @@ describe('createMockBackend', () => {
     const backend = createMockBackend();
     const info = await backend.appInfo();
     expect(info.ui.catalogue).toHaveLength(539);
-    expect(info.schema_version).toBe(6);
+    expect(info.schema_version).toBe(7);
     const opened = await backend.openSave('/mock/x.raw');
     expect(opened.source).toBe('raw');
     expect(opened.view.species).toBe('Dorumon');
@@ -46,4 +47,20 @@ describe('createMockBackend', () => {
     expect(await backend.pickOpenPath()).toBeNull();
     expect(await backend.pickSavePath('out.raw')).toBe('/b.raw');
   });
+});
+
+
+it('keeps saved created boxes when switching, and discards only unsaved creations', async () => {
+  const backend = createMockBackend();
+  const first = await backend.openSave('/mock/source.ps2');
+  const request = { format: 'memcard' as const, region: 'usa' as const, species: 'Veemon' as const, name: 'NEW3', story: null, difficulty: 'auto' as const };
+  const created = await backend.createBox(3, request);
+  expect(created.pending_write).toBe(true);
+  await backend.saveAs('/mock/copy.ps2', viewToEditSet(created.view), 'normal');
+  expect((await backend.openSave('/mock/copy.ps2', undefined, 'ps2#1')).view).toEqual(first.view);
+  expect((await backend.openSave('/mock/copy.ps2', undefined, 'ps2#3')).view.name).toBe('NEW3');
+  await backend.createBox(4, { ...request, name: 'UNSAVED' });
+  const reopened = await backend.openSave('/mock/copy.ps2', undefined, 'ps2#3');
+  expect(reopened.empty_boxes).toContain(4);
+  expect(reopened.pending_write).toBe(false);
 });

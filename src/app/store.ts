@@ -29,6 +29,8 @@ export type Session = {
   source: SourceKind;
   character_boxes?: import('../bindings').CharacterBox[] | null;
   character_selection?: string | null;
+  empty_boxes?: number[] | null;
+  pending_write?: boolean;
   region: import('../bindings').Region | null;
   view: SaveView;
   baseline: EditSet;
@@ -297,6 +299,8 @@ function sessionFrom(result: OpenResult, mirrors: readonly Mirror[]): Session {
     source: result.source,
     character_boxes: result.character_boxes,
     character_selection: result.character_selection,
+    empty_boxes: result.empty_boxes,
+    pending_write: result.pending_write,
     region: result.region,
     view: result.view,
     baseline: viewToEditSet(result.view),

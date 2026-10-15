@@ -1147,7 +1147,7 @@ Save As from a memory unit keeps the full image with `.img` or exports the
 selected four-box save container with `.dat`. Atomic writes, backups, and
 post-write verification apply to both formats.
 
-The source kind, selected box and available choices cross IPC schema 6
+The source kind, selected box and available choices were introduced in IPC schema 6
 as `character_selection` and `character_boxes` (shared with PS2 and GameCube).
 The app selector guards unsaved changes, and the CLI accepts `--xbox-slot` with
 an ID printed by `info` or returned in JSON. New Save remains PS2/GameCube;
@@ -1163,8 +1163,8 @@ FATX geometry, signatures, regional evidence and reproducible probe commands.
 PS2 memory cards and little-endian bare saves expose occupied boxes as `ps2#1`
 through `ps2#4`, in retail screen order (top-left, top-right, bottom-left,
 bottom-right). Opening without a selection chooses the first occupied box,
-including when box 1 is empty. No empty-box initialization or box copying is
-provided. GameCube selection uses the same layout with big-endian scalars and
+including when box 1 is empty. Empty PS2 boxes can be initialized as described
+below; box copying is not provided. GameCube selection uses the same layout with big-endian scalars and
 names, as described below.
 
 All field access, including species arrays, story mirrors, equipment, disks and
@@ -1187,9 +1187,35 @@ UTF-16 names use big-endian access. The checksum/version words remain shared.
 Opening defaults to the first occupied box, including when earlier boxes are empty.
 
 The desktop selector, discard guard, CLI `--box`, failed-selection behavior and
-post-save selection retention use IPC schema 6 without a new payload shape.
+post-save selection retention use the shared box payload introduced in schema 6.
+Schema 7 adds the creation metadata described below.
 All editable field groups follow the selected record. Other boxes and unknown
 bytes survive writes; GCI headers/banners and full-card filesystem metadata are
 preserved. Full-card copies, GCI exports and bare-data exports retain all boxes.
 Writes reject a source whose save payload changed externally after opening.
-Creating characters in empty boxes remains roadmap work on all three platforms.
+Creating characters in empty GameCube and Xbox boxes remains roadmap work.
+
+
+## PS2 character creation in an existing save
+
+`SaveData::create_ps2_box` / `Document::create_ps2_box` initialize one complete
+`0x2000`-byte record at `8 + (box_number - 1) * 0x2000` in both mirrors. Only
+the selected record and complete-mirror checksums change. The target must be
+1–4, its occupied byte must be zero in both mirrors, the save must be PS2
+version 4, and both checksums must already verify. Occupied, uncertain, corrupt
+or other-platform inputs are rejected without changing the save or selection.
+
+The initializer uses the save builder, marks the record occupied, selects it,
+and assigns a nonzero identity distinct from every record's ID in both mirrors.
+The service seeds the requested story/difficulty and supplies usable starter
+weapons. Omitted story uses the fresh tutorial state. Player names must contain
+1–8 supported BMP characters. Other boxes, unused bytes, wrapper metadata,
+icons, unrelated card files and regional identity survive saving.
+
+The desktop **Create box** flow operates on an opened PS2 card or bare file.
+It offers only empty boxes, keeps the original path, and makes no file write
+until Save/Save As. `dw4cli create-box input.ps2 --number 3 --name NEW3 --out output.ps2`
+uses the same service; choosing the same input/output path uses atomic writes
+and backups. The service reloads the source before creation and rechecks the
+target, so stale UI choices cannot overwrite externally created characters.
+Creation failures retain the previous editing session.

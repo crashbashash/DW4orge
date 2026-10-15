@@ -32,6 +32,7 @@ pub fn run() {
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::open_save,
         commands::new_save,
+        commands::create_box,
         commands::get_view,
         commands::validate_edits,
         commands::save,
@@ -47,6 +48,7 @@ pub fn run() {
     let builder = builder.invoke_handler(tauri::generate_handler![
         commands::open_save,
         commands::new_save,
+        commands::create_box,
         commands::get_view,
         commands::validate_edits,
         commands::save,

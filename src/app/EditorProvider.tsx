@@ -45,7 +45,8 @@ export type EditorApi = {
   openSample(): Promise<void>;
   selectCharacterBox(selection: string): Promise<void>;
   canLoadSample: boolean;
-  newSave(request: NewSaveRequest): Promise<void>;
+  newSave(request: NewSaveRequest): Promise<boolean>;
+  createBox(boxNumber: number, request: NewSaveRequest): Promise<boolean>;
   save(): Promise<void>;
   saveAs(): Promise<void>;
   speciesStats(species: Species, mode: StoreState['mode']): Promise<SpeciesStats>;
@@ -127,9 +128,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       dispatch({ type: 'busy', busy: true });
       try {
         const result = await run();
-        if (result) dispatch({ type: 'loaded', result });
+        if (result) { dispatch({ type: 'loaded', result }); return true; }
+        return false;
       } catch (err: unknown) {
         reportFailure(err);
+        return false;
       } finally {
         dispatch({ type: 'busy', busy: false });
       }
@@ -164,10 +167,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const newSave = useCallback(
     async (request: NewSaveRequest) => {
-      await load(() => backend.newSave(request));
+      return load(() => backend.newSave(request));
     },
     [backend, load],
   );
+
+  const createBox = useCallback(async (boxNumber: number, request: NewSaveRequest) => {
+    return load(() => backend.createBox(boxNumber, request));
+  }, [backend, load]);
 
   const write = useCallback(
     async (run: () => Promise<OpenResult>) => {
@@ -238,11 +245,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       selectCharacterBox,
       canLoadSample: typeof backend.openSample === 'function',
       newSave,
+      createBox,
       save,
       saveAs,
       speciesStats,
     }),
-    [backend.openSample, newSave, open, openSample, selectCharacterBox, save, saveAs, speciesStats, state, toggleTheme],
+    [backend.openSample, newSave, createBox, open, openSample, selectCharacterBox, save, saveAs, speciesStats, state, toggleTheme],
   );
 
   return <EditorContext.Provider value={api}>{children}<RegionDialog request={regionRequest} finish={finishRegion} /></EditorContext.Provider>;

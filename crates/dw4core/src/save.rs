@@ -127,6 +127,96 @@ impl SaveData {
             .then_some(id)
     }
 
+    /// Boxes whose occupied byte is clear in both mirrors. None means unsupported.
+    #[must_use]
+    pub fn empty_ps2_boxes(&self) -> Option<Vec<u8>> {
+        if self.byte_order != ByteOrder::Little || self.version() != 4 {
+            return None;
+        }
+        Some(
+            (0..4)
+                .filter(|&index| {
+                    (0..2).all(|mirror| self.raw[mirror * BLOCK + index * Self::BOX_SIZE + 8] == 0)
+                })
+                .map(|index| index as u8 + 1)
+                .collect(),
+        )
+    }
+
+    /// Initialize one empty PS2 box, preserving every other byte except checksums.
+    /// Failure leaves the complete save and selection unchanged.
+    pub fn create_ps2_box(&mut self, number: u8, spec: &crate::SaveSpec) -> Result<()> {
+        let empty = self.empty_ps2_boxes().ok_or_else(|| {
+            Error::NoSave("Box creation currently supports PS2 saves only".into())
+        })?;
+        if !(1..=4).contains(&number) {
+            return Err(Error::NoSave("PS2 box number must be 1 through 4".into()));
+        }
+        if !empty.contains(&number) {
+            return Err(Error::NoSave(
+                "The selected PS2 box is occupied or its mirrors disagree".into(),
+            ));
+        }
+        if !self.verify() {
+            return Err(Error::NoSave(
+                "Box creation requires valid checksums in both mirrors".into(),
+            ));
+        }
+        if spec.player_name.trim().is_empty()
+            || spec.player_name.chars().count() > crate::NAME_CHARS
+            || spec
+                .player_name
+                .chars()
+                .any(|c| c.is_control() || u32::from(c) >= 0xfffe)
+        {
+            return Err(Error::NoSave(
+                "Player name must contain 1 to 8 supported characters".into(),
+            ));
+        }
+        // The game uses UNIQUE to identify characters. Do not reuse a donor's
+        // character identity or the fixed new-card builder identity.
+        use std::sync::atomic::{AtomicU32, Ordering};
+        use std::time::{SystemTime, UNIX_EPOCH};
+        static SEQUENCE: AtomicU32 = AtomicU32::new(1);
+        let ticks = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_nanos();
+        let mut unique = (ticks as u32)
+            ^ ((ticks >> 32) as u32)
+            ^ std::process::id()
+            ^ SEQUENCE.fetch_add(1, Ordering::Relaxed).rotate_left(13);
+        while unique == 0
+            || (0..2).any(|mirror| {
+                (0..4).any(|index| {
+                    read_u32(
+                        &self.raw,
+                        mirror * BLOCK + index * Self::BOX_SIZE + offsets::UNIQUE,
+                        ByteOrder::Little,
+                    ) == unique
+                })
+            })
+        {
+            unique = unique.wrapping_add(1);
+        }
+        let mut fresh = spec.clone();
+        fresh.version = 4;
+        fresh.isuse = 1;
+        fresh.unique = unique;
+        let record = crate::build_save(&fresh);
+        let mut output = self.raw.clone();
+        for mirror in 0..2 {
+            let source = mirror * BLOCK + 8;
+            let target = mirror * BLOCK + usize::from(number - 1) * Self::BOX_SIZE + 8;
+            output[target..target + Self::BOX_SIZE]
+                .copy_from_slice(&record[source..source + Self::BOX_SIZE]);
+        }
+        fix_checksums(&mut output);
+        self.raw = output;
+        self.selected_box = usize::from(number - 1);
+        Ok(())
+    }
+
     fn box_prefix(&self) -> &'static str {
         match self.byte_order {
             ByteOrder::Little => "ps2",

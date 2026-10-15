@@ -54,6 +54,8 @@ impl EditorSession {
         let source = source_kind(path)?;
         let view = doc.view(Mode::Normal);
         let result = OpenResult {
+            empty_boxes: doc.empty_ps2_boxes(),
+            pending_write: false,
             region: doc.region(),
             path: Some(path_string(path)?),
             source,
@@ -146,6 +148,8 @@ impl EditorSession {
         let region = doc.region();
         self.doc = Some(doc);
         Ok(OpenResult {
+            empty_boxes: self.doc_ref()?.empty_ps2_boxes(),
+            pending_write: true,
             region,
             path: None,
             source,
@@ -153,6 +157,50 @@ impl EditorSession {
             character_boxes: None,
             character_selection: None,
         })
+    }
+
+    /// Create a character in an empty box of the currently opened PS2 save.
+    /// Reloads the source before creation; nothing is written until Save/Save As.
+    /// A failed request keeps the previous editing session intact.
+    pub fn create_ps2_box(
+        &mut self,
+        number: u8,
+        req: &NewSaveRequest,
+    ) -> Result<OpenResult, IpcError> {
+        if !matches!(
+            req.format,
+            None | Some(SourceKind::Memcard | SourceKind::Raw)
+        ) {
+            return Err(IpcError::Unsupported {
+                message: "Box creation currently supports PS2 saves only".into(),
+            });
+        }
+        let old = self.doc_ref()?;
+        let path = old
+            .path()
+            .ok_or_else(|| IpcError::Unsupported {
+                message: "Save the new file before creating another character box".into(),
+            })?
+            .to_path_buf();
+        if old.region().is_some() && req.region.is_some() && req.region != old.region() {
+            return Err(IpcError::Unsupported {
+                message: "An existing card keeps its original region".into(),
+            });
+        }
+        let mut doc = Document::load_with_region(&path, old.region().or(req.region))?;
+        // A new character needs the initial story state and usable starter gear.
+        let mut request = req.clone();
+        if request.story.is_none() {
+            request.story = Some("Fresh (tutorial)".into());
+        }
+        let mut spec = save_spec(&request)?;
+        spec.device = vec![0x050d, 0x0513, 0x0512];
+        spec.weapons = vec![0, 1, 2];
+        doc.create_ps2_box(number, &spec)?;
+        let mut result = finish(&doc, &path)?;
+        result.pending_write = true;
+        self.doc = Some(doc);
+        Ok(result)
     }
 
     /// Re-project the open save for `mode`.
@@ -259,6 +307,8 @@ impl EditorSession {
 /// Project after a write, using the card/raw source the path now resolves to.
 fn finish(doc: &Document, path: &Path) -> Result<OpenResult, IpcError> {
     Ok(OpenResult {
+        empty_boxes: doc.empty_ps2_boxes(),
+        pending_write: false,
         region: doc.region(),
         path: Some(path_string(path)?),
         source: source_kind(path)?,

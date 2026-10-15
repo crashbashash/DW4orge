@@ -13,6 +13,7 @@ export const tauriBackend: Backend = {
   appInfo: () => invoke('app_info'),
   openSave: (path, region, characterSelection) => invoke('open_save', { path, region: region ?? null, characterSelection: characterSelection ?? null }),
   newSave: (request) => invoke('new_save', { request }),
+  createBox: (boxNumber, request) => invoke('create_box', { boxNumber, request }),
   getView: (mode) => invoke('get_view', { mode }),
   async validateEdits(edits: EditSet, mode: Mode): Promise<ValidationReport> {
     try {

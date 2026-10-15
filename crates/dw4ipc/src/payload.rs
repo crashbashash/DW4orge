@@ -49,6 +49,13 @@ pub struct NewSaveRequest {
 /// The result of opening or creating a save.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 pub struct OpenResult {
+    /// Empty boxes available for creation; None for unsupported platforms.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub empty_boxes: Option<Vec<u8>>,
+    /// In-memory container changes that have not been written yet.
+    #[serde(default)]
+    pub pending_write: bool,
     /// Detected card region; raw files have no inherent regional identity.
     #[serde(default)]
     pub region: Option<dw4core::Region>,

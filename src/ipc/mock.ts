@@ -50,27 +50,65 @@ export function createMockBackend(options: MockOptions = {}): Backend {
     return current;
   };
 
+  const files = new Map<string, { result: OpenResult; views: Map<string, SaveView> }>();
+  let workingViews = new Map<string, SaveView>();
+  const openMock = (path: string, region?: import('../bindings').Region, selection?: string): OpenResult => {
+    let stored = files.get(path);
+    if (!stored) {
+      const result: OpenResult = { ...fixture(), path, source: /\.ps2$/i.test(path) ? 'memcard' : 'raw', region: region ?? (/\.ps2$/i.test(path) ? 'usa' : null) };
+      stored = { result, views: new Map([[result.character_selection ?? 'ps2#1', result.view]]) };
+      files.set(path, structuredClone(stored));
+    }
+    const id = selection ?? stored.result.character_boxes?.[0]?.id ?? stored.result.character_selection;
+    if (selection && !stored.result.character_boxes?.some(box => box.id === selection)) throw { kind: 'unsupported', message: 'No occupied character box matches the selection' };
+    current = { ...structuredClone(stored.result), path, region: region ?? stored.result.region, pending_write: false,
+      character_selection: id, view: structuredClone(stored.views.get(id ?? '') ?? stored.result.view) };
+    workingViews = structuredClone(stored.views);
+    return structuredClone(current);
+  };
+  const persist = (path: string, edits: EditSet, region?: import('../bindings').Region): OpenResult => {
+    const doc = needDoc();
+    const view = applyEdits(doc.view, edits, appInfo.ui.mirrors);
+    const id = doc.character_selection ?? (doc.source.startsWith('gamecube') ? 'gamecube#1' : 'ps2#1');
+    workingViews.set(id, structuredClone(view));
+    const choices = doc.character_boxes ?? [{ id, label: `Box 1 · ${view.name}`, box_number: 1 }];
+    current = { ...doc, path, pending_write: false, region: region ?? doc.region, view,
+      character_selection: id, character_boxes: choices.map(box => box.id === id ? { ...box, label: `Box ${box.box_number} · ${view.name}` } : box) };
+    files.set(path, { result: structuredClone(current), views: structuredClone(workingViews) });
+    return structuredClone(current);
+  };
+
   return {
     appInfo: async () => structuredClone(appInfo),
 
-    openSave: async (path, region) => {
-      current = { ...fixture(), path, source: /\.ps2$/i.test(path) ? 'memcard' : 'raw', region: region ?? (/\.ps2$/i.test(path) ? 'usa' : null) };
-      return structuredClone(current);
-    },
+    openSave: async (path, region, selection) => openMock(path, region, selection),
 
-    openSample: async () => {
-      current = { ...fixture(), path: '/mock/Mcd001.ps2', source: 'memcard', region: 'usa' };
-      return structuredClone(current);
-    },
+    openSample: async () => openMock('/mock/Mcd001.ps2', 'usa'),
 
     newSave: async (request: NewSaveRequest) => {
       const base = fixture();
       current = {
         region: request.region ?? 'usa',
         path: null,
+        pending_write: true,
+        empty_boxes: !request.format || request.format === 'memcard' || request.format === 'raw' ? [2,3,4] : undefined,
         source: request.format === 'memcard' ? 'raw' : request.format ?? 'raw',
         view: { ...base.view, species: request.species, name: request.name },
       };
+      workingViews = new Map();
+      return structuredClone(current);
+    },
+
+    createBox: async (boxNumber, request) => {
+      const previous = needDoc();
+      const stored = previous.path ? files.get(previous.path) : undefined;
+      if (!stored?.result.empty_boxes?.includes(boxNumber)) throw { kind: 'unsupported', message: 'This PS2 box is not empty' };
+      const doc = openMock(previous.path!, previous.region ?? undefined);
+      current = { ...doc, pending_write: true, character_selection: `ps2#${boxNumber}`,
+        empty_boxes: doc.empty_boxes!.filter(number => number !== boxNumber),
+        character_boxes: [...doc.character_boxes ?? [], { id: `ps2#${boxNumber}`, label: `Box ${boxNumber} · ${request.name}`, box_number: boxNumber }].sort((a,b)=>a.box_number-b.box_number),
+        view: { ...fixture().view, species: request.species, name: request.name, bit: 0, xdata: 0, level: 1, exp: 0 } };
+      workingViews.set(`ps2#${boxNumber}`, structuredClone(current.view));
       return structuredClone(current);
     },
 
@@ -79,17 +117,8 @@ export function createMockBackend(options: MockOptions = {}): Backend {
     validateEdits: async (edits, mode) =>
       options.validateEdits?.(edits, mode) ?? { errors: [], warnings: [] },
 
-    save: async (edits) => {
-      const doc = needDoc();
-      current = { ...doc, view: applyEdits(doc.view, edits, appInfo.ui.mirrors) };
-      return structuredClone(current);
-    },
-
-    saveAs: async (path, edits, _mode, region) => {
-      const doc = needDoc();
-      current = { ...doc, path, region: region ?? doc.region, view: applyEdits(doc.view, edits, appInfo.ui.mirrors) };
-      return structuredClone(current);
-    },
+    save: async (edits) => persist(needDoc().path ?? '/mock/out.ps2', edits),
+    saveAs: async (path, edits, _mode, region) => persist(path, edits, region),
 
     speciesStats: async (species, mode) =>
       options.speciesStats?.(species, mode) ?? {

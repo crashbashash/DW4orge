@@ -422,3 +422,139 @@ fn gamecube_box_selection_survives_gci_and_card_exports_and_failed_switches() {
         .unwrap();
     assert_eq!(first.view, opened.view);
 }
+
+#[test]
+fn ps2_creation_is_pending_until_saved_and_refuses_overwriting_existing_characters() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("source.ps2");
+    let original = dw4core::memcard::format_card_for_region(
+        &dw4core::build_save(&dw4core::SaveSpec::default()),
+        dw4core::Region::Japan,
+    )
+    .unwrap();
+    std::fs::write(&path, &original).unwrap();
+    let mut session = EditorSession::new_session();
+    let opened = session.open(&path).unwrap();
+    assert_eq!(opened.empty_boxes, Some(vec![2, 3, 4]));
+    assert!(!opened.pending_write);
+    let request = NewSaveRequest {
+        format: Some(SourceKind::Memcard),
+        region: Some(dw4core::Region::Japan),
+        species: Species::Veemon,
+        name: "NEW3".into(),
+        story: None,
+        difficulty: DifficultyChoice::Auto,
+    };
+    let created = session.create_ps2_box(3, &request).unwrap();
+    assert!(created.pending_write);
+    assert_eq!(created.path, opened.path);
+    assert_eq!(created.region, opened.region);
+    assert_eq!(created.character_selection.as_deref(), Some("ps2#3"));
+    assert_eq!(created.empty_boxes, Some(vec![2, 4]));
+    assert_eq!(created.view.name, "NEW3");
+    assert_eq!(created.view.species, Species::Veemon);
+    assert_eq!(created.view.device[..3], [0x050d, 0x0513, 0x0512]);
+    assert_eq!(created.view.weapons, [0, 1, 2]);
+    assert_eq!(std::fs::read(&path).unwrap(), original);
+    assert!(session.create_ps2_box(1, &request).is_err());
+    assert_eq!(session.view(Mode::Normal).unwrap(), created.view);
+    let copy = dir.path().join("copy.ps2");
+    let saved = session
+        .save_as(&copy, &created.view.to_edit_set(), Mode::Normal)
+        .unwrap();
+    assert!(!saved.pending_write);
+    assert_eq!(saved.character_selection, created.character_selection);
+    assert_eq!(
+        session
+            .open_with_selection(&copy, None, Some("ps2#1"))
+            .unwrap()
+            .view,
+        opened.view
+    );
+    assert_eq!(
+        session
+            .open_with_selection(&copy, None, Some("ps2#3"))
+            .unwrap()
+            .view,
+        created.view
+    );
+    let created2 = session.create_ps2_box(2, &request).unwrap();
+    let saved = session
+        .save(&created2.view.to_edit_set(), Mode::Normal)
+        .unwrap();
+    assert!(!saved.pending_write);
+    assert_eq!(saved.empty_boxes, Some(vec![4]));
+    assert!(copy.with_extension("ps2.bak").exists());
+    assert_eq!(std::fs::read(&path).unwrap(), original);
+}
+
+#[test]
+fn creation_rechecks_disk_state_and_rejects_wrong_platform_region_and_invalid_request() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("source.bin");
+    let raw = dw4core::build_save(&dw4core::SaveSpec::default());
+    std::fs::write(&path, &raw).unwrap();
+    let request = NewSaveRequest {
+        format: None,
+        region: None,
+        species: Species::Agumon,
+        name: "NEW2".into(),
+        story: Some("After World 1".into()),
+        difficulty: DifficultyChoice::Fixed(Difficulty::Hard),
+    };
+    let mut session = EditorSession::new_session();
+    assert!(session.create_ps2_box(2, &request).is_err());
+    let first = session.open(&path).unwrap();
+    let mut external = dw4core::document::Document::load(&path).unwrap();
+    external
+        .create_ps2_box(2, &dw4core::SaveSpec::default())
+        .unwrap();
+    external.save(&path).unwrap();
+    assert!(session.create_ps2_box(2, &request).is_err());
+    assert_eq!(session.view(Mode::Normal).unwrap(), first.view);
+    for bad in [
+        NewSaveRequest {
+            name: "123456789".into(),
+            ..request.clone()
+        },
+        NewSaveRequest {
+            story: Some("not a preset".into()),
+            ..request.clone()
+        },
+        NewSaveRequest {
+            format: Some(SourceKind::Gamecube),
+            ..request.clone()
+        },
+    ] {
+        assert!(session.create_ps2_box(4, &bad).is_err());
+        assert_eq!(session.view(Mode::Normal).unwrap(), first.view);
+    }
+    let created = session.create_ps2_box(4, &request).unwrap();
+    assert_eq!(created.character_boxes.unwrap().len(), 3); // incorporates the external box 2
+    let gc = dir.path().join("gc.bin");
+    std::fs::write(
+        &gc,
+        dw4core::build_save_with_order(&dw4core::SaveSpec::default(), dw4core::ByteOrder::Big),
+    )
+    .unwrap();
+    session.open(&gc).unwrap();
+    assert!(session.create_ps2_box(2, &request).is_err());
+    let card = dir.path().join("japan.ps2");
+    std::fs::write(
+        &card,
+        dw4core::memcard::format_card_for_region(&raw, dw4core::Region::Japan).unwrap(),
+    )
+    .unwrap();
+    session.open(&card).unwrap();
+    assert!(
+        session
+            .create_ps2_box(
+                2,
+                &NewSaveRequest {
+                    region: Some(dw4core::Region::Europe),
+                    ..request
+                }
+            )
+            .is_err()
+    );
+}

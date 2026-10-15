@@ -9,6 +9,14 @@ import type { SourceKind } from "./SourceKind";
  */
 export type OpenResult = {
 /**
+ * Empty boxes available for creation; None for unsupported platforms.
+ */
+empty_boxes?: Array<number>,
+/**
+ * In-memory container changes that have not been written yet.
+ */
+pending_write: boolean,
+/**
  * Detected card region; raw files have no inherent regional identity.
  */
 region: Region | null,

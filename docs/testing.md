@@ -275,3 +275,55 @@ this boundary. Live coverage is USA raw-card box 4. GCI/bare exports have automa
 native app coverage; all four boxes and three regional card identities have
 automated coverage. A full campaign or Japanese/European retail playthrough
 is not claimed.
+
+
+## Creating an empty PS2 character box (0.7.0 / schema 7)
+
+Open a PS2 memory card or bare save and use **Create box**. The native form
+lists only empty targets and keeps the existing file/region. Creation is
+pending immediately, even before editing a field. Save or Save As writes the
+complete container; opening, switching, creating again and closing use the
+existing discard guards. The CLI equivalent is:
+
+```sh
+dw4cli create-box input.ps2 --number 3 --species Veemon --name NEW3 --out output.ps2
+```
+
+Tests cover all four targets, stale bytes in empty records, both mirrors,
+distinct nonzero identities, unchanged occupied boxes and trailing bytes,
+card metadata/icons and unrelated file pages, all three PS2 regional identities,
+ECC and flat cards, raw exports, occupied/invalid/mismatched/corrupt refusal,
+invalid names and other-platform refusal. Service and CLI tests cover pending
+state, failed requests retaining the session, source reload/empty-target
+revalidation, backups, repeated writes, and region preservation. UI tests
+cover the empty-only form, Cancel/Discard, immediate dirty state, unsupported
+platforms, full-card disabling, and saved/unsaved creation in the browser mock.
+
+Private native evidence is under `../Decomp/local/ps2-box-creation/`.
+`native-report.json` records creation of a fresh Veemon in box 3 of a retail
+card containing two pre-existing characters, Save As and switching back to the
+unchanged first character, raw export, creating an Agumon in raw box 4 and
+saving it, and full-save disabling. The CLI filled box 4 of the card copy.
+`isolation-report.json` verifies the original two boxes and trailing bytes are
+unchanged, all four identities are distinct, and both checksums are valid.
+`create-box-dialog.png`, `created-box3-saved.png`, and `full-save-created4.png`
+were inspected for layout.
+
+USA retail cold-boot validation recognized the two original characters plus
+app-created `BOXNEW3` (Veemon, box 3) and CLI-created `CLI4` (Agumon, box 4).
+The new Veemon loaded at level 1 with starter equipment, moved through the
+Terminal/Central Areas, and saved successfully through the Save Keeper back to
+box 3. All compared `SaveView` field groups matched after saving, including
+name/species, level/EXP, currency, techniques, power-ups, inventory, equipment,
+disks, bank and story folders. The startup/hub flow changed story flags 24,
+501, 508, 931, 935 and 936. Boxes 1, 2 and 4, trailing data and all four
+character identities remained byte-identical; both checksums verified.
+`retail-roundtrip-report.json` and captures under `retail/` record this result.
+The source card and master disc were not modified; only a profile-local card
+copy was mounted in PCSX2.
+
+Final checks passed 326 Rust tests (including doctests), 169 frontend tests,
+four Tauri agent tests, formatting, Clippy for core and shell, normal-shell
+compilation, TypeScript, ESLint, production frontend build and palette contrast.
+Live coverage is USA box-3 creation/load/resave; all four targets, regional
+card formats and raw/ECC/flat container behavior have automated coverage.

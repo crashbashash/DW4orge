@@ -40,6 +40,16 @@ pub fn new_save(
     session(&state).new_save(&request)
 }
 
+/// Create a character in an empty PS2 box. The source file is not written.
+#[tauri::command]
+pub fn create_box(
+    state: State<'_, AppState>,
+    box_number: u8,
+    request: NewSaveRequest,
+) -> Result<OpenResult, IpcError> {
+    session(&state).create_ps2_box(box_number, &request)
+}
+
 /// Re-project the open save for `mode`.
 #[tauri::command]
 pub fn get_view(state: State<'_, AppState>, mode: Mode) -> Result<SaveView, IpcError> {

@@ -59,13 +59,32 @@ it('Cancel preserves drafts and failed creation keeps the form and previous char
   expect((screen.getByLabelText('BIT') as HTMLInputElement).value).toBe('77');
 });
 
-it.each(['xbox', 'xbox_mu'] as const)('does not offer creation for %s', async source => {
-  const backend = createMockBackend();const sample = await backend.openSample!();
-  backend.openSample = async () => ({ ...sample, source, empty_boxes: undefined });
-  render(<BackendProvider backend={backend}><App /></BackendProvider>);
-  await userEvent.click(await screen.findByRole('button', { name: /load sample save/i }));
-  await screen.findByLabelText('BIT');
-  expect(screen.queryByRole('button', { name: 'Create box' })).toBeNull();
+it.each(['xbox', 'xbox_mu'] as const)('creates %s boxes with the shared dialog and retains pending state', async source => {
+  const backend = createMockBackend();
+  const sample = await backend.openSample!();
+  const prefix = source === 'xbox' ? 'SaveData.dat' : '42410002/SECOND/SaveData.dat';
+  backend.openSample = async () => ({ ...sample, source, region: null, empty_boxes: [2,3],
+    character_selection: `${prefix}#4`, character_boxes: [{id: `${prefix}#4`, label: 'Box 4 · ORIGINAL', box_number: 4}] });
+  const create = vi.spyOn(backend, 'createBox').mockImplementation(async (number, request) => ({
+    ...sample, source, region: null, pending_write: true, empty_boxes: [3],
+    character_selection: `${prefix}#${number}`, character_boxes: [{ id: `${prefix}#${number}`, label: `Box ${number} · ${request.name}`, box_number: number }],
+    view: { ...sample.view, name: request.name, species: request.species }
+  }));
+  await openEditor(backend);
+  await userEvent.click(screen.getByRole('button', { name: 'Create box' }));
+  const modal = await screen.findByRole('dialog', { name: 'Create character box' });
+  expect(within(modal).queryByRole('button', { name: /save format|region/i })).toBeNull();
+  if (source === 'xbox_mu') expect(within(modal).getByText(/save container selected in Character box/)).toBeTruthy();
+  await userEvent.clear(within(modal).getByLabelText('Player name'));
+  await userEvent.type(within(modal).getByLabelText('Player name'), 'XBNEW2');
+  await userEvent.click(within(modal).getByRole('button', { name: 'Create' }));
+  expect(await screen.findByDisplayValue('XBNEW2')).toBeTruthy();
+  expect(create).toHaveBeenCalledWith(2, expect.objectContaining({format: undefined, region: null, name: 'XBNEW2'}));
+  expect(screen.getByRole('img', {name:'Unsaved changes'})).toBeTruthy();
+  await userEvent.click(screen.getByRole('button', {name:'Open'}));
+  expect(await screen.findByRole('dialog', {name:/discard unsaved/i})).toBeTruthy();
+  await userEvent.click(screen.getByRole('button', {name:'Cancel'}));
+  expect(screen.getByDisplayValue('XBNEW2')).toBeTruthy();
 });
 
 it('disables creation when every PS2 box is occupied', async () => {

@@ -1,6 +1,6 @@
 # Automated editor and retail-game testing
 
-## Finding the Save Keeper from a fresh lobby arrival (PS2 / GameCube)
+## Finding the Save Keeper from a fresh lobby arrival (PS2 / GameCube / Xbox)
 
 From the Terminal Area where a newly created or called Digimon appears, take
 the bridge to the **left**. Confirm **Central Area → Go to the destination**
@@ -331,8 +331,8 @@ card formats and raw/ECC/flat container behavior have automated coverage.
 ## Creating an empty GameCube character box (0.8.0 / schema 7)
 
 The shared Create box flow and `dw4cli create-box --number N --out FILE` now
-support GCI, full raw/GCP cards and big-endian bare saves. Xbox creation remains
-unavailable. PS2-only core/service entry points retain their platform guards;
+support GCI, full raw/GCP cards and big-endian bare saves. PS2-only core/service
+entry points retain their platform guards;
 the shared entry points dispatch using the loaded save's byte order.
 
 Tests cover all four creation targets, big-endian names/scalars/identity fields,
@@ -374,3 +374,48 @@ Live coverage is USA newly created box 2 on a converted full card. GCI/full-card
 and big-endian bare creation also have native editor coverage. All four targets
 and three regional formats have automated coverage; a full campaign or other
 regional retail playthrough is not claimed.
+
+
+## Creating an empty Xbox character box (0.9.0 / schema 7)
+
+The shared Create box flow supports existing signed `SaveData.dat` containers
+and FATX memory-unit images. Select an occupied character from the intended
+save container first. Only its empty boxes are offered. The CLI equivalent is:
+
+```sh
+dw4cli create-box MemoryUnit.img --box '42410002/80482ED3557F/SaveData.dat#4' --number 2 --species Veemon --name XBMU2 --out created.img
+```
+
+Synthetic tests cover all four targets, full-record initialization over stale
+empty padding, both signatures, distinct nonzero identities, mirror occupancy
+conflicts, invalid names/targets, unchanged other boxes and unrelated bytes,
+fragmented FATX allocation, multiple save containers, selected-container reload,
+pending creation/recreation, Save/Save As and MU-to-dat export, repeated writes,
+backups, stale targets, external changes and corrupted-input rejection. Failed
+creation retains the prior session. Standalone Xbox New Save remains refused.
+The frontend tests cover both Xbox source kinds, hidden format/region controls,
+memory-unit container guidance and immediate dirty/discard behavior.
+
+The complete suites pass 339 Rust tests, 169 frontend tests and four Tauri agent
+tests, plus formatting, Clippy, TypeScript, ESLint, production build and contrast.
+Private desktop evidence is in `../Decomp/local/xbox-box-creation/`:
+`native-validation.json` records seven checks, filling all four dat boxes with
+distinct identities, an unchanged original input, full-container disabling,
+MU creation, dat export and explicit CLI source selection. An independent
+byte comparison verifies every MU byte outside the selected new record and
+signatures, including filesystem metadata. `native-ui.png` was visually checked.
+
+
+USA retail xemu cold-booted an isolated copied HDD with `native-all4.dat` and
+showed the original character plus all three newly created boxes. It then
+loaded `XBMU2` (new box 2) from an app-written controller-1 slot-A memory unit,
+completed the introduction, walked across the left bridge to Central Area,
+and saved through the Save Keeper into HDD box 2. The independently extracted
+result matches all 22 compared SaveView fields, preserves the new character's
+identity, has two valid XBE-derived signatures and identical mirrored records.
+Introduction/lobby flags 24, 501, 508, 931, 935 and 936 changed. HDD boxes 1, 3
+and 4 remain byte-identical. `retail-roundtrip-report.json` and retail captures
+record the boundary. Original game, save and emulator profiles were preserved.
+Retail coverage is USA new box 2 via slot A and HDD save; the Japanese game,
+slot B and existing-character editing retain the earlier 0.4.0 evidence. This
+release does not claim a new Japanese creation round-trip or full campaign test.

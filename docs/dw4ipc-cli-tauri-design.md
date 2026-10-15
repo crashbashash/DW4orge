@@ -387,7 +387,7 @@ stops at the first empty bank item. Advanced mode preserves raw placement.
 ## Empty character box creation (schema 7)
 
 `OpenResult.empty_boxes` lists available one-based creation targets. `None`
-means unsupported; an empty list means a supported but full PS2/GameCube save.
+means unsupported; an empty list means a supported but full save container.
 `pending_write` marks container changes not represented by an EditSet diff.
 New files and newly created boxes are dirty immediately; successful writes
 clear that flag. This extends the existing discard/close guards to a created
@@ -401,5 +401,10 @@ the previous document intact. Existing card regions cannot be changed through
 creation. The CLI exposes this as `create-box --number N --out FILE`; the UI
 reuses the creation form with an empty-box selector and no format/region change.
 GameCube support uses the same schema 7 payload. The pre-0.8 PS2-only service
-and core methods remain available with their platform guards. Xbox creation
-targets remain unavailable.
+and core methods remain available with their platform guards. Xbox support in
+0.9.0 uses the same schema. Empty Xbox targets belong to the selected save
+container, not every save on the memory unit. Reloading before creation keeps
+that container even when discarding a pending new character. The CLI accepts
+`--box` (or `--xbox-slot`) to choose an occupied source in the intended container,
+while `--number` chooses the empty destination. Standalone Xbox New Save remains
+unsupported.

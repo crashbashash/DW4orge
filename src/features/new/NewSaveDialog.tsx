@@ -102,7 +102,7 @@ export function NewSaveDialog({ isOpen, onClose, boxCreation = false }: { isOpen
       </div>
 
       {state.error && <p role="alert" className="danger">{state.error}</p>}
-      {boxCreation && <p className="muted">Creates a new character in the opened save. Other boxes are preserved. Use Save or Save As to write it.</p>}
+      {boxCreation && <p className="muted">Creates a new character in the opened save. Other boxes are preserved.{state.session?.source === 'xbox_mu' ? ' On memory units, this uses the save container selected in Character box.' : ''} Use Save or Save As to write it.</p>}
       {!boxCreation && format !== 'memcard' && <p className="muted">
         Creates a new GameCube save with a blank banner and icon. The game replaces them
         when it saves. GCI files can be imported into Dolphin; full cards can be mounted directly.

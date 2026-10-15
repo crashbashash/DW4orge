@@ -49,7 +49,7 @@ pub struct NewSaveRequest {
 /// The result of opening or creating a save.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
 pub struct OpenResult {
-    /// Empty boxes available for creation; None for unsupported platforms (currently Xbox).
+    /// Empty boxes in the selected save container; None for unsupported formats.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub empty_boxes: Option<Vec<u8>>,

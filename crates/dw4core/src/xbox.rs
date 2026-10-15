@@ -95,6 +95,8 @@ pub struct XboxSource {
     file_index: usize,
     box_index: usize,
     memory_unit: bool,
+    /// Full initialized slot until the first write; original image stays intact for conflict checks.
+    created_slot: Option<Vec<u8>>,
 }
 impl XboxSource {
     pub fn parse(bytes: Vec<u8>, selected: Option<&str>) -> Result<Self> {
@@ -164,6 +166,7 @@ impl XboxSource {
             file_index,
             box_index,
             memory_unit,
+            created_slot: None,
         })
     }
     pub(crate) fn matches_image(&self, bytes: &[u8]) -> bool {
@@ -193,12 +196,99 @@ impl XboxSource {
             let at = mirror * crate::BLOCK;
             raw[at + 4..at + 8].copy_from_slice(&4u32.to_le_bytes());
             let src = mirror * RECORD_SIZE + 4 + self.box_index * SLOT_SIZE;
-            raw[at + 8..at + 8 + SLOT_SIZE].copy_from_slice(&save[src..src + SLOT_SIZE]);
+            raw[at + 8..at + 8 + SLOT_SIZE].copy_from_slice(
+                self.created_slot
+                    .as_deref()
+                    .unwrap_or(&save[src..src + SLOT_SIZE]),
+            );
         }
         crate::fix_checksums(&mut raw);
         SaveData::parse(&raw)
     }
-    /// Patch only known character fields, retaining slot padding in each mirror.
+    /// Empty boxes in the currently selected save container, requiring agreement of both records.
+    #[must_use]
+    pub fn empty_boxes(&self) -> Vec<u8> {
+        let save = self.files[self.file_index].read(&self.image);
+        (0..4)
+            .filter(|&index| {
+                !(self.created_slot.is_some() && index == self.box_index)
+                    && (0..2).all(|mirror| save[mirror * RECORD_SIZE + 4 + index * SLOT_SIZE] == 0)
+            })
+            .map(|index| index as u8 + 1)
+            .collect()
+    }
+
+    /// Initialize a full empty slot. Do not mutate the retained source image: it is
+    /// also the baseline for detecting external writes before Save.
+    pub fn create_box(&mut self, number: u8, spec: &crate::SaveSpec) -> Result<SaveData> {
+        if !self.empty_boxes().contains(&number) {
+            return Err(bad(
+                "Choose an empty Xbox character box from 1 through 4; both records must agree",
+            ));
+        }
+        if self.created_slot.is_some() {
+            return Err(bad(
+                "Save or reopen before creating another Xbox character box",
+            ));
+        }
+        // Reuse shared validation and initialization, including a fresh identity.
+        let save = self.files[self.file_index].read(&self.image);
+        let mut raw = vec![0; crate::SAVE_SIZE];
+        for mirror in 0..2 {
+            let dest = mirror * crate::BLOCK;
+            raw[dest + 4..dest + 8].copy_from_slice(&4u32.to_le_bytes());
+            let src = mirror * RECORD_SIZE + 4;
+            raw[dest + 8..dest + 8 + 4 * SLOT_SIZE]
+                .copy_from_slice(&save[src..src + 4 * SLOT_SIZE]);
+        }
+        crate::fix_checksums(&mut raw);
+        let mut data = SaveData::parse(&raw)?;
+        data.create_box(number, spec)?;
+        // Avoid identities in every container on a memory unit, including unused records.
+        let mut ids = HashSet::new();
+        for file in &self.files {
+            let bytes = file.read(&self.image);
+            for mirror in 0..2 {
+                for index in 0..4 {
+                    ids.insert(word(&bytes, mirror * RECORD_SIZE + 8 + index * SLOT_SIZE));
+                }
+            }
+        }
+        let mut unique = data.unique();
+        while unique == 0 || ids.contains(&unique) {
+            unique = unique.wrapping_add(1);
+        }
+        data.set_u32(crate::offsets::UNIQUE, unique);
+        let at = 8 + usize::from(number - 1) * SLOT_SIZE;
+        let slot = data.as_bytes()[at..at + SLOT_SIZE].to_vec();
+        let index = usize::from(number - 1);
+        let id = format!("{}#{}", self.files[self.file_index].path, number);
+        let label = if self.files.len() > 1 {
+            format!(
+                "Save {} · Box {} · {}",
+                self.files[self.file_index]
+                    .path
+                    .split('/')
+                    .nth(1)
+                    .unwrap_or(&self.files[self.file_index].path),
+                number,
+                spec.player_name
+            )
+        } else {
+            format!("Box {} · {}", number, spec.player_name)
+        };
+        self.box_index = index;
+        self.created_slot = Some(slot);
+        self.choices.push(CharacterBox {
+            id,
+            label,
+            box_number: number,
+        });
+        self.choices.sort_by(|a, b| a.id.cmp(&b.id));
+        self.data()
+    }
+
+    /// Write a full newly created slot, or patch known fields while retaining existing padding.
     pub fn render(&self, data: &SaveData, export_file: bool) -> Result<Vec<u8>> {
         if data.byte_order() != crate::ByteOrder::Little {
             return Err(bad("Xbox character data must be little-endian"));
@@ -207,6 +297,11 @@ impl XboxSource {
         let mut save = file.read(&self.image);
         for mirror in 0..2 {
             let dest = mirror * RECORD_SIZE + 4 + self.box_index * SLOT_SIZE;
+            if self.created_slot.is_some() {
+                let src = mirror * crate::BLOCK + 8;
+                save[dest..dest + SLOT_SIZE]
+                    .copy_from_slice(&data.as_bytes()[src..src + SLOT_SIZE]);
+            }
             for field in crate::offsets::FIELDS
                 .iter()
                 .filter(|field| field.offset >= 8)
@@ -448,6 +543,171 @@ mod tests {
         }
         image
     }
+    fn with_empty(number: usize) -> Vec<u8> {
+        let mut bytes = fixture();
+        for mirror in 0..2 {
+            let at = mirror * RECORD_SIZE + 4 + (number - 1) * SLOT_SIZE;
+            bytes[at..at + SLOT_SIZE].fill(0xcc);
+            bytes[at] = 0;
+        }
+        resign(&mut bytes);
+        bytes
+    }
+
+    #[test]
+    fn creates_each_empty_box_with_new_identity_and_full_initialization() {
+        for number in 1..=4 {
+            let original = with_empty(number);
+            let mut source = XboxSource::parse(original.clone(), None).unwrap();
+            assert_eq!(source.empty_boxes(), [number as u8]);
+            let spec = crate::SaveSpec {
+                player_name: "NEWあ".into(),
+                ..Default::default()
+            };
+            let mut data = source.create_box(number as u8, &spec).unwrap();
+            assert_ne!(data.unique(), 0);
+            assert_ne!(data.unique(), crate::SaveSpec::default().unique);
+            assert_eq!(data.player_name(), "NEWあ");
+            assert!(source.empty_boxes().is_empty());
+            assert!(source.matches_image(&original));
+            data.set_bit(456);
+            let output = source.render(&data, false).unwrap();
+            assert_eq!(verify_save(&output).unwrap(), [true, true]);
+            for mirror in 0..2 {
+                let at = mirror * RECORD_SIZE + 4 + (number - 1) * SLOT_SIZE;
+                assert_eq!(
+                    output[at + SLOT_SIZE - 1],
+                    0,
+                    "dirty empty padding initialized"
+                );
+                let signature = mirror * RECORD_SIZE + SIGNED_SIZE..(mirror + 1) * RECORD_SIZE;
+                for i in mirror * RECORD_SIZE..(mirror + 1) * RECORD_SIZE {
+                    if !(at..at + SLOT_SIZE).contains(&i) && !signature.contains(&i) {
+                        assert_eq!(original[i], output[i], "other bytes at {i:x}");
+                    }
+                }
+            }
+            let check = XboxSource::parse(output, Some(&source.selected())).unwrap();
+            assert_eq!(check.data().unwrap().bit(), 456);
+            assert_eq!(check.data().unwrap().unique(), data.unique());
+        }
+    }
+
+    #[test]
+    fn creation_rejects_bad_targets_and_names_without_changing_source_or_selection() {
+        let original = with_empty(3);
+        let mut source = XboxSource::parse(original.clone(), None).unwrap();
+        let selected = source.selected();
+        for number in [0, 1, 5] {
+            assert!(
+                source
+                    .create_box(number, &crate::SaveSpec::default())
+                    .is_err()
+            );
+        }
+        for name in ["", "  ", "123456789", "bad\n", "😀"] {
+            assert!(
+                source
+                    .create_box(
+                        3,
+                        &crate::SaveSpec {
+                            player_name: name.into(),
+                            ..Default::default()
+                        }
+                    )
+                    .is_err()
+            );
+            assert_eq!(source.selected(), selected);
+            assert!(source.matches_image(&original));
+            assert_eq!(source.empty_boxes(), [3]);
+        }
+        for flag in [1, 2, 255] {
+            let mut disagree = original.clone();
+            disagree[RECORD_SIZE + 4 + 2 * SLOT_SIZE] = flag;
+            resign(&mut disagree);
+            let mut source = XboxSource::parse(disagree, None).unwrap();
+            assert!(source.empty_boxes().is_empty());
+            assert!(source.create_box(3, &crate::SaveSpec::default()).is_err());
+        }
+    }
+
+    #[test]
+    fn creation_on_multi_container_fragmented_mu_preserves_other_saves_and_metadata() {
+        let file = with_empty(2);
+        let mut original = memory_unit(&file);
+        let offset = |cluster: usize| 8192 + (cluster - 1) * 16384;
+        entry(&mut original, offset(2) + 64, "SECOND", true, 10, 0);
+        entry(
+            &mut original,
+            offset(10),
+            "SaveData.dat",
+            false,
+            11,
+            FILE_SIZE,
+        );
+        for cluster in 11..=15 {
+            let next = if cluster == 15 { 0xffff } else { cluster + 1 } as u16;
+            original[4096 + cluster * 2..4098 + cluster * 2].copy_from_slice(&next.to_le_bytes());
+            let start = (cluster - 11) * 16384;
+            let len = (FILE_SIZE - start).min(16384);
+            original[offset(cluster)..offset(cluster) + len]
+                .copy_from_slice(&file[start..start + len]);
+        }
+        let id = "42410002/SECOND/SaveData.dat#4";
+        let mut source = XboxSource::parse(original.clone(), Some(id)).unwrap();
+        let data = source.create_box(2, &crate::SaveSpec::default()).unwrap();
+        assert_eq!(source.selected(), "42410002/SECOND/SaveData.dat#2");
+        assert!(
+            source
+                .choices()
+                .iter()
+                .any(|choice| choice.label.starts_with("Save SECOND · Box 2"))
+        );
+        let output = source.render(&data, false).unwrap();
+        let file = &source.files[source.file_index];
+        for (i, (before, after)) in original.iter().zip(&output).enumerate() {
+            if !file
+                .spans
+                .iter()
+                .any(|&(at, len)| (at..at + len).contains(&i))
+            {
+                assert_eq!(before, after, "unrelated image byte {i:x}");
+            }
+        }
+        let exported = source.render(&data, true).unwrap();
+        assert_eq!(verify_save(&exported).unwrap(), [true, true]);
+        assert!(
+            XboxSource::parse(output, Some(&source.selected()))
+                .unwrap()
+                .empty_boxes()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn created_box_document_writes_backup_and_rejects_external_changes() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("save.dat");
+        let original = with_empty(4);
+        std::fs::write(&path, &original).unwrap();
+        let mut doc = crate::document::Document::load(&path).unwrap();
+        doc.create_box(4, &crate::SaveSpec::default()).unwrap();
+        let mut external = original.clone();
+        external[100] ^= 1;
+        resign(&mut external);
+        std::fs::write(&path, &external).unwrap();
+        assert!(doc.save(&path).is_err());
+        assert_eq!(std::fs::read(&path).unwrap(), external);
+        assert!(!path.with_extension("dat.bak").exists());
+        std::fs::write(&path, &original).unwrap();
+        doc.save(&path).unwrap();
+        assert_eq!(
+            std::fs::read(path.with_extension("dat.bak")).unwrap(),
+            original
+        );
+        assert_eq!(doc.character_selection().as_deref(), Some("SaveData.dat#4"));
+    }
+
     #[test]
     fn every_box_maps_and_edits_without_touching_other_boxes_or_padding() {
         let original = fixture();

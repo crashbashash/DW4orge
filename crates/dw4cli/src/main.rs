@@ -19,7 +19,7 @@ struct Cli {
     /// usa | europe | japan. Selects a save on mixed-region cards and new card identity.
     #[arg(long, global = true, value_parser = parse_region)]
     region: Option<Region>,
-    /// Character box ID from info, e.g. ps2#2, gamecube#4 or SaveData.dat#4.
+    /// Occupied box ID from info. For create-box, identifies the source save container.
     #[arg(long = "box", alias = "xbox-slot", global = true)]
     character_box: Option<String>,
     #[command(subcommand)]
@@ -53,7 +53,7 @@ enum Command {
         #[arg(short, long)]
         out: PathBuf,
     },
-    /// Create a character in an empty PS2 or GameCube box, writing a separate output or the same file.
+    /// Create a character in an empty PS2, GameCube or Xbox box, writing a separate output or the same file.
     CreateBox {
         path: PathBuf,
         /// Destination character box, 1 through 4; it must be empty.
@@ -181,11 +181,6 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
             difficulty,
             out,
         } => {
-            if cli.character_box.is_some() {
-                return Err(IpcError::Unsupported {
-                    message: "Use --number to choose the empty destination box".into(),
-                });
-            }
             let req = NewSaveRequest {
                 format: None,
                 region: cli.region,
@@ -195,7 +190,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
                 difficulty: difficulty.map_or(DifficultyChoice::Auto, DifficultyChoice::Fixed),
             };
             let mut session = EditorSession::new_session();
-            session.open_with_region(path, cli.region)?;
+            session.open_with_selection(path, cli.region, cli.character_box.as_deref())?;
             let created = session.create_box(*number, &req)?;
             let saved = session.save_as(out, &created.view.to_edit_set(), Mode::Normal)?;
             if cli.json {

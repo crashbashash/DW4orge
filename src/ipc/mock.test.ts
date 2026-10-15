@@ -56,6 +56,8 @@ it('keeps saved created boxes when switching, and discards only unsaved creation
   const request = { format: 'memcard' as const, region: 'usa' as const, species: 'Veemon' as const, name: 'NEW3', story: null, difficulty: 'auto' as const };
   const created = await backend.createBox(3, request);
   expect(created.pending_write).toBe(true);
+  // Discarding/recreating a pending box can select an occupied sibling on disk.
+  expect((await backend.createBox(3, request)).view.name).toBe('NEW3');
   await backend.saveAs('/mock/copy.ps2', viewToEditSet(created.view), 'normal');
   expect((await backend.openSave('/mock/copy.ps2', undefined, 'ps2#1')).view).toEqual(first.view);
   expect((await backend.openSave('/mock/copy.ps2', undefined, 'ps2#3')).view.name).toBe('NEW3');

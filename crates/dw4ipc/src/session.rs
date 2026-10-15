@@ -104,7 +104,7 @@ impl EditorSession {
                 SourceKind::Memcard | SourceKind::Raw => dw4core::ByteOrder::Little,
                 SourceKind::Xbox | SourceKind::XboxMu => return Err(IpcError::Unsupported {
                     message:
-                        "Open an existing Xbox save to edit it; Xbox save creation is not supported"
+                        "Open an existing Xbox save and use Create box; standalone Xbox file creation is not supported"
                             .into(),
                 }),
             };
@@ -159,15 +159,10 @@ impl EditorSession {
         })
     }
 
-    /// Create a character in an empty box of the currently opened PS2 or GameCube save.
+    /// Create a character in an empty box of the currently opened save.
     /// Reloads the source before creation; nothing is written until Save/Save As.
     /// A failed request keeps the previous editing session intact.
     pub fn create_box(&mut self, number: u8, req: &NewSaveRequest) -> Result<OpenResult, IpcError> {
-        if matches!(req.format, Some(SourceKind::Xbox | SourceKind::XboxMu)) {
-            return Err(IpcError::Unsupported {
-                message: "Xbox box creation is not supported yet".into(),
-            });
-        }
         let old = self.doc_ref()?;
         let path = old
             .path()
@@ -181,18 +176,33 @@ impl EditorSession {
             });
         }
         let mut doc = Document::load_with_region(&path, old.region().or(req.region))?;
+        if matches!(source_kind(&path)?, SourceKind::Xbox | SourceKind::XboxMu) {
+            // A pending new box may not exist on disk yet. Keep its container,
+            // selecting an occupied sibling rather than falling back to another save.
+            if let Some(selected) = old.character_selection() {
+                let prefix = selected.rsplit_once('#').map(|(path, _)| path);
+                let choice = doc.character_boxes().into_iter().find(|choice| {
+                    choice.id.rsplit_once('#').map(|(path, _)| path) == prefix
+                }).ok_or_else(|| IpcError::Unsupported {
+                    message: "The selected Xbox save container no longer has an occupied character; reopen it".into(),
+                })?;
+                doc = Document::load_with_selection(&path, None, Some(&choice.id))?;
+            }
+        }
         if doc.empty_boxes().is_none() {
             return Err(IpcError::Unsupported {
-                message: "Box creation supports PS2 and GameCube saves only".into(),
+                message: "Box creation requires a supported version-4 save".into(),
             });
         }
+        let source = source_kind(&path)?;
+        let xbox = matches!(source, SourceKind::Xbox | SourceKind::XboxMu);
         let gamecube = doc.data().byte_order() == dw4core::ByteOrder::Big;
-        if matches!(req.format, Some(SourceKind::Memcard)) && gamecube
-            || matches!(
-                req.format,
-                Some(SourceKind::Gamecube | SourceKind::GamecubeCard)
-            ) && !gamecube
-        {
+        let incompatible = req.format.is_some_and(|format| match format {
+            SourceKind::Xbox | SourceKind::XboxMu => !xbox,
+            SourceKind::Gamecube | SourceKind::GamecubeCard => xbox || !gamecube,
+            SourceKind::Memcard | SourceKind::Raw => xbox || gamecube,
+        });
+        if incompatible {
             return Err(IpcError::Unsupported {
                 message: "Creation cannot change the opened save's platform".into(),
             });

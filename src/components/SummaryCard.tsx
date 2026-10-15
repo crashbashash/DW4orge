@@ -53,7 +53,7 @@ export function SummaryCard() {
             if (selection) void selectCharacterBox(selection);
           }} />
       </> : null}
-      {session.empty_boxes && session.path && session.source !== 'xbox' && session.source !== 'xbox_mu' && <>
+      {session.empty_boxes && session.path && <>
         <button type="button" disabled={state.status === 'busy' || session.empty_boxes.length === 0}
           title={session.empty_boxes.length === 0 ? 'All character boxes are occupied' : undefined}
           onClick={() => dirty(state) ? setConfirmCreate(true) : setCreateOpen(true)}>Create box</button>

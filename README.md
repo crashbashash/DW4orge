@@ -55,9 +55,9 @@ USA, Europe and Japan (Digimon World X) are available. Existing cards retain
 their region. Player names use the game's fullwidth character encoding; the
 editor's item labels are in English.
 
-### Create a character in an empty PS2 or GameCube box
+### Create a character in an empty PS2, GameCube or Xbox box
 
-Open the existing PS2/GameCube memory card, GCI file or bare save, then choose
+Open the existing memory card, GCI, bare save or Xbox `SaveData.dat`, then choose
 **Create box** next to **Character box**. Select an empty box, species, name, story preset and
 difficulty. Click **Create**, then **Save** or **Save As** to write it.
 
@@ -65,7 +65,9 @@ Occupied boxes cannot be overwritten. Existing characters, icons and unrelated
 card files are preserved. A new character starts with fresh stats, starter
 weapons and its own identity. Creation counts as unsaved work immediately;
 switching characters, opening another save or closing asks before discarding it.
-Save each created character before creating another one.
+Save each created character before creating another one. On an Xbox memory unit,
+select an occupied character in the intended save container first; **Create box**
+uses that container. Existing Xbox signatures must be valid.
 
 Edits go through six sections (below), with validation on every change that
 points at the exact field and says how to fix it. Undo/redo spans the whole
@@ -114,6 +116,10 @@ dw4cli info Mcd001.ps2 --box 'ps2#2'  # select PS2 character box 2
 dw4cli create-box Mcd001.ps2 --number 3 --species Veemon --name NEW3 --out new.ps2
 dw4cli create-box NDMWSaveData.gci --number 2 --species Veemon --name NEW2 --out new.gci
 dw4cli info NDMWSaveData.gci --box 'gamecube#4'  # select GameCube box 4
+dw4cli create-box SaveData.dat --number 2 --species Veemon --name XBNEW2 --out new.dat
+# On a memory unit, --box identifies the existing source container; --number is the empty destination.
+dw4cli create-box MemoryUnit.img --box '42410002/80482ED3557F/SaveData.dat#4' --number 2 --name XBMU2 --out new.img
+
 dw4cli info SaveData.dat        # Xbox save and available character boxes
 dw4cli info SaveData.dat --xbox-slot 'SaveData.dat#4'
 dw4cli verify MemoryUnit.img    # Xbox signatures and FATX structure
@@ -216,7 +222,7 @@ editor does not rename or convert another region's save silently.
 - [x] **Select additional character save boxes on PS2.**
 - [x] **Create characters in empty PS2 save boxes.**
 - [x] **Create characters in empty GameCube save boxes.**
-- [ ] **Create characters in empty Xbox save boxes.**
+- [x] **Create characters in empty Xbox save boxes.**
 - [x] **Select additional character save boxes on GameCube.**
 - [ ] **Native Wayland support.**
 - [ ] **Packaging for Arch and Flatpak.**

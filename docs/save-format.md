@@ -1151,8 +1151,9 @@ The source kind, selected box and available choices were introduced in IPC schem
 as `character_selection` and `character_boxes` (shared with PS2 and GameCube).
 The app selector guards unsaved changes, and the CLI accepts `--xbox-slot` with
 an ID printed by `info` or returned in JSON. New Save remains PS2/GameCube;
-Xbox support edits existing occupied boxes. HDD filesystem/qcow2 images and
-Xbox save creation are outside this release.
+Xbox support edits occupied boxes and creates characters in empty boxes of
+existing containers. HDD filesystem/qcow2 images and standalone Xbox container
+creation are outside this release.
 
 See [Xbox format and retail validation](xbox-save-research.md) for byte offsets,
 FATX geometry, signatures, regional evidence and reproducible probe commands.
@@ -1193,8 +1194,7 @@ All editable field groups follow the selected record. Other boxes and unknown
 bytes survive writes; GCI headers/banners and full-card filesystem metadata are
 preserved. Full-card copies, GCI exports and bare-data exports retain all boxes.
 Writes reject a source whose save payload changed externally after opening.
-Empty GameCube boxes can be initialized as described below. Xbox creation
-remains roadmap work.
+Empty boxes on all three platforms can be initialized as described below.
 
 
 ## PS2 character creation in an existing save
@@ -1244,4 +1244,30 @@ metadata and unrelated files. GCI-to-card exports now retain donor artwork and
 metadata, infer the region from the GCI game code when no override was supplied,
 and change that code only for an explicit regional export. Card/bare/GCI
 exports retain the complete four-box payload. Creation does not change the
-region of an existing full card. Xbox initialization remains separate work.
+region of an existing full card. Xbox initialization is described below.
+
+
+## Xbox character creation in an existing save
+
+`XboxSource::create_box` adapts the selected signed container to the shared
+initializer, validates the target and name, and creates a complete 0x2000-byte
+slot. Both occupied bytes must be zero. Its new nonzero identity avoids every
+record in every save container on the memory unit. The source image remains
+unchanged in memory for external-write detection; a pending full slot is held
+separately until Save/Save As. Creation replaces stale unused slot padding;
+ordinary edits continue to patch only known field ranges.
+
+Rendering writes the new slot to both signed records and recomputes both
+HMAC-SHA1 signatures. Other slots, save containers, file allocations and metadata
+are retained. `.img` writes stay within the existing FATX file chain; `.dat`
+export keeps all four boxes and selects the new character. Atomic writes,
+backups, signature verification and external-change checks use the existing
+Xbox write path. Invalid signatures are rejected before creation.
+
+The shared dialog, service and CLI use schema 7 with pending-write and discard
+behavior identical to PS2/GameCube. On a memory unit, the selected occupied
+character identifies the destination save container. `empty_boxes` describes
+only that container. The CLI can use `--box PATH#N` to identify it and
+`--number M` to choose the new empty box. This does not allocate new save
+containers or initialize an entirely blank memory unit; open an existing
+Xbox save with at least one occupied character.

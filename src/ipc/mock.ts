@@ -103,7 +103,9 @@ export function createMockBackend(options: MockOptions = {}): Backend {
       const previous = needDoc();
       const stored = previous.path ? files.get(previous.path) : undefined;
       if (!stored?.result.empty_boxes?.includes(boxNumber)) throw { kind: 'unsupported', message: 'This character box is not empty' };
-      const doc = openMock(previous.path!, previous.region ?? undefined);
+      const previousPrefix = previous.character_selection?.split('#')[0];
+      const selection = stored.result.character_boxes?.find(box => box.id.split('#')[0] === previousPrefix)?.id;
+      const doc = openMock(previous.path!, previous.region ?? undefined, selection);
       const prefix = doc.character_selection?.split('#')[0] ?? (doc.source.startsWith('gamecube') ? 'gamecube' : 'ps2');
       current = { ...doc, pending_write: true, character_selection: `${prefix}#${boxNumber}`,
         empty_boxes: doc.empty_boxes!.filter(number => number !== boxNumber),

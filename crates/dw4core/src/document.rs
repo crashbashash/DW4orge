@@ -466,18 +466,17 @@ impl Document {
 
     #[must_use]
     pub fn empty_boxes(&self) -> Option<Vec<u8>> {
-        if self.xbox.is_some() {
-            None
+        if let Some(source) = &self.xbox {
+            Some(source.empty_boxes())
         } else {
             self.data.empty_boxes()
         }
     }
 
     pub fn create_box(&mut self, number: u8, spec: &crate::SaveSpec) -> crate::Result<()> {
-        if self.xbox.is_some() {
-            return Err(crate::Error::NoSave(
-                "Xbox box creation is not supported yet".into(),
-            ));
+        if let Some(source) = &mut self.xbox {
+            self.data = source.create_box(number, spec)?;
+            return Ok(());
         }
         self.data.create_box(number, spec)
     }

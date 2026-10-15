@@ -209,7 +209,8 @@ Detach a unit or close xemu before editing/replacing its image.
 
 This release supports existing `.dat` save files and raw FATX `.img` memory
 units, not direct HDD/qcow2 image editing, physical memory-unit USB access,
-spare-area hardware dumps, Xbox save creation or empty-box initialization.
+spare-area hardware dumps or standalone Xbox container creation. Version 0.9.0
+adds empty-box initialization inside an existing occupied container.
 Memory-unit images are bounded to 128 MiB with validated geometry; retail
 acceptance was tested using standard 8 MiB images. Complete campaign behavior
 and cross-title/nonstandard saves are not claimed.
@@ -257,3 +258,27 @@ row of fields. Native measurement changed its trigger width from about 124 px
 for `Box 1 · BOX1` to 152 px for `Box 4 · MUAEDIT`; screenshots verify the final
 summary spacing. The native app test also verified the discard guard and that
 editing box 2 leaves boxes 1, 3 and 4 unchanged.
+
+
+## Empty-box creation (0.9.0)
+
+The editor and CLI now initialize empty boxes in existing signed dat containers
+and FATX memory-unit saves. Both records must mark the target empty; valid
+signatures are required before creation. The new full slot receives fresh
+stats, story/difficulty, starter equipment and a distinct nonzero identity.
+Only the target slot and signatures change. On multi-save units, the selected
+occupied character identifies the destination container; creation reloads that
+same container and rechecks the target. No new FATX allocation is needed.
+Standalone container creation and entirely blank memory units remain outside
+this flow. See [creation format](save-format.md#xbox-character-creation-in-an-existing-save)
+and [validation](testing.md#creating-an-empty-xbox-character-box-090--schema-7).
+
+Private 0.9.0 evidence is in `../Decomp/local/xbox-box-creation/`. Native app
+checks cover dat creation through all four occupied boxes, MU creation/export,
+discard guards and independent preservation/signature checks. USA retail xemu
+accepted all four dat boxes, loaded new MU box 2 (`XBMU2`, Veemon), completed
+the introduction and saved to HDD box 2. All 22 compared view fields and the
+new identity survived, both XBE-derived signatures verified, and the other
+three HDD boxes stayed byte-identical. The intro/lobby changed flags
+24, 501, 508, 931, 935 and 936. The copied HDD, EEPROM and MU were isolated;
+this is a focused USA creation round-trip, not a full campaign validation.

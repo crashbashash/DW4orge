@@ -419,3 +419,35 @@ record the boundary. Original game, save and emulator profiles were preserved.
 Retail coverage is USA new box 2 via slot A and HDD save; the Japanese game,
 slot B and existing-character editing retain the earlier 0.4.0 evidence. This
 release does not claim a new Japanese creation round-trip or full campaign test.
+
+
+## Native Wayland on Linux
+
+Native support already exists in the GTK/Tauri shell and the packaged AppImage
+startup hook. `src-tauri/scripts/tauri-build.sh` patches the generated GTK hook
+through `src-tauri/scripts/patch-appimage.sh`. It preloads the host Wayland
+client library, removes the generated `GDK_BACKEND=x11` setting when a Wayland
+display exists, and supports an explicit `DW4ORGE_GDK_BACKEND` choice. No new
+runtime implementation was needed for the 2026-10-15 investigation.
+
+On the CachyOS/Hyprland desktop, an agent-enabled native 0.9.0 build was started
+with `GDK_BACKEND=wayland` and `DISPLAY` removed. Hyprland reported a mapped
+surface with `xwayland: false`. Creating an Xbox box, Save As, reopening,
+character selection, theme controls and the unsaved indicator worked. After
+disabling the agent's file-dialog stub, the actual Open File chooser also
+mapped as a native Wayland surface. The saved output had valid signatures.
+
+The CI-built 0.8.0 AppImage also rendered under native Wayland by default,
+with `xwayland: false` and the host `/usr/lib/libwayland-client.so.0.26.0`
+loaded. Starting it with `DW4ORGE_GDK_BACKEND=x11` instead produced a mapped
+XWayland surface, confirming the explicit compatibility option. The AppImage
+hook was inspected inside the downloaded package. Private screenshots and
+machine-readable observations are in `../Decomp/local/dw4orge-wayland/`.
+The final CI-built 0.9.0 AppImage was checked again: default startup and
+startup with `DISPLAY` removed both produced native Wayland surfaces. The
+executable extracted from its matching Debian package also rendered with
+`GDK_BACKEND=wayland` and no `DISPLAY`. Both Linux downloads matched the release
+asset SHA-256 digests.
+
+This evidence is specific to the tested Hyprland/AMD Mesa host; GNOME, KDE,
+other GPUs and mixed-DPI configurations have not received this live coverage.

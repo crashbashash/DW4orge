@@ -140,6 +140,27 @@ Download the bundle for your OS from the [Releases page](https://github.com/cras
 | Windows | `.msi` |
 | macOS | universal `.dmg` |
 
+### Linux: native Wayland
+
+The AppImage uses native Wayland automatically when the desktop provides
+`WAYLAND_DISPLAY`. Its packaged startup hook loads the host Wayland client
+library and removes the bundler's X11 setting. You do not need XWayland to run
+the app or its file dialogs on a working GTK Wayland desktop.
+
+To explicitly select the AppImage backend:
+
+```sh
+DW4ORGE_GDK_BACKEND=wayland ./DW4orge_*.AppImage
+# Optional X11 compatibility mode:
+DW4ORGE_GDK_BACKEND=x11 ./DW4orge_*.AppImage
+```
+
+System-library builds, including the `.deb` and local binary, use GTK's normal
+backend selection (`GDK_BACKEND=wayland` selects Wayland explicitly). Native
+startup, editing/saving and the real GTK file picker were verified on Hyprland;
+other compositors have not received the same live validation. See
+[Wayland verification](docs/testing.md#native-wayland-on-linux).
+
 ### In a browser, no Rust build needed
 
 The frontend runs against a fixture-backed mock backend:
@@ -224,7 +245,7 @@ editor does not rename or convert another region's save silently.
 - [x] **Create characters in empty GameCube save boxes.**
 - [x] **Create characters in empty Xbox save boxes.**
 - [x] **Select additional character save boxes on GameCube.**
-- [ ] **Native Wayland support.**
+- [x] **Native Wayland support.**
 - [ ] **Packaging for Arch and Flatpak.**
 
 ## Documentation

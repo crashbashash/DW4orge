@@ -299,8 +299,19 @@ pub fn render_container_with_sources(
             return Ok(card.image().to_vec());
         }
         if crate::SaveData::parse(data)?.byte_order() == crate::ByteOrder::Big {
-            let region = region.unwrap_or_default();
-            let file = gci::create_save(data, region)?;
+            let mut file = if let Some(donor) = source_gci {
+                let original = std::fs::read(donor).map_err(|source| crate::Error::File {
+                    path: donor.to_path_buf(),
+                    source,
+                })?;
+                gci::write_save(&original, data)?
+            } else {
+                gci::create_save(data, region.unwrap_or_default())?
+            };
+            let region = region.or_else(|| gci::region(&file)).unwrap_or_default();
+            // Preserve GCI artwork/metadata; only an explicit regional export
+            // changes the game code. Unknown raw data still defaults to USA.
+            file[..4].copy_from_slice(gci::game_code(region));
             return gamecube::format_card(Some(&file), 16, region);
         }
         if path

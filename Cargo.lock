@@ -172,7 +172,7 @@ dependencies = [
 
 [[package]]
 name = "dw4cli"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "clap",
  "dw4core",
@@ -184,7 +184,7 @@ dependencies = [
 
 [[package]]
 name = "dw4core"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "hmac",
  "proptest",
@@ -198,7 +198,7 @@ dependencies = [
 
 [[package]]
 name = "dw4ipc"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "dw4core",
  "serde",

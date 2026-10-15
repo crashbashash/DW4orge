@@ -418,3 +418,59 @@ fn create_box_cli_adds_a_character_without_overwriting_occupied_boxes_or_source_
     assert!(out.status.success());
     assert!(output.with_extension("ps2.bak").exists());
 }
+
+#[test]
+fn create_box_cli_supports_all_gamecube_containers_and_leaves_occupied_boxes_untouched() {
+    let dir = tempfile::tempdir().unwrap();
+    for ext in ["gci", "raw", "bin"] {
+        let source = dir.path().join(format!("input.{ext}"));
+        let output = dir.path().join(format!("output.{ext}"));
+        let raw =
+            dw4core::build_save_with_order(&dw4core::SaveSpec::default(), dw4core::ByteOrder::Big);
+        let mut doc = dw4core::document::Document::from_bytes(&raw).unwrap();
+        doc.save(&source).unwrap();
+        let original = std::fs::read(&source).unwrap();
+        let out = bin()
+            .args([
+                "create-box",
+                source.to_str().unwrap(),
+                "--number",
+                "4",
+                "--name",
+                "CLI4",
+                "--species",
+                "Veemon",
+                "--out",
+                output.to_str().unwrap(),
+                "--json",
+            ])
+            .output()
+            .unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let value: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+        assert_eq!(value["character_selection"], "gamecube#4");
+        assert_eq!(value["view"]["name"], "CLI4");
+        assert_eq!(value["pending_write"], false);
+        let before = std::fs::read(&output).unwrap();
+        for n in ["0", "1", "4", "5"] {
+            let bad = bin()
+                .args([
+                    "create-box",
+                    output.to_str().unwrap(),
+                    "--number",
+                    n,
+                    "--out",
+                    output.to_str().unwrap(),
+                ])
+                .output()
+                .unwrap();
+            assert!(!bad.status.success());
+            assert_eq!(std::fs::read(&output).unwrap(), before);
+        }
+        assert_eq!(std::fs::read(&source).unwrap(), original);
+    }
+}

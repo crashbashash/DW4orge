@@ -55,10 +55,10 @@ USA, Europe and Japan (Digimon World X) are available. Existing cards retain
 their region. Player names use the game's fullwidth character encoding; the
 editor's item labels are in English.
 
-### Create a character in an empty PS2 box
+### Create a character in an empty PS2 or GameCube box
 
-Open the existing PS2 memory card or bare save, then choose **Create box** next
-to **Character box**. Select an empty box, species, name, story preset and
+Open the existing PS2/GameCube memory card, GCI file or bare save, then choose
+**Create box** next to **Character box**. Select an empty box, species, name, story preset and
 difficulty. Click **Create**, then **Save** or **Save As** to write it.
 
 Occupied boxes cannot be overwritten. Existing characters, icons and unrelated
@@ -112,6 +112,7 @@ dw4cli new --species Dorumon --name abcdefgh -o new.ps2
 dw4cli verify new.ps2           # checksums and card ECC
 dw4cli info Mcd001.ps2 --box 'ps2#2'  # select PS2 character box 2
 dw4cli create-box Mcd001.ps2 --number 3 --species Veemon --name NEW3 --out new.ps2
+dw4cli create-box NDMWSaveData.gci --number 2 --species Veemon --name NEW2 --out new.gci
 dw4cli info NDMWSaveData.gci --box 'gamecube#4'  # select GameCube box 4
 dw4cli info SaveData.dat        # Xbox save and available character boxes
 dw4cli info SaveData.dat --xbox-slot 'SaveData.dat#4'
@@ -214,7 +215,8 @@ editor does not rename or convert another region's save silently.
 - [x] **Xbox save support.**
 - [x] **Select additional character save boxes on PS2.**
 - [x] **Create characters in empty PS2 save boxes.**
-- [ ] **Create characters in empty save boxes on GameCube and Xbox.**
+- [x] **Create characters in empty GameCube save boxes.**
+- [ ] **Create characters in empty Xbox save boxes.**
 - [x] **Select additional character save boxes on GameCube.**
 - [ ] **Native Wayland support.**
 - [ ] **Packaging for Arch and Flatpak.**

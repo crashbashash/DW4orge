@@ -53,9 +53,9 @@ export function SummaryCard() {
             if (selection) void selectCharacterBox(selection);
           }} />
       </> : null}
-      {session.empty_boxes && session.path && (session.source === 'memcard' || session.source === 'raw') && <>
+      {session.empty_boxes && session.path && session.source !== 'xbox' && session.source !== 'xbox_mu' && <>
         <button type="button" disabled={state.status === 'busy' || session.empty_boxes.length === 0}
-          title={session.empty_boxes.length === 0 ? 'All PS2 boxes are occupied' : undefined}
+          title={session.empty_boxes.length === 0 ? 'All character boxes are occupied' : undefined}
           onClick={() => dirty(state) ? setConfirmCreate(true) : setCreateOpen(true)}>Create box</button>
         <ConfirmDialog isOpen={confirmCreate} title="Discard unsaved changes?"
           message="Creating a character box will discard the current unsaved changes." confirmLabel="Discard"

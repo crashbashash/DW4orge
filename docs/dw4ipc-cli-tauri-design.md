@@ -384,20 +384,22 @@ Normal-mode Xbox bank edits pack nonempty slots, because the retail loader
 stops at the first empty bank item. Advanced mode preserves raw placement.
 
 
-## Empty PS2 box creation (schema 7)
+## Empty character box creation (schema 7)
 
 `OpenResult.empty_boxes` lists available one-based creation targets. `None`
-means unsupported; an empty list means a supported but full PS2 save.
+means unsupported; an empty list means a supported but full PS2/GameCube save.
 `pending_write` marks container changes not represented by an EditSet diff.
 New files and newly created boxes are dirty immediately; successful writes
 clear that flag. This extends the existing discard/close guards to a created
 box whose file already has a path.
 
 `create_box(box_number, request: NewSaveRequest)` delegates to
-`EditorSession::create_ps2_box`. It reloads the existing path and selected
+`EditorSession::create_box`. It reloads the existing path and selected
 region, validates the request/empty target, initializes a new character,
 selects it and returns a pending session. It never writes to disk. Errors leave
 the previous document intact. Existing card regions cannot be changed through
 creation. The CLI exposes this as `create-box --number N --out FILE`; the UI
 reuses the creation form with an empty-box selector and no format/region change.
-GameCube and Xbox creation targets remain unavailable.
+GameCube support uses the same schema 7 payload. The pre-0.8 PS2-only service
+and core methods remain available with their platform guards. Xbox creation
+targets remain unavailable.

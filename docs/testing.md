@@ -327,3 +327,50 @@ four Tauri agent tests, formatting, Clippy for core and shell, normal-shell
 compilation, TypeScript, ESLint, production frontend build and palette contrast.
 Live coverage is USA box-3 creation/load/resave; all four targets, regional
 card formats and raw/ECC/flat container behavior have automated coverage.
+
+## Creating an empty GameCube character box (0.8.0 / schema 7)
+
+The shared Create box flow and `dw4cli create-box --number N --out FILE` now
+support GCI, full raw/GCP cards and big-endian bare saves. Xbox creation remains
+unavailable. PS2-only core/service entry points retain their platform guards;
+the shared entry points dispatch using the loaded save's byte order.
+
+Tests cover all four creation targets, big-endian names/scalars/identity fields,
+nonzero identities distinct from every occupied record in both mirrors,
+unchanged other records and unknown bytes, invalid/full/corrupt or conflicting
+mirror targets, all three regional card identities, repeated writes/backups,
+stale-source rechecks, cross-platform request refusal, and GCI/card/bare CLI
+creation. GCI headers and banners and card filesystem metadata are pinned.
+GCI-to-card conversion retains the donor artwork and infers its region when no
+override is supplied. The suites pass 332 Rust tests, 169 frontend tests and
+four Tauri agent tests, plus formatting, Clippy, TypeScript, ESLint, production
+frontend build and palette contrast.
+
+Private native evidence is in `../Decomp/local/gamecube-box-creation/`.
+`native-report.json` records creation of a fresh Veemon (`GCBNEW2`) in GCI box 2,
+immediate dirty state, Cancel retaining a pending creation, GCI Save As,
+conversion to a full card, creation of Agumon (`GCBNEW3`) in card box 3,
+Save As/switching between the created characters, bare export, native
+big-endian bare-file creation with pending state/Save As, full-save disabling
+and an unchanged original input. Existing boxes 1 and 4 were retained.
+The CLI independently created a character in the remaining card box.
+`isolation-report.json` verifies preservation of those original characters,
+trailing data, filesystem metadata and artwork, plus distinct identities for
+the two new characters. Native dialog/summary captures were visually checked.
+
+USA retail Dolphin validation cold-booted a copied card converted from the
+app-written GCI. Call Digimon displayed the original characters and newly
+created `GCBNEW2` (Veemon, box 2) and `GCBNEW3` (Agumon, box 3). The new Veemon
+loaded at level 1 with starter equipment, completed the introduction, moved
+through the lobby and saved successfully through the Save Keeper to box 2.
+Every compared `SaveView` field group matched after saving. The introduction
+and hub flow changed story flags 24, 501, 508, 931, 935 and 936. Both big-endian
+checksums verified. The other three boxes, trailing bytes and all character
+identities were preserved. `retail-roundtrip-report.json` and captures under
+`retail/` record the boundary. Only an isolated profile-local card copy was
+mounted; original inputs and the master RVZ were not modified.
+
+Live coverage is USA newly created box 2 on a converted full card. GCI/full-card
+and big-endian bare creation also have native editor coverage. All four targets
+and three regional formats have automated coverage; a full campaign or other
+regional retail playthrough is not claimed.

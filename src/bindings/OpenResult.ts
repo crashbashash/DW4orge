@@ -9,7 +9,7 @@ import type { SourceKind } from "./SourceKind";
  */
 export type OpenResult = {
 /**
- * Empty boxes available for creation; None for unsupported platforms.
+ * Empty boxes available for creation; None for unsupported platforms (currently Xbox).
  */
 empty_boxes?: Array<number>,
 /**

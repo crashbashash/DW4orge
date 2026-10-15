@@ -1193,7 +1193,8 @@ All editable field groups follow the selected record. Other boxes and unknown
 bytes survive writes; GCI headers/banners and full-card filesystem metadata are
 preserved. Full-card copies, GCI exports and bare-data exports retain all boxes.
 Writes reject a source whose save payload changed externally after opening.
-Creating characters in empty GameCube and Xbox boxes remains roadmap work.
+Empty GameCube boxes can be initialized as described below. Xbox creation
+remains roadmap work.
 
 
 ## PS2 character creation in an existing save
@@ -1219,3 +1220,28 @@ uses the same service; choosing the same input/output path uses atomic writes
 and backups. The service reloads the source before creation and rechecks the
 target, so stale UI choices cannot overwrite externally created characters.
 Creation failures retain the previous editing session.
+
+
+## GameCube character creation in an existing save
+
+The shared `SaveData::create_box`, `Document::create_box` and
+`EditorSession::create_box` initialize empty PS2 or GameCube records. The
+source's byte order controls the builder, identity-field collision checks and
+both complete-mirror checksums. GameCube writes the new record and its nonzero,
+distinct identity big-endian; names use big-endian UTF-16. The occupied flag
+remains a single byte. Only the selected record and checksum words change.
+The older PS2-only creation methods keep their original platform guard.
+
+The shared **Create box** dialog and CLI `create-box --number N --out FILE`
+support GCI, full raw/GCP cards and big-endian bare files. Both mirrors must
+mark the target empty and have valid checksums. Occupied/uncertain, invalid
+and stale targets are rejected without replacing the session. Fresh story,
+starter equipment, pending-write state, Save/Save As and discard behavior use
+the same rules as PS2. No new IPC shape beyond schema 7 is required.
+
+Same-container writes retain the GCI header/banner or full-card filesystem
+metadata and unrelated files. GCI-to-card exports now retain donor artwork and
+metadata, infer the region from the GCI game code when no override was supplied,
+and change that code only for an explicit regional export. Card/bare/GCI
+exports retain the complete four-box payload. Creation does not change the
+region of an existing full card. Xbox initialization remains separate work.

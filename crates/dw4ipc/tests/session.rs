@@ -558,3 +558,126 @@ fn creation_rechecks_disk_state_and_rejects_wrong_platform_region_and_invalid_re
             .is_err()
     );
 }
+
+#[test]
+fn gamecube_creation_gci_card_and_bare_sessions_preserve_existing_characters_and_pending_state() {
+    let dir = tempfile::tempdir().unwrap();
+    for ext in ["gci", "raw", "bin"] {
+        let path = dir.path().join(format!("source.{ext}"));
+        let raw =
+            dw4core::build_save_with_order(&dw4core::SaveSpec::default(), dw4core::ByteOrder::Big);
+        let mut doc = dw4core::document::Document::from_bytes(&raw).unwrap();
+        doc.set_region(dw4core::Region::Japan).unwrap();
+        doc.save(&path).unwrap();
+        let original = std::fs::read(&path).unwrap();
+        let mut session = EditorSession::new_session();
+        let first = session.open(&path).unwrap();
+        assert_eq!(first.empty_boxes, Some(vec![2, 3, 4]));
+        let request = NewSaveRequest {
+            format: None,
+            region: None,
+            species: Species::Veemon,
+            name: "GCNEWあ".into(),
+            story: None,
+            difficulty: DifficultyChoice::Auto,
+        };
+        let created = session.create_box(3, &request).unwrap();
+        assert!(created.pending_write);
+        assert_eq!(created.path, first.path);
+        assert_eq!(created.character_selection.as_deref(), Some("gamecube#3"));
+        assert_eq!(created.empty_boxes, Some(vec![2, 4]));
+        assert_eq!(created.view.name, "GCNEWあ");
+        assert_eq!(created.view.device[..3], [0x050d, 0x0513, 0x0512]);
+        assert_eq!(created.view.weapons, [0, 1, 2]);
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+        assert!(session.create_box(1, &request).is_err());
+        assert_eq!(session.view(Mode::Normal).unwrap(), created.view);
+        let copy = dir.path().join(format!("copy.{ext}"));
+        let saved = session
+            .save_as(&copy, &created.view.to_edit_set(), Mode::Normal)
+            .unwrap();
+        assert!(!saved.pending_write);
+        assert_eq!(saved.character_selection, created.character_selection);
+        assert_eq!(
+            session
+                .open_with_selection(&copy, None, Some("gamecube#1"))
+                .unwrap()
+                .view,
+            first.view
+        );
+        let reopened = session
+            .open_with_selection(&copy, None, Some("gamecube#3"))
+            .unwrap();
+        assert_eq!(reopened.view, created.view);
+        session.create_box(2, &request).unwrap();
+        let edits = session.view(Mode::Normal).unwrap().to_edit_set();
+        assert!(!session.save(&edits, Mode::Normal).unwrap().pending_write);
+        assert!(copy.with_extension(format!("{ext}.bak")).exists());
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+    }
+}
+
+#[test]
+fn shared_creation_refuses_platform_conversion_and_rechecks_a_stale_gamecube_target() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("source.bin");
+    let raw =
+        dw4core::build_save_with_order(&dw4core::SaveSpec::default(), dw4core::ByteOrder::Big);
+    std::fs::write(&path, &raw).unwrap();
+    let mut session = EditorSession::new_session();
+    let first = session.open(&path).unwrap();
+    let request = NewSaveRequest {
+        format: None,
+        region: None,
+        species: Species::Agumon,
+        name: "NEW4".into(),
+        story: Some("After World 1".into()),
+        difficulty: DifficultyChoice::Fixed(Difficulty::Normal),
+    };
+    for format in [SourceKind::Memcard, SourceKind::Xbox, SourceKind::XboxMu] {
+        assert!(
+            session
+                .create_box(
+                    2,
+                    &NewSaveRequest {
+                        format: Some(format),
+                        ..request.clone()
+                    }
+                )
+                .is_err()
+        );
+        assert_eq!(session.view(Mode::Normal).unwrap(), first.view);
+    }
+    let mut external = dw4core::document::Document::load(&path).unwrap();
+    external
+        .create_box(4, &dw4core::SaveSpec::default())
+        .unwrap();
+    external.save(&path).unwrap();
+    assert!(session.create_box(4, &request).is_err());
+    assert_eq!(session.view(Mode::Normal).unwrap(), first.view);
+    assert_eq!(
+        session
+            .create_box(2, &request)
+            .unwrap()
+            .character_boxes
+            .unwrap()
+            .len(),
+        3
+    );
+    let card = dir.path().join("japan.raw");
+    let mut doc = dw4core::document::Document::from_bytes(&raw).unwrap();
+    doc.set_region(dw4core::Region::Japan).unwrap();
+    doc.save(&card).unwrap();
+    session.open(&card).unwrap();
+    assert!(
+        session
+            .create_box(
+                3,
+                &NewSaveRequest {
+                    region: Some(dw4core::Region::Europe),
+                    ..request
+                }
+            )
+            .is_err()
+    );
+}

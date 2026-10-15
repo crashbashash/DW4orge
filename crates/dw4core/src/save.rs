@@ -129,8 +129,8 @@ impl SaveData {
 
     /// Boxes whose occupied byte is clear in both mirrors. None means unsupported.
     #[must_use]
-    pub fn empty_ps2_boxes(&self) -> Option<Vec<u8>> {
-        if self.byte_order != ByteOrder::Little || self.version() != 4 {
+    pub fn empty_boxes(&self) -> Option<Vec<u8>> {
+        if self.version() != 4 {
             return None;
         }
         Some(
@@ -143,18 +143,20 @@ impl SaveData {
         )
     }
 
-    /// Initialize one empty PS2 box, preserving every other byte except checksums.
+    /// Initialize one empty PS2 or GameCube box, preserving every other byte except checksums.
     /// Failure leaves the complete save and selection unchanged.
-    pub fn create_ps2_box(&mut self, number: u8, spec: &crate::SaveSpec) -> Result<()> {
-        let empty = self.empty_ps2_boxes().ok_or_else(|| {
-            Error::NoSave("Box creation currently supports PS2 saves only".into())
+    pub fn create_box(&mut self, number: u8, spec: &crate::SaveSpec) -> Result<()> {
+        let empty = self.empty_boxes().ok_or_else(|| {
+            Error::NoSave("Box creation supports PS2 and GameCube version-4 saves".into())
         })?;
         if !(1..=4).contains(&number) {
-            return Err(Error::NoSave("PS2 box number must be 1 through 4".into()));
+            return Err(Error::NoSave(
+                "Character box number must be 1 through 4".into(),
+            ));
         }
         if !empty.contains(&number) {
             return Err(Error::NoSave(
-                "The selected PS2 box is occupied or its mirrors disagree".into(),
+                "The selected character box is occupied or its mirrors disagree".into(),
             ));
         }
         if !self.verify() {
@@ -192,7 +194,7 @@ impl SaveData {
                     read_u32(
                         &self.raw,
                         mirror * BLOCK + index * Self::BOX_SIZE + offsets::UNIQUE,
-                        ByteOrder::Little,
+                        self.byte_order,
                     ) == unique
                 })
             })
@@ -203,7 +205,7 @@ impl SaveData {
         fresh.version = 4;
         fresh.isuse = 1;
         fresh.unique = unique;
-        let record = crate::build_save(&fresh);
+        let record = crate::build_save_with_order(&fresh, self.byte_order);
         let mut output = self.raw.clone();
         for mirror in 0..2 {
             let source = mirror * BLOCK + 8;
@@ -211,10 +213,30 @@ impl SaveData {
             output[target..target + Self::BOX_SIZE]
                 .copy_from_slice(&record[source..source + Self::BOX_SIZE]);
         }
-        fix_checksums(&mut output);
+        fix_checksums_with_order(&mut output, self.byte_order);
         self.raw = output;
         self.selected_box = usize::from(number - 1);
         Ok(())
+    }
+
+    /// Backwards-compatible PS2-only creation metadata.
+    #[must_use]
+    pub fn empty_ps2_boxes(&self) -> Option<Vec<u8>> {
+        if self.byte_order == ByteOrder::Little {
+            self.empty_boxes()
+        } else {
+            None
+        }
+    }
+
+    /// Backwards-compatible PS2-only creation entry point.
+    pub fn create_ps2_box(&mut self, number: u8, spec: &crate::SaveSpec) -> Result<()> {
+        if self.byte_order != ByteOrder::Little {
+            return Err(Error::NoSave(
+                "Box creation through this entry point supports PS2 only".into(),
+            ));
+        }
+        self.create_box(number, spec)
     }
 
     fn box_prefix(&self) -> &'static str {
@@ -232,7 +254,7 @@ impl SaveData {
         }
     }
 
-    pub(crate) fn byte_order(&self) -> ByteOrder {
+    pub fn byte_order(&self) -> ByteOrder {
         self.byte_order
     }
 

@@ -23,6 +23,26 @@ pub fn is_gci(bytes: &[u8]) -> bool {
     known_game && name.starts_with(b"NDMWSaveData")
 }
 
+pub(super) fn region(bytes: &[u8]) -> Option<crate::Region> {
+    if !is_gci(bytes) {
+        return None;
+    }
+    match bytes[3] {
+        b'E' => Some(crate::Region::Usa),
+        b'P' => Some(crate::Region::Europe),
+        b'J' => Some(crate::Region::Japan),
+        _ => None,
+    }
+}
+
+pub(super) fn game_code(region: crate::Region) -> &'static [u8; 4] {
+    match region {
+        crate::Region::Usa => b"GDJE",
+        crate::Region::Europe => b"GDJP",
+        crate::Region::Japan => b"GDJJ",
+    }
+}
+
 /// Extract the two serialized save blocks from a GCI file.
 pub fn read_save(bytes: &[u8]) -> Result<Vec<u8>> {
     if !is_gci(bytes) {

@@ -91,7 +91,7 @@ export function createMockBackend(options: MockOptions = {}): Backend {
         region: request.region ?? 'usa',
         path: null,
         pending_write: true,
-        empty_boxes: !request.format || request.format === 'memcard' || request.format === 'raw' ? [2,3,4] : undefined,
+        empty_boxes: request.format === 'xbox' || request.format === 'xbox_mu' ? undefined : [2,3,4],
         source: request.format === 'memcard' ? 'raw' : request.format ?? 'raw',
         view: { ...base.view, species: request.species, name: request.name },
       };
@@ -102,13 +102,14 @@ export function createMockBackend(options: MockOptions = {}): Backend {
     createBox: async (boxNumber, request) => {
       const previous = needDoc();
       const stored = previous.path ? files.get(previous.path) : undefined;
-      if (!stored?.result.empty_boxes?.includes(boxNumber)) throw { kind: 'unsupported', message: 'This PS2 box is not empty' };
+      if (!stored?.result.empty_boxes?.includes(boxNumber)) throw { kind: 'unsupported', message: 'This character box is not empty' };
       const doc = openMock(previous.path!, previous.region ?? undefined);
-      current = { ...doc, pending_write: true, character_selection: `ps2#${boxNumber}`,
+      const prefix = doc.character_selection?.split('#')[0] ?? (doc.source.startsWith('gamecube') ? 'gamecube' : 'ps2');
+      current = { ...doc, pending_write: true, character_selection: `${prefix}#${boxNumber}`,
         empty_boxes: doc.empty_boxes!.filter(number => number !== boxNumber),
-        character_boxes: [...doc.character_boxes ?? [], { id: `ps2#${boxNumber}`, label: `Box ${boxNumber} · ${request.name}`, box_number: boxNumber }].sort((a,b)=>a.box_number-b.box_number),
+        character_boxes: [...doc.character_boxes ?? [], { id: `${prefix}#${boxNumber}`, label: `Box ${boxNumber} · ${request.name}`, box_number: boxNumber }].sort((a,b)=>a.box_number-b.box_number),
         view: { ...fixture().view, species: request.species, name: request.name, bit: 0, xdata: 0, level: 1, exp: 0 } };
-      workingViews.set(`ps2#${boxNumber}`, structuredClone(current.view));
+      workingViews.set(`${prefix}#${boxNumber}`, structuredClone(current.view));
       return structuredClone(current);
     },
 

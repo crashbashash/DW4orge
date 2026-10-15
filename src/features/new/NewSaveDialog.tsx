@@ -30,14 +30,14 @@ export function NewSaveDialog({ isOpen, onClose, boxCreation = false }: { isOpen
   if (!state.appInfo) return null;
 
   const submit = async () => {
-    const request = { format: boxCreation ? 'memcard' as const : format, region: boxCreation ? state.session?.region ?? null : region, species, name, story, difficulty };
+    const request = { format: boxCreation ? undefined : format, region: boxCreation ? state.session?.region ?? null : region, species, name, story, difficulty };
     const ok = boxCreation ? selectedBox !== undefined && await createBox(selectedBox, request) : await newSave(request);
     if (ok) onClose();
   };
 
   return (
     <Modal
-      title={boxCreation ? "Create PS2 character box" : "New save"}
+      title={boxCreation ? "Create character box" : "New save"}
       isOpen={isOpen}
       onClose={onClose}
       footer={
@@ -102,7 +102,7 @@ export function NewSaveDialog({ isOpen, onClose, boxCreation = false }: { isOpen
       </div>
 
       {state.error && <p role="alert" className="danger">{state.error}</p>}
-      {boxCreation && <p className="muted">Creates a new character in the opened PS2 save. Other boxes are preserved. Use Save or Save As to write it.</p>}
+      {boxCreation && <p className="muted">Creates a new character in the opened save. Other boxes are preserved. Use Save or Save As to write it.</p>}
       {!boxCreation && format !== 'memcard' && <p className="muted">
         Creates a new GameCube save with a blank banner and icon. The game replaces them
         when it saves. GCI files can be imported into Dolphin; full cards can be mounted directly.

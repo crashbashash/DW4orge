@@ -4,6 +4,7 @@ import { expect, it, vi } from 'vitest';
 import { App } from '../../app/App';
 import { BackendProvider } from '../../ipc/context';
 import { createMockBackend } from '../../ipc/mock';
+import { viewToEditSet } from '../../app/store';
 
 async function openEditor(backend = createMockBackend()) {
   render(<BackendProvider backend={backend}><App /></BackendProvider>);
@@ -17,7 +18,7 @@ it('creates only an empty PS2 box and treats it as unsaved before any field edit
   const create = vi.spyOn(backend, 'createBox');
   await openEditor(backend);
   await userEvent.click(screen.getByRole('button', { name: 'Create box' }));
-  const modal = await screen.findByRole('dialog', { name: 'Create PS2 character box' });
+  const modal = await screen.findByRole('dialog', { name: 'Create character box' });
   expect(within(modal).queryByRole('button', { name: /save format/i })).toBeNull();
   await userEvent.click(within(modal).getByRole('button', { name: /empty box/i }));
   expect(screen.queryByRole('option', { name: 'Box 1 (empty)' })).toBeNull();
@@ -27,7 +28,7 @@ it('creates only an empty PS2 box and treats it as unsaved before any field edit
   await userEvent.clear(within(modal).getByLabelText('Player name'));
   await userEvent.type(within(modal).getByLabelText('Player name'), 'NEW3');
   await userEvent.click(within(modal).getByRole('button', { name: 'Create' }));
-  await waitFor(() => expect(create).toHaveBeenCalledWith(3, expect.objectContaining({ format: 'memcard', region: 'usa', name: 'NEW3', species: 'Veemon' })));
+  await waitFor(() => expect(create).toHaveBeenCalledWith(3, expect.objectContaining({ format: undefined, region: 'usa', name: 'NEW3', species: 'Veemon' })));
   expect(await screen.findByDisplayValue('NEW3')).toBeTruthy();
   expect(screen.getByRole('img', { name: 'Unsaved changes' })).toBeTruthy();
   await userEvent.click(screen.getByRole('button', { name: /character box/i }));
@@ -50,15 +51,15 @@ it('Cancel preserves drafts and failed creation keeps the form and previous char
   expect(create).not.toHaveBeenCalled();
   await userEvent.click(screen.getByRole('button', { name: 'Create box' }));
   await userEvent.click(await screen.findByRole('button', { name: 'Discard' }));
-  const modal = await screen.findByRole('dialog', { name: 'Create PS2 character box' });
+  const modal = await screen.findByRole('dialog', { name: 'Create character box' });
   await userEvent.click(within(modal).getByRole('button', { name: 'Create' }));
   expect(await within(modal).findByRole('alert')).toHaveProperty('textContent', 'The selected PS2 box is occupied');
-  expect(screen.getByRole('dialog', { name: 'Create PS2 character box' })).toBeTruthy();
+  expect(screen.getByRole('dialog', { name: 'Create character box' })).toBeTruthy();
   await userEvent.click(within(modal).getByRole('button', { name: 'Cancel' }));
   expect((screen.getByLabelText('BIT') as HTMLInputElement).value).toBe('77');
 });
 
-it.each(['gamecube', 'gamecube_card', 'xbox', 'xbox_mu'] as const)('does not offer creation for %s', async source => {
+it.each(['xbox', 'xbox_mu'] as const)('does not offer creation for %s', async source => {
   const backend = createMockBackend();const sample = await backend.openSample!();
   backend.openSample = async () => ({ ...sample, source, empty_boxes: undefined });
   render(<BackendProvider backend={backend}><App /></BackendProvider>);
@@ -71,4 +72,29 @@ it('disables creation when every PS2 box is occupied', async () => {
   const backend = createMockBackend();const sample = await backend.openSample!();backend.openSample = async () => ({ ...sample, empty_boxes: [] });
   await openEditor(backend);
   expect((screen.getByRole('button', { name: 'Create box' }) as HTMLButtonElement).disabled).toBe(true);
+});
+
+
+it.each(['gamecube', 'gamecube_card'] as const)('creates and persists GameCube boxes on %s with the shared dialog', async format => {
+  const backend = createMockBackend();
+  const base = await backend.newSave({ format, region: 'japan', species: 'Dorumon', name: 'ORIGINAL', story: null, difficulty: 'auto' });
+  const path = format === 'gamecube' ? '/mock/input.gci' : '/mock/input.raw';
+  await backend.saveAs(path, viewToEditSet(base.view), 'normal');
+  backend.openSample = () => backend.openSave(path);
+  const create = vi.spyOn(backend, 'createBox');
+  await openEditor(backend);
+  await userEvent.click(screen.getByRole('button', { name: 'Create box' }));
+  const modal = await screen.findByRole('dialog', { name: 'Create character box' });
+  await userEvent.click(within(modal).getByRole('button', { name: /empty box/i }));
+  await userEvent.click(await screen.findByRole('option', { name: 'Box 3 (empty)' }));
+  await userEvent.clear(within(modal).getByLabelText('Player name'));
+  await userEvent.type(within(modal).getByLabelText('Player name'), 'GCNEW3');
+  await userEvent.click(within(modal).getByRole('button', { name: 'Create' }));
+  expect(await screen.findByDisplayValue('GCNEW3')).toBeTruthy();
+  expect(create).toHaveBeenCalledWith(3, expect.objectContaining({ format: undefined, region: 'japan' }));
+  expect(screen.getByRole('img', { name: 'Unsaved changes' })).toBeTruthy();
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+  await waitFor(() => expect(screen.getByRole('img', { name: 'No changes' })).toBeTruthy());
+  expect((await backend.openSave(path, undefined, 'gamecube#1')).view.name).toBe('ORIGINAL');
+  expect((await backend.openSave(path, undefined, 'gamecube#3')).view.name).toBe('GCNEW3');
 });

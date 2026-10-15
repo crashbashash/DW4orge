@@ -53,7 +53,7 @@ enum Command {
         #[arg(short, long)]
         out: PathBuf,
     },
-    /// Create a character in an empty PS2 box, writing a separate output or the same file.
+    /// Create a character in an empty PS2 or GameCube box, writing a separate output or the same file.
     CreateBox {
         path: PathBuf,
         /// Destination character box, 1 through 4; it must be empty.
@@ -187,7 +187,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
                 });
             }
             let req = NewSaveRequest {
-                format: Some(dw4ipc::SourceKind::Memcard),
+                format: None,
                 region: cli.region,
                 species: species.unwrap_or(Species::DEFAULT),
                 name: name.clone().unwrap_or_else(|| "TST".into()),
@@ -196,7 +196,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
             };
             let mut session = EditorSession::new_session();
             session.open_with_region(path, cli.region)?;
-            let created = session.create_ps2_box(*number, &req)?;
+            let created = session.create_box(*number, &req)?;
             let saved = session.save_as(out, &created.view.to_edit_set(), Mode::Normal)?;
             if cli.json {
                 output::json(&saved);

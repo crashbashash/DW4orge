@@ -1,10 +1,10 @@
 {
   "name": "DW4orge",
-  "version": "0.3.1",
-  "core_version": "0.3.1",
+  "version": "0.4.0",
+  "core_version": "0.4.0",
   "save_size": 81920,
   "block_size": 40960,
-  "schema_version": 4,
+  "schema_version": 5,
   "ui": {
     "catalogue": [
       {

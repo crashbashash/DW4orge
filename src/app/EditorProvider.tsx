@@ -43,6 +43,7 @@ export type EditorApi = {
   toggleTheme(): void;
   open(): Promise<void>;
   openSample(): Promise<void>;
+  selectXboxSlot(selection: string): Promise<void>;
   canLoadSample: boolean;
   newSave(request: NewSaveRequest): Promise<void>;
   save(): Promise<void>;
@@ -150,6 +151,11 @@ export function EditorProvider({ children }: { children: ReactNode }) {
     });
   }, [backend, load, chooseRegion]);
 
+  const selectXboxSlot = useCallback(async (selection: string) => {
+    if (!state.session?.path || state.status === 'busy') return;
+    await load(() => backend.openSave(state.session!.path!, undefined, selection));
+  }, [backend, load, state.session, state.status]);
+
   const openSample = useCallback(async () => {
     const sample = backend.openSample;
     if (!sample) return;
@@ -180,7 +186,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 
   const saveAs = useCallback(async () => {
     if (!edits) return;
-    const path = await backend.pickSavePath(defaultSaveName(state.session?.path ?? null, state.session?.source));
+    const path = await backend.pickSavePath(defaultSaveName(state.session?.path ?? null, state.session?.source), state.session?.source);
     if (!path) return;
     let region: Region | undefined;
     if (/\.ps2$/i.test(path) && state.session?.region == null) {
@@ -229,13 +235,14 @@ export function EditorProvider({ children }: { children: ReactNode }) {
       toggleTheme,
       open,
       openSample,
+      selectXboxSlot,
       canLoadSample: typeof backend.openSample === 'function',
       newSave,
       save,
       saveAs,
       speciesStats,
     }),
-    [backend.openSample, newSave, open, openSample, save, saveAs, speciesStats, state, toggleTheme],
+    [backend.openSample, newSave, open, openSample, selectXboxSlot, save, saveAs, speciesStats, state, toggleTheme],
   );
 
   return <EditorContext.Provider value={api}>{children}<RegionDialog request={regionRequest} finish={finishRegion} /></EditorContext.Provider>;

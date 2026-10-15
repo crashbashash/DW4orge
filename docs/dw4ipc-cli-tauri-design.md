@@ -359,3 +359,21 @@ multiple regional saves are present. Save As accepts an export region for raw
 files; an existing source card keeps its region. The UI resolves these choices
 with a cancellable region dialog; no save is selected or written on cancellation.
 The CLI exposes the same selection through global `--region`.
+
+
+## Xbox selection and integrity (0.4.0 / schema 5)
+
+`SourceKind` adds `xbox` for signed `SaveData.dat` files and `xbox_mu` for raw
+FATX memory-unit images. `OpenResult` adds optional `xbox_slots` (occupied boxes,
+with `id`, `label`, one-based `box_number`) and `xbox_selection`. `open_save`
+accepts optional `xbox_selection`; the equivalent service method is
+`EditorSession::open_with_selection`. Failed selections retain the previous
+session. The UI reuses its load path with a discard guard when switching boxes.
+The CLI accepts `--xbox-slot` on info/dump; IDs are visible in `info` and JSON.
+
+The Xbox document retains the whole original container and adapts only the
+selected box to the existing `SaveView`/`EditSet`. Saves patch that box and sign
+both records, then use the existing atomic write/backup policy with a complete
+byte comparison and reparse. A changed source file is rejected before overwrite.
+Normal-mode Xbox bank edits pack nonempty slots, because the retail loader
+stops at the first empty bank item. Advanced mode preserves raw placement.

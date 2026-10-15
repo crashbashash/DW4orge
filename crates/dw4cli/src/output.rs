@@ -15,11 +15,27 @@ pub fn json<T: serde::Serialize>(value: &T) {
 /// Summary block for `info`.
 pub fn info(result: &OpenResult) {
     let view = &result.view;
+    if let Some(slots) = &result.xbox_slots {
+        for slot in slots {
+            println!(
+                "{}: {}{}",
+                slot.id,
+                slot.label,
+                if result.xbox_selection.as_ref() == Some(&slot.id) {
+                    " (selected)"
+                } else {
+                    ""
+                }
+            );
+        }
+    }
     let source = match result.source {
         dw4ipc::SourceKind::Raw => "raw save",
         dw4ipc::SourceKind::Memcard => "memory card",
         dw4ipc::SourceKind::Gamecube => "GameCube GCI save",
         dw4ipc::SourceKind::GamecubeCard => "GameCube memory card",
+        dw4ipc::SourceKind::Xbox => "Xbox HDD save",
+        dw4ipc::SourceKind::XboxMu => "Xbox memory unit",
     };
     let occupied = view.device.iter().filter(|id| **id != EMPTY).count();
     let disks = view.disks.iter().filter(|n| **n != 0).count();
@@ -86,6 +102,8 @@ pub fn verify(report: &VerifyReport) {
             dw4ipc::SourceKind::Memcard => "memory card",
             dw4ipc::SourceKind::Gamecube => "GameCube GCI save",
             dw4ipc::SourceKind::GamecubeCard => "GameCube memory card",
+            dw4ipc::SourceKind::Xbox => "Xbox HDD save",
+            dw4ipc::SourceKind::XboxMu => "Xbox memory unit",
         }
     );
     println!(

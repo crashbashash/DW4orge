@@ -1120,3 +1120,24 @@ For a new GameCube save, Save As to .gci creates the standalone file; .raw or
 .gcp creates a complete card. .bin remains the bare savedata export. Existing
 cards are copied and retain their unrelated data. A bare GameCube .raw file
 that already exists remains bare when overwritten.
+
+
+## Xbox editing (0.4.0)
+
+Xbox `SaveData.dat` files from HDD saves and extracted memory-unit saves share
+65,584-byte signed containers. Raw FATX controller memory-unit `.img` files are
+also supported. The Xbox reader maps the selected occupied character box to the
+shared field layer; its writer preserves the original container, all other
+boxes/saves, and unknown bytes, then recomputes both HMAC-SHA1 signatures.
+Save As from a memory unit keeps the full image with `.img` or exports the
+selected four-box save container with `.dat`. Atomic writes, backups, and
+post-write verification apply to both formats.
+
+The source kind, selected Xbox box and available choices cross IPC schema 5.
+The app selector guards unsaved changes, and the CLI accepts `--xbox-slot` with
+an ID printed by `info` or returned in JSON. New Save remains PS2/GameCube;
+Xbox support edits existing occupied boxes. HDD filesystem/qcow2 images and
+Xbox save creation are outside this release.
+
+See [Xbox format and retail validation](xbox-save-research.md) for byte offsets,
+FATX geometry, signatures, regional evidence and reproducible probe commands.

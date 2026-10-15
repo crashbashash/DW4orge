@@ -526,3 +526,31 @@ legend {
   background: var(--accent);
   color: var(--accent-contrast);
 }
+
+.summary .xbox-choice {
+  width: max-content;
+  max-width: 100%;
+}
+
+.select-button .react-aria-SelectValue {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary .xbox-choice .select-button {
+  width: auto;
+  max-width: 100%;
+  gap: 12px;
+}
+
+.summary-xbox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+
+.summary-xbox > .field {
+  flex: 0 1 auto;
+}

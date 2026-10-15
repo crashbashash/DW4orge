@@ -1,6 +1,6 @@
 [package]
 name = "dw4core"
-description = "Digimon World 4 / Digimon World X (PS2 and GameCube) save-format engine"
+description = "Digimon World 4 / Digimon World X (PS2, GameCube and Xbox) save-format engine"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -16,6 +16,8 @@ workspace = true
 ts = ["dep:ts-rs"]
 
 [dependencies]
+hmac = "0.12"
+sha1 = "0.10"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 thiserror = "2"

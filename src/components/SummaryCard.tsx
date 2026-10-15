@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { ConfirmDialog } from './ConfirmDialog';
+import { dirty } from '../app/selectors';
 import type { Difficulty } from '../bindings';
 import { useEditor } from '../app/EditorProvider';
 import { formatNumber } from '../lib/num';
@@ -21,7 +24,8 @@ const DIFFICULTY_OPTIONS = [
 ];
 
 export function SummaryCard() {
-  const { state, setDifficulty } = useEditor();
+  const [pendingBox, setPendingBox] = useState<string | null>(null);
+  const { state, setDifficulty, selectXboxSlot } = useEditor();
   const { session } = state;
   if (!session) return null;
   const { view } = session;
@@ -29,10 +33,26 @@ export function SummaryCard() {
   const choice = state.difficulty === 'auto' ? 'auto' : state.difficulty.fixed;
 
   return (
-    <section className="summary" aria-label="Save summary">
+    <section className={session.xbox_slots?.length ? "summary summary-xbox" : "summary"} aria-label="Save summary">
+      {session.xbox_slots?.length ? <>
+        <SelectField className="xbox-choice" label="Character box" value={session.xbox_selection ?? ''}
+          options={session.xbox_slots.map(slot => ({ value: slot.id, label: slot.label }))}
+          disabled={state.status === 'busy'}
+          onChange={selection => {
+            if (selection === session.xbox_selection) return;
+            if (dirty(state)) setPendingBox(selection);
+            else void selectXboxSlot(selection);
+          }} />
+        <ConfirmDialog isOpen={pendingBox !== null} title="Discard unsaved changes?"
+          message="Switching character boxes will discard your unsaved changes." confirmLabel="Discard"
+          onCancel={() => setPendingBox(null)} onConfirm={() => {
+            const selection = pendingBox; setPendingBox(null);
+            if (selection) void selectXboxSlot(selection);
+          }} />
+      </> : null}
       <Field
         label="Region"
-        value={session.region ? REGION_LABELS[session.region] : session.source === 'gamecube' ? 'GameCube GCI' : 'Unknown (raw save)'}
+        value={session.region ? REGION_LABELS[session.region] : session.source === 'gamecube' ? 'GameCube GCI' : session.source === 'xbox' || session.source === 'xbox_mu' ? 'Xbox (USA / Japan)' : 'Unknown (raw save)'}
       />
       <Field label="Species" value={view.species} />
       <Field label="Name" value={view.name} />
@@ -41,7 +61,7 @@ export function SummaryCard() {
       <Field label="X-Data" value={formatNumber(view.xdata)} />
       <Field label="Junk tier" value={String(view.junk_tier)} />
       <Field
-        label="Checksum"
+        label={session.source === 'xbox' || session.source === 'xbox_mu' ? 'Signature' : 'Checksum'}
         value={view.checksum_ok ? 'OK' : 'Mismatch'}
         tone={view.checksum_ok ? 'ok' : 'danger'}
       />

@@ -20,6 +20,9 @@ pub enum SourceKind {
     /// A full GameCube `.raw`/`.gcp` memory-card image.
     #[serde(rename = "gamecube_card")]
     GamecubeCard,
+    Xbox,
+    #[serde(rename = "xbox_mu")]
+    XboxMu,
 }
 
 /// Everything the New Save dialog supplies.
@@ -55,6 +58,12 @@ pub struct OpenResult {
     pub source: SourceKind,
     /// The projected fields.
     pub view: SaveView,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub xbox_slots: Option<Vec<dw4core::xbox::XboxSlot>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub xbox_selection: Option<String>,
 }
 
 /// One species' stored progression, for the Character section's species

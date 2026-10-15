@@ -28,3 +28,4 @@ export type { StoryPreset } from './StoryPreset';
 export type { UiData } from './UiData';
 
 export type { Region } from './Region';
+export type { XboxSlot } from './XboxSlot';

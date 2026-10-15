@@ -1,4 +1,4 @@
-//! Digimon World 4 / Digimon World X save-format engine (PS2 and GameCube).
+//! Digimon World 4 / Digimon World X save-format engine (PS2, GameCube and Xbox).
 //!
 //! Each region uses its own card filename (see [`Region`]), with 81,920 bytes: two byte-identical
 //! 0xA000-byte blocks (a mirror/backup). Every write here updates both, so the
@@ -33,6 +33,7 @@ pub mod name;
 pub mod offsets;
 pub mod save;
 pub mod species;
+pub mod xbox;
 
 pub use builder::{
     SaveSpec, UNIQUE_DEFAULT, build_block, build_block_with_order, build_save,

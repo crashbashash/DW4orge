@@ -75,6 +75,28 @@ pub fn verify_path_with_region(
         })?
         .to_string();
 
+    if dw4core::xbox::is_save(&bytes) || dw4core::xbox::is_memory_unit(&bytes) {
+        let source = if dw4core::xbox::is_memory_unit(&bytes) {
+            SourceKind::XboxMu
+        } else {
+            SourceKind::Xbox
+        };
+        let result = dw4core::xbox::XboxSource::parse(bytes, None);
+        let problems = match &result {
+            Ok(_) => Vec::new(),
+            Err(error) => vec![VerifyProblem {
+                severity: Severity::Error,
+                message: error.to_string(),
+            }],
+        };
+        return Ok(VerifyReport {
+            path,
+            source,
+            checksum_ok: result.is_ok(),
+            problems,
+            card: None,
+        });
+    }
     let mut problems = Vec::new();
     let is_card = dw4core::memcard::is_memcard(&bytes);
     let is_gci = dw4core::memcard::is_gamecube_gci(&bytes);

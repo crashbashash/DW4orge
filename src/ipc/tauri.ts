@@ -11,7 +11,7 @@ function agentControlsEnabled(): boolean {
 
 export const tauriBackend: Backend = {
   appInfo: () => invoke('app_info'),
-  openSave: (path, region) => invoke('open_save', { path, region: region ?? null }),
+  openSave: (path, region, xboxSelection) => invoke('open_save', { path, region: region ?? null, xboxSelection: xboxSelection ?? null }),
   newSave: (request) => invoke('new_save', { request }),
   getView: (mode) => invoke('get_view', { mode }),
   async validateEdits(edits: EditSet, mode: Mode): Promise<ValidationReport> {
@@ -32,9 +32,14 @@ export const tauriBackend: Backend = {
     const picked = await open({ multiple: false, directory: false, filters: OPEN_FILTERS });
     return typeof picked === 'string' ? picked : null;
   },
-  pickSavePath: (defaultName) => agentControlsEnabled()
+  pickSavePath: (defaultName, source) => agentControlsEnabled()
     ? invoke<string | null>('agent_pick_path', { kind: 'save' })
-    : save({ defaultPath: defaultName, filters: [...SAVE_FILTERS].sort((a, b) => {
+    : save({ defaultPath: defaultName, filters: SAVE_FILTERS.filter(filter => {
+      const xbox = filter.extensions.includes('dat') || filter.extensions.includes('img');
+      if (source === 'xbox') return filter.extensions.includes('dat');
+      if (source === 'xbox_mu') return xbox;
+      return !xbox;
+    }).sort((a, b) => {
       const extension = defaultName?.split('.').pop()?.toLowerCase() ?? 'ps2';
       return Number(b.extensions.includes(extension)) - Number(a.extensions.includes(extension));
     }) }),

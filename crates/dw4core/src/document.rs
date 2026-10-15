@@ -361,6 +361,7 @@ fn socket_base_id(device: &[u32; DEVICE_SLOTS], index: u32) -> Option<u32> {
 #[derive(Debug, Clone)]
 pub struct Document {
     data: SaveData,
+    xbox: Option<crate::xbox::XboxSource>,
     path: Option<PathBuf>,
     /// PS2 card donor used when creating a `.ps2` destination.
     source_card: Option<PathBuf>,
@@ -383,6 +384,7 @@ impl Document {
         let loaded_checksums_ok = data.verify();
         Ok(Self {
             data,
+            xbox: None,
             path: None,
             source_card: None,
             source_gci: None,
@@ -404,6 +406,31 @@ impl Document {
     }
 
     pub fn load_with_region(path: &Path, requested: Option<crate::Region>) -> crate::Result<Self> {
+        Self::load_with_selection(path, requested, None)
+    }
+
+    pub fn load_with_selection(
+        path: &Path,
+        requested: Option<crate::Region>,
+        selection: Option<&str>,
+    ) -> crate::Result<Self> {
+        let input = fs::read(path).map_err(|source| crate::Error::File {
+            path: path.to_path_buf(),
+            source,
+        })?;
+        if crate::xbox::is_save(&input) || crate::xbox::is_memory_unit(&input) {
+            let xbox = crate::xbox::XboxSource::parse(input, selection)?;
+            let data = xbox.data()?;
+            let mut doc = Self::from_bytes(data.as_bytes())?;
+            doc.xbox = Some(xbox);
+            doc.path = Some(path.to_path_buf());
+            return Ok(doc);
+        }
+        if selection.is_some() {
+            return Err(crate::Error::NoSave(
+                "character-box selection is only available for Xbox saves".into(),
+            ));
+        }
         let (bytes, region) = crate::memcard::load_save_with_region(path, requested)?;
         let mut doc = Self::from_bytes(&bytes)?;
         doc.path = Some(path.to_path_buf());
@@ -421,6 +448,17 @@ impl Document {
             doc.source_gc_card = Some(path.to_path_buf());
         }
         Ok(doc)
+    }
+
+    #[must_use]
+    pub fn xbox_slots(&self) -> Vec<crate::xbox::XboxSlot> {
+        self.xbox
+            .as_ref()
+            .map_or_else(Vec::new, |source| source.choices().to_vec())
+    }
+    #[must_use]
+    pub fn xbox_selection(&self) -> Option<String> {
+        self.xbox.as_ref().map(|source| source.selected())
     }
 
     #[must_use]
@@ -621,6 +659,22 @@ impl Document {
             }
         }
 
+        if edits.bank_items.len() != BANK_SLOTS {
+            errors.push(FieldError::error(
+                "bank_items",
+                format!("expected {BANK_SLOTS} bank slots"),
+            ));
+        }
+        if self.xbox.is_some()
+            && !adv
+            && edits
+                .bank_items
+                .iter()
+                .position(|&id| id == EMPTY)
+                .is_some_and(|empty| edits.bank_items[empty..].iter().any(|&id| id != EMPTY))
+        {
+            warnings.push(FieldError::warning("bank_items", "Xbox bank items will be packed together so the game reads items after an empty slot."));
+        }
         // Item slots.
         for (i, id) in edits.device.iter().enumerate() {
             validate_item(*id, &format!("device[{i}]"), mode, &mut errors);
@@ -711,7 +765,16 @@ impl Document {
     /// untouched.
     pub fn apply(&mut self, edits: &EditSet, mode: Mode) -> Result<Vec<Warning>, Vec<FieldError>> {
         let warnings = self.validate(edits, mode)?;
-        apply_to(&mut self.data, edits);
+        if self.xbox.is_some() && !mode.is_advanced() {
+            // Xbox's bank loader stops at the first EMPTY, rather than skipping
+            // holes (retail USA VA 0x225FF0..0x22604E).
+            let mut packed = edits.clone();
+            packed.bank_items.retain(|&id| id != EMPTY);
+            packed.bank_items.resize(BANK_SLOTS, EMPTY);
+            apply_to(&mut self.data, &packed);
+        } else {
+            apply_to(&mut self.data, edits);
+        }
         Ok(warnings)
     }
 }
@@ -892,6 +955,18 @@ impl Document {
     /// [`crate::Error::NoSave`] if a new container lacks a suitable donor or
     /// post-write verification fails.
     pub fn save(&mut self, path: &Path) -> crate::Result<()> {
+        if self.xbox.is_some() {
+            return self.save_xbox(path);
+        }
+        if self.path.as_deref() != Some(path)
+            && path.extension().is_some_and(|ext| {
+                ext.eq_ignore_ascii_case("dat") || ext.eq_ignore_ascii_case("img")
+            })
+        {
+            return Err(crate::Error::NoSave(
+                "Xbox exports require an opened Xbox save or memory unit".into(),
+            ));
+        }
         let save = self.data.to_bytes();
         let bytes = crate::memcard::render_container_with_sources(
             path,
@@ -934,6 +1009,70 @@ impl Document {
         } else if crate::memcard::is_gamecube_card(&bytes) {
             self.source_gc_card = Some(path.to_path_buf());
         }
+        self.loaded_checksums_ok = true;
+        Ok(())
+    }
+    fn save_xbox(&mut self, path: &Path) -> crate::Result<()> {
+        let source = self.xbox.as_ref().expect("Xbox source checked");
+        let same_path = self.path.as_deref() == Some(path);
+        if same_path {
+            let current = fs::read(path).map_err(|source| crate::Error::File {
+                path: path.to_path_buf(),
+                source,
+            })?;
+            if !source.matches_image(&current) {
+                return Err(crate::Error::NoSave(
+                    "The Xbox file changed since opening. Reopen it before saving.".into(),
+                ));
+            }
+        }
+        let ext = path
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .unwrap_or("")
+            .to_ascii_lowercase();
+        let export = source.memory_unit() && matches!(ext.as_str(), "dat" | "bin");
+        if !same_path
+            && !(matches!(ext.as_str(), "dat" | "bin") || source.memory_unit() && ext == "img")
+        {
+            return Err(crate::Error::NoSave(
+                "Xbox Save As requires .dat/.bin, or .img for a memory-unit image".into(),
+            ));
+        }
+        let bytes = source.render(&self.data, export)?;
+        let selected = if export {
+            format!(
+                "SaveData.dat#{}",
+                source
+                    .choices()
+                    .iter()
+                    .find(|slot| slot.id == source.selected())
+                    .expect("selected choice")
+                    .box_number
+            )
+        } else {
+            source.selected()
+        };
+        // Validate complete output before touching the destination.
+        crate::xbox::XboxSource::parse(bytes.clone(), Some(&selected))?;
+        if path.exists() {
+            let bak = backup_path(path);
+            if !bak.exists() {
+                fs::copy(path, &bak).map_err(|source| crate::Error::File { path: bak, source })?;
+            }
+        }
+        write_atomically(path, &bytes)?;
+        let written = fs::read(path).map_err(|source| crate::Error::File {
+            path: path.to_path_buf(),
+            source,
+        })?;
+        if written != bytes {
+            return Err(crate::Error::NoSave(
+                "Xbox post-write verification failed".into(),
+            ));
+        }
+        self.xbox = Some(crate::xbox::XboxSource::parse(written, Some(&selected))?);
+        self.path = Some(path.to_path_buf());
         self.loaded_checksums_ok = true;
         Ok(())
     }

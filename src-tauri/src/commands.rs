@@ -22,8 +22,9 @@ pub fn open_save(
     state: State<'_, AppState>,
     path: String,
     region: Option<Region>,
+    xbox_selection: Option<String>,
 ) -> Result<OpenResult, IpcError> {
-    session(&state).open_with_region(std::path::Path::new(&path), region)
+    session(&state).open_with_selection(std::path::Path::new(&path), region, xbox_selection.as_deref())
 }
 
 /// Synthesise a new save in memory; nothing is written until `save_as`.

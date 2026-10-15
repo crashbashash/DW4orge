@@ -23,7 +23,7 @@ export type ValidationReport = {
 /** Everything the UI can ask of the shell. */
 export interface Backend {
   appInfo(): Promise<AppInfo>;
-  openSave(path: string, region?: Region): Promise<OpenResult>;
+  openSave(path: string, region?: Region, xboxSelection?: string): Promise<OpenResult>;
   newSave(request: NewSaveRequest): Promise<OpenResult>;
   getView(mode: Mode): Promise<SaveView>;
   validateEdits(edits: EditSet, mode: Mode): Promise<ValidationReport>;
@@ -31,7 +31,7 @@ export interface Backend {
   saveAs(path: string, edits: EditSet, mode: Mode, region?: Region): Promise<OpenResult>;
   speciesStats(species: Species, mode: Mode): Promise<SpeciesStats>;
   pickOpenPath(): Promise<string | null>;
-  pickSavePath(defaultName: string): Promise<string | null>;
+  pickSavePath(defaultName: string, source?: import('../bindings').SourceKind): Promise<string | null>;
   /**
    * Register a handler for the shell's window-close request (the title bar's
    * close button, Alt+F4). The handler returns `true` to keep the window open
@@ -51,15 +51,19 @@ export interface Backend {
 
 /** The open dialog lists every container first, then each kind alone. */
 export const OPEN_FILTERS = [
-  { name: 'Memory cards / GCI / raw saves', extensions: ['gci', 'gcp', 'ps2', 'raw', 'bin'] },
+  { name: 'Supported saves and memory cards', extensions: ['gci', 'gcp', 'ps2', 'raw', 'bin', 'dat', 'img'] },
   { name: 'GameCube memory card', extensions: ['raw', 'gcp'] },
   { name: 'PS2 memory card', extensions: ['ps2'] },
   { name: 'GameCube GCI save', extensions: ['gci'] },
+  { name: 'Xbox HDD save', extensions: ['dat'] },
+  { name: 'Xbox memory unit', extensions: ['img'] },
   { name: 'Raw save', extensions: ['raw', 'bin'] },
 ];
 
 /** Container choices; the native dialog puts the suggested extension first. */
 export const SAVE_FILTERS = [
+  { name: 'Xbox HDD save', extensions: ['dat'] },
+  { name: 'Xbox memory unit', extensions: ['img'] },
   { name: 'PS2 memory card', extensions: ['ps2'] },
   { name: 'GameCube GCI save', extensions: ['gci'] },
   { name: 'GameCube memory card', extensions: ['raw', 'gcp'] },

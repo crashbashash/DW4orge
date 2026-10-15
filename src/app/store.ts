@@ -27,6 +27,8 @@ export type StoryDrafts = Record<Difficulty, StoryDraft>;
 export type Session = {
   path: string | null;
   source: SourceKind;
+  xbox_slots?: import('../bindings').XboxSlot[] | null;
+  xbox_selection?: string | null;
   region: import('../bindings').Region | null;
   view: SaveView;
   baseline: EditSet;
@@ -293,6 +295,8 @@ function sessionFrom(result: OpenResult, mirrors: readonly Mirror[]): Session {
   return {
     path: result.path,
     source: result.source,
+    xbox_slots: result.xbox_slots,
+    xbox_selection: result.xbox_selection,
     region: result.region,
     view: result.view,
     baseline: viewToEditSet(result.view),

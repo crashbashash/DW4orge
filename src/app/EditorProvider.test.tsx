@@ -96,7 +96,7 @@ describe('EditorProvider', () => {
     await userEvent.click(screen.getByRole('button', { name: 'new' }));
     await waitFor(() => expect(screen.getByTestId('species').textContent).toBe('Dorumon'));
     await userEvent.click(screen.getByRole('button', { name: 'save as' }));
-    expect(pick).toHaveBeenCalledWith('save.ps2');
+    expect(pick).toHaveBeenCalledWith('save.ps2', 'raw');
   });
 
   it('keeps the open file name on Save As', async () => {
@@ -105,7 +105,7 @@ describe('EditorProvider', () => {
     await userEvent.click(screen.getByRole('button', { name: 'sample' }));
     await waitFor(() => expect(screen.getByTestId('species').textContent).toBe('Dorumon'));
     await userEvent.click(screen.getByRole('button', { name: 'save as' }));
-    expect(pick).toHaveBeenCalledWith('Mcd001.ps2');
+    expect(pick).toHaveBeenCalledWith('Mcd001.ps2', 'memcard');
   });
 });
 

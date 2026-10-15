@@ -50,3 +50,12 @@ GameCube filesystem references (0.3.0)
     GameCube editing was verified against the USA GDJEB2 retail release using
     privately held GCI and raw-card samples generated in Dolphin. The samples,
     game banners and private emulator control patch are not shipped here.
+
+Xbox filesystem and signing references (0.4.0)
+--------------------------------------------
+The native FATX reader/writer was implemented with reference to xemu and
+mborgerson/fatx (https://github.com/mborgerson/fatx), and checked against files
+extracted by pyfatx. The title-key derivation was independently checked against
+PMStanley/xbox-save-sig (https://github.com/PMStanley/xbox-save-sig), live kernel
+memory and retail signatures. No game executable, save fixture or console
+firmware is included with the Xbox implementation.

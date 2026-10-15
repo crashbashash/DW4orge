@@ -10,5 +10,7 @@ export function describeSource(source: SourceKind): string {
   if (source === 'memcard') return 'PS2 memory card';
   if (source === 'gamecube') return 'GameCube GCI save';
   if (source === 'gamecube_card') return 'GameCube memory card';
+  if (source === 'xbox') return 'Xbox save file';
+  if (source === 'xbox_mu') return 'Xbox memory unit';
   return 'Raw save';
 }

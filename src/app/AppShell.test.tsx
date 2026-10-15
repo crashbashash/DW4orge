@@ -85,3 +85,34 @@ describe('AppShell', () => {
     expect(screen.getAllByText('Dorumon').length).toBeGreaterThan(0);
   });
 });
+
+it('guards Xbox character-box switching and sends the selected choice to the backend', async () => {
+  const backend = createMockBackend();
+  const sample = await backend.openSample!();
+  const choices = [
+    { id: 'SaveData.dat#1', label: 'Box 1 · ONE', box_number: 1 },
+    { id: 'SaveData.dat#4', label: 'Box 4 · FOUR', box_number: 4 },
+  ];
+  backend.openSample = async () => ({ ...sample, path: '/save.dat', source: 'xbox', xbox_slots: choices, xbox_selection: choices[0].id });
+  const selections: (string | undefined)[] = [];
+  backend.openSave = async (_path, _region, selection) => {
+    selections.push(selection);
+    return { ...sample, path: '/save.dat', source: 'xbox', xbox_slots: choices, xbox_selection: selection, view: { ...sample.view, name: 'FOUR', bit: 444 } };
+  };
+  render(<BackendProvider backend={backend}><App /></BackendProvider>);
+  await userEvent.click(await screen.findByRole('button', { name: /load sample save/i }));
+  await screen.findByRole('button', { name: /Character box/i });
+  await userEvent.clear(screen.getByLabelText('BIT'));
+  await userEvent.type(screen.getByLabelText('BIT'), '77{Enter}');
+  await userEvent.click(screen.getByRole('button', { name: /Character box/i }));
+  await userEvent.click(await screen.findByRole('option', { name: 'Box 4 · FOUR' }));
+  expect(await screen.findByRole('dialog', { name: /discard unsaved/i })).toBeTruthy();
+  await userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(selections).toEqual([]);
+  expect((screen.getByLabelText('BIT') as HTMLInputElement).value).toBe('77');
+  await userEvent.click(screen.getByRole('button', { name: /Character box/i }));
+  await userEvent.click(await screen.findByRole('option', { name: 'Box 4 · FOUR' }));
+  await userEvent.click(await screen.findByRole('button', { name: 'Discard' }));
+  expect(await screen.findByDisplayValue('444')).toBeTruthy();
+  expect(selections).toEqual(['SaveData.dat#4']);
+});

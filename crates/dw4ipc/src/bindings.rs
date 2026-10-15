@@ -46,6 +46,7 @@ pub fn exported_types(cfg: &Config) -> Result<Vec<(&'static str, String)>, Expor
         ("StoryKind", StoryKind::export_to_string(cfg)?),
         ("StoryPreset", StoryPreset::export_to_string(cfg)?),
         ("UiData", UiData::export_to_string(cfg)?),
+        ("XboxSlot", dw4core::xbox::XboxSlot::export_to_string(cfg)?),
     ];
     Ok(types
         .into_iter()

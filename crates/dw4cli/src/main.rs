@@ -19,6 +19,9 @@ struct Cli {
     /// usa | europe | japan. Selects a save on mixed-region cards and new card identity.
     #[arg(long, global = true, value_parser = parse_region)]
     region: Option<Region>,
+    /// Xbox character choice ID from info/dump, e.g. SaveData.dat#4.
+    #[arg(long, global = true)]
+    xbox_slot: Option<String>,
     #[command(subcommand)]
     command: Command,
 }
@@ -81,7 +84,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
     match &cli.command {
         Command::Info { path } => {
             let mut session = EditorSession::new_session();
-            let result = session.open_with_region(path, cli.region)?;
+            let result = session.open_with_selection(path, cli.region, cli.xbox_slot.as_deref())?;
             if cli.json {
                 output::json(&result);
             } else {
@@ -90,7 +93,7 @@ fn run(cli: &Cli) -> Result<(), IpcError> {
         }
         Command::Dump { path } => {
             let mut session = EditorSession::new_session();
-            let result = session.open_with_region(path, cli.region)?;
+            let result = session.open_with_selection(path, cli.region, cli.xbox_slot.as_deref())?;
             if cli.json {
                 output::json(&result.view);
             } else {

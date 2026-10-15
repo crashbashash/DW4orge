@@ -2,6 +2,7 @@
 import type { Region } from "./Region";
 import type { SaveView } from "./SaveView";
 import type { SourceKind } from "./SourceKind";
+import type { XboxSlot } from "./XboxSlot";
 
 /**
  * The result of opening or creating a save.
@@ -22,4 +23,4 @@ source: SourceKind,
 /**
  * The projected fields.
  */
-view: SaveView, };
+view: SaveView, xbox_slots?: Array<XboxSlot>, xbox_selection?: string, };

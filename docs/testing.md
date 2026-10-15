@@ -141,3 +141,34 @@ raw exports, and mixed-region selection with the other save preserved. CLI and
 UI tests cover region selection. To repeat game acceptance with the integrated
 writer, create a card using `dw4cli new --region europe|japan --out test.ps2`, mount
 it in an isolated PCSX2 profile and follow the load/save/cold-boot sequence above.
+
+
+## Xbox validation (0.4.0)
+
+The Xbox suite adds synthetic signed four-box files and fragmented FATX images.
+It checks selected-box isolation, preservation of other boxes/unknown padding,
+filesystem and unrelated-file preservation, signatures, backup/Save As behavior,
+image-to-file export, malformed geometry/chains/cross-links, invalid signatures,
+external-write conflicts and Normal/Advanced bank packing. Frontend tests cover
+box-switch discard/cancel behavior. The native Tauri app was also driven through
+HDD-file and memory-unit edits, all four box choices, Save As and the discard
+guard; independent HMAC checks verified its output and untouched boxes.
+
+`cargo run -p dw4ipc --example xbox_validation -- input output [selection]`
+creates a controlled field matrix through the same service used by the app.
+It requires an existing retail character and writes a separate output. It does
+not launch xemu or attach media. `tools/xbox_save_probe.py` provides independent
+signature/field checks using a local XBE. No Xbox game/save binaries are fixtures
+in the repository. See [Xbox research](xbox-save-research.md) for retail results,
+private evidence locations and the memory-unit mounting format.
+
+
+Final v0.4.0 checks passed 307 Rust tests (including doctests), 158 frontend
+tests, four Tauri agent tests and three independent Python probe tests, plus
+Rust formatting/Clippy, TypeScript, ESLint, production frontend build and palette
+contrast checks. Retail USA loaded an app-written slot-A image and re-saved to
+HDD; retail Japan loaded the final slot-B image and re-saved to HDD. The final
+Japanese round-trip retained every tested editable field group, including both
+packed bank items and persistent story milestone 20. Only menu/runtime story
+flags 908/912 changed. Native screenshots checked the content-sized box selector
+and summary spacing.

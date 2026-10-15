@@ -41,7 +41,16 @@ impl EditorSession {
         path: &Path,
         region: Option<dw4core::Region>,
     ) -> Result<OpenResult, IpcError> {
-        let doc = Document::load_with_region(path, region)?;
+        self.open_with_selection(path, region, None)
+    }
+
+    pub fn open_with_selection(
+        &mut self,
+        path: &Path,
+        region: Option<dw4core::Region>,
+        selection: Option<&str>,
+    ) -> Result<OpenResult, IpcError> {
+        let doc = Document::load_with_selection(path, region, selection)?;
         let source = source_kind(path)?;
         let view = doc.view(Mode::Normal);
         let result = OpenResult {
@@ -49,6 +58,8 @@ impl EditorSession {
             path: Some(path_string(path)?),
             source,
             view,
+            xbox_slots: (!doc.xbox_slots().is_empty()).then(|| doc.xbox_slots()),
+            xbox_selection: doc.xbox_selection(),
         };
         self.doc = Some(doc);
         Ok(result)
@@ -85,10 +96,16 @@ impl EditorSession {
     ) -> Result<OpenResult, IpcError> {
         let spec = save_spec(req)?;
         let format = req.format.unwrap_or(SourceKind::Memcard);
-        let order = match format {
-            SourceKind::Gamecube | SourceKind::GamecubeCard => dw4core::ByteOrder::Big,
-            SourceKind::Memcard | SourceKind::Raw => dw4core::ByteOrder::Little,
-        };
+        let order =
+            match format {
+                SourceKind::Gamecube | SourceKind::GamecubeCard => dw4core::ByteOrder::Big,
+                SourceKind::Memcard | SourceKind::Raw => dw4core::ByteOrder::Little,
+                SourceKind::Xbox | SourceKind::XboxMu => return Err(IpcError::Unsupported {
+                    message:
+                        "Open an existing Xbox save to edit it; Xbox save creation is not supported"
+                            .into(),
+                }),
+            };
         if card.is_some() && order == dw4core::ByteOrder::Big {
             return Err(IpcError::Unsupported {
                 message: "GameCube creation cannot use a PS2 donor card".into(),
@@ -125,6 +142,8 @@ impl EditorSession {
             path: None,
             source,
             view,
+            xbox_slots: None,
+            xbox_selection: None,
         })
     }
 
@@ -236,6 +255,8 @@ fn finish(doc: &Document, path: &Path) -> Result<OpenResult, IpcError> {
         path: Some(path_string(path)?),
         source: source_kind(path)?,
         view: doc.view(Mode::Normal),
+        xbox_slots: (!doc.xbox_slots().is_empty()).then(|| doc.xbox_slots()),
+        xbox_selection: doc.xbox_selection(),
     })
 }
 
@@ -245,7 +266,11 @@ fn source_kind(path: &Path) -> Result<SourceKind, IpcError> {
         variant: "Io".to_string(),
         message: format!("{}: {source}", path.display()),
     })?;
-    Ok(if dw4core::memcard::is_memcard(&bytes) {
+    Ok(if dw4core::xbox::is_save(&bytes) {
+        SourceKind::Xbox
+    } else if dw4core::xbox::is_memory_unit(&bytes) {
+        SourceKind::XboxMu
+    } else if dw4core::memcard::is_memcard(&bytes) {
         SourceKind::Memcard
     } else if dw4core::memcard::is_gamecube_card(&bytes) {
         SourceKind::GamecubeCard

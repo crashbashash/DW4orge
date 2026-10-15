@@ -1,6 +1,6 @@
 # DW4orge
 
-A save editor for **Digimon World 4** / **Digimon World X** on PS2 (USA, Europe and Japan) and GameCube.
+A save editor for **Digimon World 4** / **Digimon World X** on PS2 (USA, Europe and Japan), GameCube, and Xbox (USA and Japan).
 
 Point it at a memory-card image or a bare save file, change your Digimon,
 inventory or progress in a normal form UI, and write it back. It also ships a
@@ -17,13 +17,22 @@ scriptable CLI.
 ### Open and edit a save
 
 Choose **Open** and select a PS2 `.ps2` memory card, a GameCube `.raw`/`.gcp`
-memory card or `.gci` save, or a bare 81,920-byte save. The editor detects the
-format automatically. Choose the regional save when a card contains more than
-one region, then edit the character, inventory, equipment or progress.
+memory card or `.gci` save, an Xbox `SaveData.dat` file or FATX memory-unit `.img`, or a bare 81,920-byte PS2/GameCube save. The editor detects the format
+automatically. Choose the regional save when a card contains more than
+one region, then edit the character, inventory, equipment or progress. Xbox saves
+show a **Character box** selector for occupied boxes; memory units can also
+contain multiple save containers. Switching boxes checks for unsaved changes.
 
 **Save** updates the opened file. **Save As** writes a separate copy. Existing
 memory cards keep their icons, filesystem and unrelated saves. GameCube cards
 can also be exported to `.gci`; `.bin` exports only the game-data blocks.
+Xbox Save As keeps all character boxes; `.img`
+keeps the whole memory unit and `.dat` exports the selected save container.
+Xbox writes re-sign both records and preserve other saves and filesystem metadata.
+Normal mode packs bank items together because the Xbox loader stops at the first
+empty slot; Advanced mode retains raw bank placement.
+Open an extracted HDD save file; direct HDD/qcow2 image editing is not supported.
+Close xemu or detach the memory unit before replacing its image.
 
 ### Create a save
 
@@ -87,6 +96,9 @@ dw4cli info Mcd001.ps2          # one-screen summary
 dw4cli dump Mcd001.ps2          # every editable field
 dw4cli new --species Dorumon --name abcdefgh -o new.ps2
 dw4cli verify new.ps2           # checksums and card ECC
+dw4cli info SaveData.dat        # Xbox save and available character boxes
+dw4cli info SaveData.dat --xbox-slot 'SaveData.dat#4'
+dw4cli verify MemoryUnit.img    # Xbox signatures and FATX structure
 dw4cli items --query "wisdom" --category mods
 ```
 
@@ -180,7 +192,6 @@ editor does not rename or convert another region's save silently.
 
 ## Roadmap
 
-- [ ] **Xbox save support.**
 - [ ] **Select additional character save boxes on GameCube.**
 - [ ] **Native Wayland support.**
 - [ ] **Packaging for Arch and Flatpak.**
@@ -189,6 +200,8 @@ editor does not rename or convert another region's save silently.
 
 - [`docs/save-format.md`](docs/save-format.md) — the save layout, memory-card
   filesystem, checksums and item-id packing.
+- [`docs/xbox-save-research.md`](docs/xbox-save-research.md) — Xbox retail save
+  layout, signing evidence and the experimental inspection/editing probe.
 - [`docs/dw4ipc-cli-tauri-design.md`](docs/dw4ipc-cli-tauri-design.md) — the IPC
   payloads and the CLI/Tauri service layer.
 - [`docs/testing.md`](docs/testing.md) — optional desktop agent controls and

@@ -19,7 +19,7 @@ struct Cli {
     /// usa | europe | japan. Selects a save on mixed-region cards and new card identity.
     #[arg(long, global = true, value_parser = parse_region)]
     region: Option<Region>,
-    /// Character box ID from info, e.g. ps2#2 or SaveData.dat#4.
+    /// Character box ID from info, e.g. ps2#2, gamecube#4 or SaveData.dat#4.
     #[arg(long = "box", alias = "xbox-slot", global = true)]
     character_box: Option<String>,
     #[command(subcommand)]

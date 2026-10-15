@@ -188,9 +188,10 @@ Per block: `checksum = Σ u32le(block+4 .. block+0xA000) mod 2³²`, stored at
 Each mirror contains a shared 8-byte checksum/version header followed by four
 `0x2000`-byte character records. The first record begins at `+0x08`, then
 `+0x2008`, `+0x4008`, and `+0x6008`; the four records end at `+0x8008`.
-An occupied PS2 box has `ISUSE = 1` at record offset zero in both mirrors.
-These offsets were confirmed by saving a second character through the retail
-USA Save Keeper and cold-loading an editor-written second box.
+An occupied PS2 or GameCube box has the byte `ISUSE = 1` at record offset
+zero in both mirrors; the next three bytes are reserved, not part of a u32.
+These offsets were confirmed through retail USA PS2 box-2 and GameCube box-4
+Save Keeper writes and cold-load checks.
 
 ### 4.1 Field map (box-1 block offsets)
 
@@ -202,7 +203,7 @@ for the selected box; checksum calculation still covers the complete mirror.
 | --- | --- | --- |
 | `+0x00` | u32 | checksum |
 | `+0x04` | u32 | version (4) |
-| `+0x08` | u32 | `ISUSE` |
+| `+0x08` | u8 + 3 reserved bytes | `ISUSE` (same byte layout on both platforms) |
 | `+0x0c` | u32 | `UNIQUE`, a per-save id — **varies** (`0x6096F82C`, `0x700FFDAC` observed) |
 | `+0x10` | 16 B | `DIGIMONNAME` (ASCII model stem, `p_<stem>`) |
 | `+0x30` | 18 B | `PLAYERNAME` (u16 `0xFFFF` marker + up to 8 fullwidth chars) |
@@ -1037,8 +1038,8 @@ values in gameplay. The GCI header/banner remained byte-identical, both save
 blocks remained identical, and both stored checksums matched their big-endian
 sums. Private samples, screenshots, and the validation record are under
 `Decomp/local/evidence/dw4-gamecube/` (`dolphin-validation.json`). This verifies
-the USA first-character GCI edit/load path; other save boxes, Japanese saves,
-still require separate work. Synthesis validation and full memory-card validation are
+the USA first-character GCI edit/load path. Additional-box evidence is recorded
+below; Japanese retail saves still require separate live validation. Synthesis validation and full memory-card validation are
 recorded below.
 
 ## GameCube raw memory-card support
@@ -1076,8 +1077,8 @@ file's existing directory entry and banner; `.bin` exports only the savedata.
 The existing atomic-write, backup and post-write verification rules apply.
 Cross-platform writes that would put GameCube data in a PS2 card, or PS2 data
 in a GameCube container, are rejected. New big-endian saves can also generate
-a GCI or a full 251-block card without a donor. A selector for the other three
-character save boxes remains separate work.
+a GCI or a full 251-block card without a donor. All four occupied character
+boxes are selectable through the shared box API.
 
 The filesystem contract was checked against the local Dolphin implementation
 in `Core/HW/GCMemcard/GCMemcard.{h,cpp}`. Synthetic tests cover fragmentation,
@@ -1099,8 +1100,8 @@ The private full-card samples are `dolphin-full-fresh.USA.raw`,
 `dolphin-full-edited.USA.raw`, and `dolphin-full-resaved.USA.raw`. Screenshots
 and `dolphin-raw-card-validation.json` sit alongside them in
 `Decomp/local/evidence/dw4-gamecube/`. This verifies the USA first-character
-raw-card edit, cold-load and in-game resave path. Japanese and European retail
-acceptance and a UI for the other character boxes remain unverified.
+raw-card edit, cold-load and in-game resave path. Additional-box validation is
+recorded below; Japanese and European retail acceptance remains unverified.
 
 
 ## GameCube creation (0.3.1)
@@ -1147,7 +1148,7 @@ selected four-box save container with `.dat`. Atomic writes, backups, and
 post-write verification apply to both formats.
 
 The source kind, selected box and available choices cross IPC schema 6
-as `character_selection` and `character_boxes` (shared with PS2).
+as `character_selection` and `character_boxes` (shared with PS2 and GameCube).
 The app selector guards unsaved changes, and the CLI accepts `--xbox-slot` with
 an ID printed by `info` or returned in JSON. New Save remains PS2/GameCube;
 Xbox support edits existing occupied boxes. HDD filesystem/qcow2 images and
@@ -1163,7 +1164,8 @@ PS2 memory cards and little-endian bare saves expose occupied boxes as `ps2#1`
 through `ps2#4`, in retail screen order (top-left, top-right, bottom-left,
 bottom-right). Opening without a selection chooses the first occupied box,
 including when box 1 is empty. No empty-box initialization or box copying is
-provided. GameCube additional-box selection remains separate work.
+provided. GameCube selection uses the same layout with big-endian scalars and
+names, as described below.
 
 All field access, including species arrays, story mirrors, equipment, disks and
 bank, follows the selected record. Both complete `0xA000` mirror checksums are
@@ -1173,3 +1175,21 @@ rejected before overwriting it. Card Save As keeps the entire save; `.bin`
 exports all four boxes, and the current box remains selected after either write.
 
 Retail evidence and the Save Keeper route are in [testing](testing.md).
+
+
+## GameCube character box selection
+
+GCI files, full `.raw`/`.gcp` memory cards and big-endian bare saves expose
+occupied choices `gamecube#1` through `gamecube#4`. The serializer uses the same
+four `0x2000`-byte records and two `0xA000` mirrors as PS2. Occupancy checks the
+single byte at each record's beginning in both mirrors; integers and fullwidth
+UTF-16 names use big-endian access. The checksum/version words remain shared.
+Opening defaults to the first occupied box, including when earlier boxes are empty.
+
+The desktop selector, discard guard, CLI `--box`, failed-selection behavior and
+post-save selection retention use IPC schema 6 without a new payload shape.
+All editable field groups follow the selected record. Other boxes and unknown
+bytes survive writes; GCI headers/banners and full-card filesystem metadata are
+preserved. Full-card copies, GCI exports and bare-data exports retain all boxes.
+Writes reject a source whose save payload changed externally after opening.
+Creating characters in empty boxes remains roadmap work on all three platforms.

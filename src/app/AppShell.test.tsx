@@ -86,11 +86,11 @@ describe('AppShell', () => {
   });
 });
 
-it.each(['xbox', 'memcard'] as const)('guards %s character-box switching and retains the regional selection', async (source) => {
+it.each(['xbox', 'memcard', 'gamecube', 'gamecube_card'] as const)('guards %s character-box switching and retains the regional selection', async (source) => {
   const backend = createMockBackend();
   const sample = await backend.openSample!();
-  const prefix = source === 'memcard' ? 'ps2' : 'SaveData.dat';
-  const region = source === 'memcard' ? 'japan' as const : null;
+  const prefix = source === 'memcard' ? 'ps2' : source.startsWith('gamecube') ? 'gamecube' : 'SaveData.dat';
+  const region = source === 'memcard' || source === 'gamecube_card' ? 'japan' as const : null;
   const choices = [
     { id: `${prefix}#1`, label: 'Box 1 · ONE', box_number: 1 },
     { id: `${prefix}#4`, label: 'Box 4 · FOUR', box_number: 4 },

@@ -970,12 +970,11 @@ impl Document {
                 "Xbox exports require an opened Xbox save or memory unit".into(),
             ));
         }
-        if self.path.as_deref() == Some(path) && self.data.byte_order() == crate::ByteOrder::Little
-        {
+        if self.path.as_deref() == Some(path) {
             let current = crate::memcard::load_save_with_region(path, self.region)?.0;
             if current != self.original_save {
                 return Err(crate::Error::NoSave(
-                    "The PS2 save changed since opening. Reopen it before saving.".into(),
+                    "The save changed since opening. Reopen it before saving.".into(),
                 ));
             }
         }

@@ -368,3 +368,57 @@ fn new_character_on_a_donor_card_preserves_other_ps2_boxes() {
         );
     }
 }
+
+#[test]
+fn gamecube_box_selection_survives_gci_and_card_exports_and_failed_switches() {
+    let dir = tempfile::tempdir().unwrap();
+    let source = dir.path().join("boxes.gci");
+    let mut raw =
+        dw4core::build_save_with_order(&dw4core::SaveSpec::default(), dw4core::ByteOrder::Big);
+    let fourth = dw4core::build_save_with_order(
+        &dw4core::SaveSpec {
+            player_name: "FOURあ".into(),
+            bit: 444,
+            ..Default::default()
+        },
+        dw4core::ByteOrder::Big,
+    );
+    for mirror in 0..2 {
+        let at = mirror * dw4core::BLOCK + 0x6000;
+        raw[at + 8..at + 0x2008].copy_from_slice(&fourth[8..0x2008]);
+    }
+    dw4core::fix_checksums_with_order(&mut raw, dw4core::ByteOrder::Big);
+    let mut seed = dw4core::document::Document::from_bytes(&raw).unwrap();
+    seed.save(&source).unwrap();
+    let mut session = EditorSession::new_session();
+    let opened = session.open(&source).unwrap();
+    assert_eq!(opened.source, SourceKind::Gamecube);
+    assert_eq!(opened.character_boxes.unwrap().len(), 2);
+    let chosen = session
+        .open_with_selection(&source, None, Some("gamecube#4"))
+        .unwrap();
+    assert_eq!(chosen.view.name, "FOURあ");
+    assert!(
+        session
+            .open_with_selection(&source, None, Some("ps2#4"))
+            .is_err()
+    );
+    assert_eq!(session.view(Mode::Normal).unwrap().name, "FOURあ");
+    let mut edits = chosen.view.to_edit_set();
+    edits.name = "SAVED4".into();
+    edits.bit = 654321;
+    let result = session.save(&edits, Mode::Normal).unwrap();
+    assert_eq!(result.character_selection.as_deref(), Some("gamecube#4"));
+    assert_eq!(result.character_boxes.unwrap()[1].label, "Box 4 · SAVED4");
+    let card = dir.path().join("card.raw");
+    let result = session
+        .save_as_with_region(&card, &edits, Mode::Normal, Some(dw4core::Region::Japan))
+        .unwrap();
+    assert_eq!(result.region, Some(dw4core::Region::Japan));
+    assert_eq!(result.source, SourceKind::GamecubeCard);
+    assert_eq!(result.character_selection.as_deref(), Some("gamecube#4"));
+    let first = session
+        .open_with_selection(&card, Some(dw4core::Region::Japan), Some("gamecube#1"))
+        .unwrap();
+    assert_eq!(first.view, opened.view);
+}

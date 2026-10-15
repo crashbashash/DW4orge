@@ -16,7 +16,8 @@ pub const BLOCK: usize = 0xA000;
 pub const CHECKSUM: usize = 0x0000;
 /// Save format version. Real saves are `4`.
 pub const VERSION: usize = 0x0004;
-/// `ISUSE` ("slot in use"). Real saves are `1`.
+/// `ISUSE` ("slot in use"): one byte, followed by three reserved bytes.
+/// This byte is `1` for occupied boxes on both PS2 and GameCube.
 pub const ISUSE: usize = 0x0008;
 /// `UNIQUE`, an id that **varies between saves**. Observed `0x6096F82C` and
 /// `0x700FFDAC`. Not a constant; do not assert a fixed value against a real save.
@@ -146,7 +147,7 @@ pub struct Field {
 pub const FIELDS: &[Field] = &[
     Field { name: "CHECKSUM", offset: CHECKSUM, len: 4 },
     Field { name: "VERSION", offset: VERSION, len: 4 },
-    Field { name: "ISUSE", offset: ISUSE, len: 4 },
+    Field { name: "ISUSE", offset: ISUSE, len: 4 }, // byte flag + 3 reserved bytes
     Field { name: "UNIQUE", offset: UNIQUE, len: 4 },
     Field { name: "DIGIMON_NAME", offset: DIGIMON_NAME, len: 16 },
     Field { name: "DIGIMON_NAME_PAD", offset: DIGIMON_NAME_PAD, len: 16 },

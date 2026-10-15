@@ -96,7 +96,7 @@ fn holes_empty_boxes_invalid_ids_and_gamecube_selection() {
     }
     let mut gc =
         SaveData::parse(&build_save_with_order(&SaveSpec::default(), ByteOrder::Big)).unwrap();
-    assert!(gc.character_boxes().is_empty());
+    assert_eq!(gc.character_boxes()[0].id, "gamecube#1");
     assert!(gc.select_character_box(Some("ps2#1")).is_err());
 }
 

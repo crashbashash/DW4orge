@@ -67,26 +67,29 @@ impl SaveData {
         })
     }
 
-    /// PS2 stores four 0x2000-byte character records in each 0xA000 mirror.
+    /// PS2 and GameCube store four 0x2000-byte character records per mirror.
     /// The first eight bytes belong to the complete mirror, not the character.
-    pub const PS2_BOX_SIZE: usize = 0x2000;
+    pub const BOX_SIZE: usize = 0x2000;
+    /// Retained for callers of the PS2-specific API introduced in 0.5.0.
+    pub const PS2_BOX_SIZE: usize = Self::BOX_SIZE;
 
     #[must_use]
     pub fn character_boxes(&self) -> Vec<CharacterBox> {
-        if self.byte_order != ByteOrder::Little || self.version() != 4 {
+        if self.version() != 4 {
             return Vec::new();
         }
         (0..4)
             .filter_map(|index| {
-                let offset = index * Self::PS2_BOX_SIZE;
-                if (0..2).any(|mirror| {
-                    read_u32(&self.raw, mirror * BLOCK + offset + 8, self.byte_order) != 1
-                }) {
+                let offset = index * Self::BOX_SIZE;
+                if (0..2).any(|mirror| self.raw[mirror * BLOCK + offset + 8] != 1) {
                     return None;
                 }
-                let name = crate::decode_player_name(&self.raw[offset + 0x30..offset + 0x42]);
+                let name = crate::name::decode_player_name_with_order(
+                    &self.raw[offset + 0x30..offset + 0x42],
+                    self.byte_order,
+                );
                 Some(CharacterBox {
-                    id: format!("ps2#{}", index + 1),
+                    id: format!("{}#{}", self.box_prefix(), index + 1),
                     label: format!("Box {} · {}", index + 1, name),
                     box_number: (index + 1) as u8,
                 })
@@ -94,13 +97,20 @@ impl SaveData {
             .collect()
     }
 
-    /// Select an occupied PS2 box, or the first occupied box when omitted.
+    /// Select an occupied PS2 or GameCube box, or the first occupied box when omitted.
     /// With no occupied boxes, an omitted selection retains legacy box-1 inspection.
     pub fn select_character_box(&mut self, selection: Option<&str>) -> Result<()> {
         let boxes = self.character_boxes();
         let chosen = match selection {
             Some(id) => Some(boxes.iter().find(|b| b.id == id).ok_or_else(|| {
-                Error::NoSave("no occupied PS2 character box matches the selection".into())
+                Error::NoSave(format!(
+                    "no occupied {} character box matches the selection",
+                    if self.byte_order == ByteOrder::Big {
+                        "GameCube"
+                    } else {
+                        "PS2"
+                    }
+                ))
             })?),
             None => boxes.first(),
         };
@@ -110,16 +120,23 @@ impl SaveData {
 
     #[must_use]
     pub fn character_selection(&self) -> Option<String> {
-        let id = format!("ps2#{}", self.selected_box + 1);
+        let id = format!("{}#{}", self.box_prefix(), self.selected_box + 1);
         self.character_boxes()
             .iter()
             .any(|b| b.id == id)
             .then_some(id)
     }
 
+    fn box_prefix(&self) -> &'static str {
+        match self.byte_order {
+            ByteOrder::Little => "ps2",
+            ByteOrder::Big => "gamecube",
+        }
+    }
+
     fn field_offset(&self, offset: usize) -> usize {
         if offset >= 8 {
-            offset + self.selected_box * Self::PS2_BOX_SIZE
+            offset + self.selected_box * Self::BOX_SIZE
         } else {
             offset
         }
@@ -223,7 +240,7 @@ impl SaveData {
     /// `ISUSE`. Real saves are `1`.
     #[must_use]
     pub fn isuse(&self) -> u32 {
-        self.get_u32(offsets::ISUSE)
+        u32::from(self.get_bytes(offsets::ISUSE, 1)[0])
     }
 
     /// `UNIQUE`, a per-save id. **Not** a constant: real saves carry different

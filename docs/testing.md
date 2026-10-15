@@ -1,6 +1,6 @@
 # Automated editor and retail-game testing
 
-## Finding the PS2 Save Keeper from a fresh lobby arrival
+## Finding the Save Keeper from a fresh lobby arrival (PS2 / GameCube)
 
 From the Terminal Area where a newly created or called Digimon appears, take
 the bridge to the **left**. Confirm **Central Area → Go to the destination**
@@ -224,3 +224,54 @@ passed 314 Rust tests (including doctests), 159 frontend tests and four Tauri
 agent tests, plus formatting, Clippy, TypeScript, ESLint, production build and
 palette contrast. Live game coverage is USA box 2; other box/region combinations
 have automated format coverage, not a claimed full retail campaign test.
+
+
+## GameCube character boxes (0.6.0)
+
+GameCube box selection uses the same IPC schema 6 selector as PS2 and Xbox.
+GCI, full `.raw`/`.gcp` cards and big-endian bare data expose `gamecube#1`
+through `gamecube#4`. Empty boxes are omitted; creating a character in one
+remains separate roadmap work.
+
+`cargo run -p dw4ipc --example gamecube_box_validation -- input output 'gamecube#4'`
+creates an edit matrix through the app backend. It needs an occupied box and
+writes a separate output. Private evidence is under
+`../Decomp/local/gamecube-box-research/`.
+
+Automated checks cover four distinct characters, big-endian integer and UTF-16
+name access (including Japanese characters), byte-sized occupancy with nonzero
+reserved bytes, empty/invalid/platform-mismatched choices, default selection
+when box 1 is empty, both mirrors, unknown data and other-box preservation,
+GCI header/banner and card filesystem preservation, all three regional card
+identities, card/GCI/bare exports, repeated saves, external-save conflicts,
+failed IPC selection retaining the session, CLI selection and the desktop
+Cancel/Discard guard. The suites passed 320 Rust tests (including doctests),
+161 frontend tests and four Tauri agent tests; formatting, Clippy, TypeScript,
+ESLint, frontend production build and palette contrast also passed.
+
+The native app opened both the retail full card and its GCI export, selected
+box 4, exercised Cancel/Discard, saved and exported it, switched back to the
+unchanged first character, and retained box 4 after writes. Independent payload
+comparisons verified other-box preservation in all three exported formats and
+matching backend-written card/GCI payloads. `native-box4-summary.png` shows the
+rendered box-4 summary without clipping; `native-report.json` records the checks.
+
+Retail USA Dolphin validation used an isolated profile and copied raw card.
+The Save Keeper wrote the existing character into box 4 while retaining box 1.
+Independent directory/BAT extraction found its occupied byte and character
+fields at `+0x6008` in both mirrors. The app-backend field matrix edited only
+that record; native UI edits then saved `NATIVE4`, level 17, BIT 765432 and
+X-Data 1234. A cold boot displayed it in the fourth position, loaded it into
+gameplay and saved it again through the Central Area Save Keeper.
+
+The retail resave matched every compared `SaveView` field group: name/species,
+level/EXP, BIT/X-Data, junk counter, all techniques/power-ups, inventory,
+equipment/mod sockets, disks, bank balance/items, difficulty and story folders.
+Milestone 20 survived. Only runtime/menu flags 908 and 912 changed. Both
+big-endian checksums verified, and all other box/trailing bytes were unchanged.
+`retail-roundtrip-report.json`, `isolation-report.json`, the copied cards and
+`cold-box4-choice.png`, `cold-box4-gameplay.png`, `roundtrip-saved.png` record
+this boundary. Live coverage is USA raw-card box 4. GCI/bare exports have automated and
+native app coverage; all four boxes and three regional card identities have
+automated coverage. A full campaign or Japanese/European retail playthrough
+is not claimed.

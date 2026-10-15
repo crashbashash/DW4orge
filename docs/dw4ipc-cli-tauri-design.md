@@ -370,9 +370,9 @@ accepts optional `character_selection`; the equivalent service method is
 `EditorSession::open_with_selection`. Failed selections retain the previous
 session. The UI reuses its load path with a discard guard when switching boxes.
 The CLI accepts `--box` on info/dump (`--xbox-slot` remains an alias); IDs are
-visible in `info` and JSON. PS2 IDs are `ps2#1` through `ps2#4`; Xbox IDs retain
+visible in `info` and JSON. PS2 IDs are `ps2#1` through `ps2#4`; GameCube IDs are `gamecube#1` through `gamecube#4`; Xbox IDs retain
 the container path and box number. Switching retains the session's selected
-region, so mixed-region cards keep their identity. PS2 raw/card writes retain
+region, so mixed-region cards keep their identity. PS2 raw/card and GameCube raw/card/GCI writes retain
 all boxes and compute checksums over both complete mirrors. Schema 6 replaces
 the Xbox-only payload field names from schema 5 with these shared names.
 

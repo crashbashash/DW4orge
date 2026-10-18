@@ -51,6 +51,8 @@ const PAIRS = [
   { fg: 'text', bg: 'surface-raised', min: 4.5 },
   { fg: 'text-muted', bg: 'surface', min: 4.5 },
   { fg: 'text-muted', bg: 'surface-raised', min: 4.5 },
+  { fg: 'text', bg: 'control', min: 4.5 },
+  { fg: 'accent', bg: 'selected', min: 4.5 },
   // The brand is accent-coloured text on the raised surface.
   { fg: 'accent', bg: 'surface-raised', min: 4.5 },
   // Borders, focus rings and other non-text uses.

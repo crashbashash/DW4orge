@@ -1,5 +1,4 @@
 import { invoke } from '@tauri-apps/api/core';
-import { open, save } from '@tauri-apps/plugin-dialog';
 import type { EditSet, FieldError, Mode, OpenResult, Species } from '../bindings';
 import type { Backend, ValidationReport } from './backend';
 import { OPEN_FILTERS, SAVE_FILTERS } from './backend';
@@ -30,12 +29,11 @@ export const tauriBackend: Backend = {
   speciesStats: (species: Species, mode: Mode) => invoke('species_stats', { species, mode }),
   async pickOpenPath() {
     if (agentControlsEnabled()) return invoke<string | null>('agent_pick_path', { kind: 'open' });
-    const picked = await open({ multiple: false, directory: false, filters: OPEN_FILTERS });
-    return typeof picked === 'string' ? picked : null;
+    return invoke<string | null>('pick_open_path', { filters: OPEN_FILTERS });
   },
   pickSavePath: (defaultName, source) => agentControlsEnabled()
     ? invoke<string | null>('agent_pick_path', { kind: 'save' })
-    : save({ defaultPath: defaultName, filters: SAVE_FILTERS.filter(filter => {
+    : invoke<string | null>('pick_save_path', { defaultPath: defaultName, filters: SAVE_FILTERS.filter(filter => {
       const xbox = filter.extensions.includes('dat') || filter.extensions.includes('img');
       if (source === 'xbox') return filter.extensions.includes('dat');
       if (source === 'xbox_mu') return xbox;

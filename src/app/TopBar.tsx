@@ -19,40 +19,43 @@ export function TopBar({ onOpen, onSample }: { onOpen: () => void; onSample: () 
 
   return (
     <header className="topbar">
-      <h1 className="brand">DW4orge</h1>
-      <button type="button" onClick={onOpen} disabled={busy}>
-        Open
-      </button>
-      {canLoadSample ? (
-        <button type="button" onClick={onSample} disabled={busy}>
-          Load sample save
+      <h1 className="brand"><img src="/favicon.png" alt="" width={28} height={28} />DW4orge</h1>
+      <div className="toolbar-actions">
+        <button type="button" onClick={onOpen} disabled={busy}>
+          Open
         </button>
-      ) : null}
-      <button type="button" onClick={requestNew} disabled={!state.appInfo || busy}>
-        New
-      </button>
-      <button type="button" onClick={() => void save()} disabled={!state.session || busy}>
-        Save
-      </button>
-      <button type="button" onClick={() => void saveAs()} disabled={!state.draft || busy}>
-        Save As
-      </button>
-      <span
-        className={isDirty ? 'dirty' : 'dirty clean'}
-        title={isDirty ? 'Unsaved changes' : 'No changes'}
-        aria-label={isDirty ? 'Unsaved changes' : 'No changes'}
-        role="img"
-      />
-      <span className="spacer" />
-      <button
-        type="button"
-        onClick={() => setMode(state.mode === 'normal' ? 'advanced' : 'normal')}
-      >
-        Mode: {state.mode === 'normal' ? 'Normal' : 'Advanced'}
-      </button>
-      <button type="button" onClick={toggleTheme}>
-        Theme: {state.theme === 'dark' ? 'Dark' : 'Light'}
-      </button>
+        {canLoadSample ? (
+          <button type="button" onClick={onSample} disabled={busy}>
+            Load sample save
+          </button>
+        ) : null}
+        <button type="button" onClick={requestNew} disabled={!state.appInfo || busy}>
+          New
+        </button>
+        <button className="primary" type="button" onClick={() => void save()} disabled={!state.session || busy}>
+          Save
+        </button>
+        <button type="button" onClick={() => void saveAs()} disabled={!state.draft || busy}>
+          Save As
+        </button>
+        <span
+          className={isDirty ? 'dirty' : 'dirty clean'}
+          title={isDirty ? 'Unsaved changes' : 'No changes'}
+          aria-label={isDirty ? 'Unsaved changes' : 'No changes'}
+          role="img"
+        />
+      </div>
+      <div className="toolbar-actions toolbar-settings">
+        <button
+          type="button"
+          onClick={() => setMode(state.mode === 'normal' ? 'advanced' : 'normal')}
+        >
+          Mode: {state.mode === 'normal' ? 'Normal' : 'Advanced'}
+        </button>
+        <button type="button" onClick={toggleTheme}>
+          Theme: {state.theme === 'dark' ? 'Dark' : 'Light'}
+        </button>
+      </div>
 
       <ConfirmDialog
         isOpen={confirm}

@@ -9,6 +9,7 @@ import { DisksSection } from '../features/disks/DisksSection';
 import { EquipmentSection } from '../features/equipment/EquipmentSection';
 import { ItemsSection } from '../features/items/ItemsSection';
 import { StorySection } from '../features/story/StorySection';
+import { NewSaveDialog } from '../features/new/NewSaveDialog';
 import { CloseGuard } from './CloseGuard';
 import { useEditor } from './EditorProvider';
 import { TopBar } from './TopBar';
@@ -18,6 +19,7 @@ import { dirty } from './selectors';
 export function AppShell() {
   const { state, open, openSample, save, saveAs, undo, redo, clearError } = useEditor();
   const [pendingOpen, setPendingOpen] = useState<'open' | 'sample' | null>(null);
+  const [newOpen, setNewOpen] = useState(false);
   const requestOpen = (kind: 'open' | 'sample' = 'open') => {
     if (state.status === 'busy') return;
     if (dirty(state)) setPendingOpen(kind);
@@ -48,6 +50,7 @@ export function AppShell() {
         }}
       />
       <CloseGuard />
+      <NewSaveDialog isOpen={newOpen} onClose={() => setNewOpen(false)} />
       <div className="body">
         <Sidebar />
         <main className="main">
@@ -66,11 +69,14 @@ export function AppShell() {
             </>
           ) : (
             <div className="empty">
-              <h2>DW4orge</h2>
+              <h2>Open a save or create a new one</h2>
               <p>Open a PS2 or GameCube memory card, Xbox save or memory unit, GCI save, or raw save to begin.</p>
               <div className="empty-actions">
-                <button type="button" onClick={() => requestOpen()}>
+                <button className="primary" type="button" onClick={() => requestOpen()}>
                   Open save
+                </button>
+                <button type="button" disabled={!state.appInfo || state.status === 'busy'} onClick={() => setNewOpen(true)}>
+                  Create new save
                 </button>
               </div>
             </div>

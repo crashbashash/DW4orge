@@ -1,6 +1,9 @@
-# DW4orge
+# DW4orge: Digimon World 4 Save Editor
 
-A save editor for **Digimon World 4** / **Digimon World X** on PS2 (USA, Europe and Japan), GameCube, and Xbox (USA and Japan).
+DW4orge is a save editor for **Digimon World 4 (DW4)** and **Digimon World X**,
+available for **Windows, Linux and macOS**. It supports **PlayStation 2 (PS2)**
+saves from USA, Europe and Japan, **GameCube** saves, and **Xbox** saves from USA
+and Japan.
 
 Point it at a memory-card image or a bare save file, change your Digimon,
 inventory or progress in a normal form UI, and write it back. It also ships a
